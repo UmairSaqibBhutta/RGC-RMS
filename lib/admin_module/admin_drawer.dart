@@ -1,0 +1,175 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:leadmanagementsystem/admin_module/admin_track_users.dart';
+import 'package:leadmanagementsystem/admin_module/managers/managers_page.dart';
+import 'package:leadmanagementsystem/constants/user_roles.dart';
+import 'package:leadmanagementsystem/controllers/drawer_controller.dart';
+import 'package:leadmanagementsystem/main.dart';
+import 'package:leadmanagementsystem/projects/projects_list_page.dart';
+import 'package:leadmanagementsystem/constants/constants.dart';
+import 'package:leadmanagementsystem/reports/reports_main_screen.dart';
+import 'package:leadmanagementsystem/screens/leaves_page.dart';
+import 'package:leadmanagementsystem/screens/login_screen.dart';
+import 'package:leadmanagementsystem/screens/set_reminder_screen.dart';
+import 'package:leadmanagementsystem/screens/tasks_list_page.dart';
+import 'package:leadmanagementsystem/screens/add_user_screen.dart';
+import 'package:leadmanagementsystem/screens/profile_screen.dart';
+import 'package:leadmanagementsystem/screens/change_password_screen.dart';
+import 'package:leadmanagementsystem/screens/visit_report_list_screen.dart';
+import 'package:leadmanagementsystem/services/background_service.dart';
+import 'package:leadmanagementsystem/widgets/custom_decoration_container.dart';
+import 'package:leadmanagementsystem/widgets/custom_drawer_item.dart';
+
+class AdminDrawer extends StatefulWidget {
+  const AdminDrawer({super.key});
+
+  @override
+  State<AdminDrawer> createState() => _AdminDrawerState();
+}
+
+class _AdminDrawerState extends State<AdminDrawer> {
+  final drawerCont = Get.put(DrawersController());
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: CustomDecorationContainer(
+        isDrawer: true,
+        child: SingleChildScrollView(
+          child: Scrollbar(
+            thickness: 6,
+            thumbVisibility: true,
+            interactive: true,
+            trackVisibility: true,
+            child: Column(
+              children: [
+                DrawerHeader(
+                  child: Image.asset('images/main-logo.png'),
+                ),
+                CustomDrawerItem(
+                  icon: CupertinoIcons.home,
+                  onTap: () {
+                    Get.back();
+                  },
+                  title: "Dashboard",
+                ),
+                CustomDrawerItem(
+                  icon: CupertinoIcons.person,
+                  onTap: () {
+                    Get.to(const ProfileScreen());
+                  },
+                  title: "Profile",
+                ),
+                CustomDrawerItem(
+                  icon: CupertinoIcons.doc,
+                  onTap: () {
+                    Get.back();
+                    Get.to(ProjectListPage(
+                      findProjectsByUsers: false,
+                      userId: '',
+                    ));
+                  },
+                  title: "Project",
+                ),
+                CustomDrawerItem(
+                  icon: CupertinoIcons.chart_bar_alt_fill,
+                  onTap: () {
+                    Get.to(const VisitReportListScreen());
+                  },
+                  title: "Visit Plan / Reports",
+                ),
+                CustomDrawerItem(
+                  icon: CupertinoIcons.checkmark_alt,
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    Get.to(TaskListPage(
+                      getTasksNyIndividualUsers: false,
+                    ));
+                  },
+                  title: "Tasks",
+                ),
+                CustomDrawerItem(
+                  icon: CupertinoIcons.chart_bar,
+                  onTap: () {
+                    Get.to(const ReportsMainScreen());
+                  },
+                  title: "Reports",
+                ),
+                CustomDrawerItem(
+                  icon: Icons.work_off,
+                  onTap: () {
+                    Get.to(const LeavesPage());
+                  },
+                  title: "Leaves",
+                ),
+                CustomDrawerItem(
+                  icon: Icons.alarm,
+                  onTap: () {
+                    Get.to(const SetReminderScreen());
+                  },
+                  title: "Set Reminder",
+                ),
+                if (loginStorage.getUserRole() == UserRole.CEO)
+                  CustomDrawerItem(
+                    icon: CupertinoIcons.location,
+                    onTap: () {
+                      Get.to(const AdminTrackUsers());
+                    },
+                    title: "Locate Workers",
+                  ),
+                if (loginStorage.getUserRole() == UserRole.CEO)
+                  CustomDrawerItem(
+                    icon: CupertinoIcons.group,
+                    onTap: () {
+                      Get.back();
+                      Get.to(const ManagersPage());
+                    },
+                    title: "View Users",
+                  ),
+                if (loginStorage.getUserRole() == UserRole.CEO ||
+                    loginStorage.getUserRole() == UserRole.COMPANY_DIRECTOR ||
+                    loginStorage.getUserRole() == UserRole.COUNTRY_HEAD)
+                  CustomDrawerItem(
+                    icon: CupertinoIcons.person_add,
+                    onTap: () {
+                      Get.back();
+                      Get.to(const AddUserScreen());
+                    },
+                    title: "Add User",
+                  ),
+                CustomDrawerItem(
+                  icon: CupertinoIcons.lock,
+                  onTap: () {
+                    Get.back();
+                    Get.to(const ChangePasswordScreen());
+                  },
+                  title: "Change Password",
+                ),
+                CustomDrawerItem(
+                  icon: CupertinoIcons.square_arrow_right,
+                  onTap: () async {
+                    alertDialogueWithLoader(context);
+                    bool isLoggedOut = await drawerCont.doLogout();
+                    Navigator.of(context).pop();
+
+                    if (isLoggedOut) {
+                      loginStorage.clearStorageData();
+                      if (!kIsWeb) {
+                        await BackgroundService.stopService();
+                      }
+
+                      Get.offAll(const LoginScreen());
+                    }
+                  },
+                  title: "Logout",
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

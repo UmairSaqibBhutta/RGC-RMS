@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.crm.roofline",
+      "sha256_cert_fingerprints": [
+        "D2:B8:36:B7:7C:47:A7:CC:B8:59:0E:F2:C2:3E:59:42:E2:31:B2:12:96:C1:3A:50:5B:15:D5:8D:DA:14:59:60"
+      ]
+    }
+  }
+]

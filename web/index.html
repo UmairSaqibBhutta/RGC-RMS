@@ -1,0 +1,261 @@
+<html>
+  <title>RGC RMS</title>
+
+  <style>
+    div {
+      margin-bottom: 15px;
+    }
+    #loading {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.8) url("loading.gif") center no-repeat;
+    }
+  </style>
+
+  <head>
+    <style>
+      .loading {
+        display: flex;
+        flex-flow: column;
+        justify-content: center;
+        align-items: center;
+        margin: 0;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        -ms-transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%);
+      }
+
+      .loader {
+        border: 8px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 8px solid #00a569;
+        border-right: 8px solid #f3f3f3;
+        border-bottom: 8px solid #00a569;
+        border-left: 8px solid #f3f3f3;
+        width: 60px !important;
+        height: 60px !important;
+        -webkit-animation: spin 2s linear infinite;
+        animation: spin 2s linear infinite;
+      }
+
+      @-webkit-keyframes spin {
+        0% {
+          -webkit-transform: rotate(0deg);
+        }
+        100% {
+          -webkit-transform: rotate(360deg);
+        }
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="token"></div>
+    <div id="msg"></div>
+    <div id="notis"></div>
+    <div id="err"></div>
+    <div id="loading"></div>
+
+    <div class="loading">
+      <div class="loader"></div>
+    </div>
+
+    <!-- Ensure first time loading progress is gone after app loads -->
+    <script>
+      window.addEventListener("flutter-first-frame", function () {
+        var element = document.getElementsByClassName("loading");
+        element[0].parentNode.removeChild(element[0]);
+      });
+    </script>
+
+    <!-- The core Firebase JS SDK is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/8.4.2/firebase-app.js"></script>
+    <script defer src="voice_recorder.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-analytics.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.16.1/firebase-messaging.js"></script>
+
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("service-worker.js");
+      }
+    </script>
+
+    <script>
+      document.onreadystatechange = function () {
+        if (document.readyState === "loading") {
+          document.getElementById("loading").style.display = "block";
+        } else if (document.readyState === "complete") {
+          document.getElementById("loading").style.display = "none";
+        }
+      };
+      MsgElem = document.getElementById("msg");
+      TokenElem = document.getElementById("token");
+      NotisElem = document.getElementById("notis");
+      ErrElem = document.getElementById("err");
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyCeuJe7RNmfU6-mNLf6McA5QElAsH_kjqw",
+        authDomain: "bookingapp-5bc4d.firebaseapp.com",
+        projectId: "bookingapp-5bc4d",
+        storageBucket: "bookingapp-5bc4d.firebasestorage.app",
+        messagingSenderId: "756529764904",
+        appId: "1:756529764904:web:4addfcabbf4c4e7d26331d",
+        measurementId: "G-7M6516JVJQ",
+      };
+      firebase.initializeApp(firebaseConfig);
+
+      const messaging = firebase.messaging();
+      messaging
+        .requestPermission()
+        .then(() => {
+          // Get the token in the form of promise
+          return messaging.getToken();
+        })
+        .then((token) => {
+          // Subscribe to push notifications using the token
+          messaging
+            .subscribe(token)
+            .then(() => {
+              // Subscription successful!
+              console.error(err);
+            })
+            .catch((err) => {
+              // Subscription failed
+              console.error(err);
+            });
+        })
+        .catch((err) => {
+          // Permission denied
+          console.error(err);
+        });
+
+      // messaging.onBackgroundMessage(function(payload) {
+      //   console.log('Received background message ', payload);
+
+      //   const notificationTitle = payload.notification.title;
+      //   const notificationOptions = {
+      //     body: payload.notification.body,
+      //   };
+
+      //   self.registration.showNotification(notificationTitle,
+      //     notificationOptions);
+      // });
+
+      let enableForegroundNotification = true;
+      messaging.onMessage(function (payload) {
+        console.log("Message received. ", payload);
+        // window.functionName();
+        // Example JavaScript code to send data to Flutter during runtime
+        // var dataToSend = "Hello from JavaScript during runtime!";
+        // window.parent.postMessage({ type: 'flutter_inject_data', data: payload }, '*');
+
+        //     messaging.onMessage(function(payload) {
+        //     const noteTitle = payload.notification.title;
+        //     const noteOptions = {
+        //         body: payload.notification.body,
+        //         icon: payload.notification.icon,
+        //     };
+        //     new Notification(noteTitle, noteOptions);
+        // });
+
+        let notification = payload.notification;
+        const notificationOptions = {
+          body: notification.body,
+          icon: notification.icon,
+        };
+        new Notification(notification.title, notificationOptions);
+
+        navigator.serviceWorker.getRegistrations().then((registration) => {
+          registration[0].showNotification(
+            notification.title,
+            notificationOptions
+          );
+        });
+        // });
+
+        NotisElem.innerHTML = NotisElem.innerHTML + JSON.stringify(payload);
+
+        if (enableForegroundNotification) {
+          let notification = payload.notification;
+          navigator.serviceWorker.getRegistrations().then((registration) => {
+            registration[0].showNotification(notification.title);
+          });
+        }
+      });
+
+      var serviceWorkerVersion = null;
+      var scriptLoaded = false;
+      function loadMainDartJs() {
+        if (scriptLoaded) {
+          return;
+        }
+        scriptLoaded = true;
+        var scriptTag = document.createElement("script");
+        scriptTag.src = "main.dart.js";
+        scriptTag.type = "application/javascript";
+        document.body.append(scriptTag);
+      }
+
+      if ("serviceWorker" in navigator) {
+        // Service workers are supported. Use them.
+        window.addEventListener("load", function () {
+          loadMainDartJs();
+
+          navigator.serviceWorker.register("/firebase-messaging-sw.js");
+          // Wait for registration to finish before dropping the <script> tag.
+          // Otherwise, the browser will load the script multiple times,
+          // potentially different versions.
+
+          var serviceWorkerUrl =
+            "flutter_service_worker.js?v=" + serviceWorkerVersion;
+          navigator.serviceWorker.register(serviceWorkerUrl).then((reg) => {
+            function waitForActivation(serviceWorker) {
+              serviceWorker.addEventListener("statechange", () => {
+                if (serviceWorker.state == "activated") {
+                  console.log("Installed new service worker.");
+                }
+              });
+            }
+
+            if (!reg.active && (reg.installing || reg.waiting)) {
+              // No active web worker and we have installed or are installing
+              // one for the first time. Simply wait for it to activate.
+              waitForActivation(reg.installing || reg.waiting);
+            } else if (!reg.active.scriptURL.endsWith(serviceWorkerVersion)) {
+              // When the app updates the serviceWorkerVersion changes, so we
+              // need to ask the service worker to update.
+              console.log("New service worker available.");
+              reg.update();
+              waitForActivation(reg.installing);
+            } else {
+              // Existing service worker is still good.
+              console.log("Loading app from service worker.");
+              // loadMainDartJs();
+            }
+          });
+        });
+      }
+
+      // If service worker doesn't succeed in a reasonable amount of time,
+      // fallback to plain <script> tag.
+    </script>
+    <base href="/" />
+  </body>
+</html>
