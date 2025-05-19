@@ -28,12 +28,12 @@ class _AddUserScreenState extends State<AddUserScreen> {
   bool isRole = false;
 
   List<String> roles = [
-    'Group Director-CEO',
-    'Company Director',
-    'Country Head',
-    'RSM (Regional Sales Manager)',
-    'ASM (Area Sales Manager)',
-    'New Recruits'
+    UserRole.CEO,
+    UserRole.COMPANY_DIRECTOR,
+    UserRole.COUNTRY_HEAD,
+    UserRole.RSM,
+    UserRole.ASM,
+    UserRole.NEW_RECRUITS
   ];
 
   List<String> area = ['Centre', 'North', 'South'];
@@ -175,7 +175,8 @@ class _AddUserScreenState extends State<AddUserScreen> {
                             if (selectedRole != null &&
                                 selectedCompany != null &&
                                 selectedRole != UserRole.CEO &&
-                                selectedRole != UserRole.COMPANY_DIRECTOR)
+                                selectedRole != UserRole.COMPANY_DIRECTOR &&
+                                selectedRole != UserRole.COUNTRY_HEAD)
                               CustomExpansion(
                                 title: selectedArea ?? 'Select Region',
                                 onTap: () {
@@ -266,7 +267,8 @@ class _AddUserScreenState extends State<AddUserScreen> {
                               managerController.addManager(body);
                             }
                           } else if (selectedRole ==
-                              UserRole.COMPANY_DIRECTOR) {
+                                  UserRole.COMPANY_DIRECTOR ||
+                              selectedRole == UserRole.COUNTRY_HEAD) {
                             Map<String, dynamic> body = {
                               'name': nameController.text.trim(),
                               'email': emailController.text.trim(),
@@ -340,7 +342,8 @@ class _AddUserScreenState extends State<AddUserScreen> {
 
     // Region is required for roles other than CEO & Company Director
     if (selectedRole != UserRole.CEO &&
-        selectedRole != UserRole.COMPANY_DIRECTOR) {
+        selectedRole != UserRole.COMPANY_DIRECTOR &&
+        selectedRole != UserRole.COUNTRY_HEAD) {
       if (selectedArea == null) {
         Get.snackbar('Validation Error', 'Please select a region');
         return false;

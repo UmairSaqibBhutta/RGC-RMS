@@ -6,7 +6,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:leadmanagementsystem/admin_module/add_project_page.dart';
-import 'package:leadmanagementsystem/admin_module/admin_home_page.dart';
+import 'package:leadmanagementsystem/admin_module/home_page.dart';
 import 'package:leadmanagementsystem/constants/constants.dart';
 import 'package:leadmanagementsystem/constants/user_roles.dart';
 import 'package:leadmanagementsystem/controllers/location_controller.dart';
@@ -27,7 +27,7 @@ class BottomNavScreen extends StatefulWidget {
 
 class _BottomNavScreenState extends State<BottomNavScreen> {
   final screens = [
-    const AdminHomePage(),
+    const HomePage(),
     TaskListPage(
       getTasksNyIndividualUsers: false,
     ),

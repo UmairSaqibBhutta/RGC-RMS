@@ -22,16 +22,15 @@ import 'package:leadmanagementsystem/screens/notification_screen.dart';
 import 'package:leadmanagementsystem/widgets/custom_text_field.dart';
 import 'package:leadmanagementsystem/widgets/custom_widgets.dart';
 
-class AdminHomePage extends StatefulWidget {
-  const AdminHomePage({super.key});
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
 
   @override
-  State<AdminHomePage> createState() => _AdminHomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _AdminHomePageState extends State<AdminHomePage>
-    with TickerProviderStateMixin {
-  ProjectController addProjectController = Get.find();
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
+  ProjectController projectController = Get.find();
   FilterController filterController = Get.put(FilterController());
 
   AnimationController? controller;
@@ -44,7 +43,7 @@ class _AdminHomePageState extends State<AdminHomePage>
     super.initState();
 
     loginController.getNotifications();
-    addProjectController.getProjects(context);
+    projectController.getProjects(context);
 
     controller = AnimationController(
       vsync: this,
@@ -94,7 +93,7 @@ class _AdminHomePageState extends State<AdminHomePage>
 
   Future<void> onRefresh() async {
     [
-      await addProjectController.getProjects(context),
+      await projectController.getProjects(context),
       loginController.getNotifications()
     ];
   }
@@ -203,25 +202,23 @@ class _AdminHomePageState extends State<AdminHomePage>
 
                                           filterController.visible.value =
                                               false;
-                                          addProjectController.leadB.value =
+                                          projectController.leadB.value = false;
+                                          projectController.contactedB.value =
                                               false;
-                                          addProjectController
-                                              .contactedB.value = false;
-                                          addProjectController.pitchedB.value =
+                                          projectController.pitchedB.value =
                                               false;
-                                          addProjectController
-                                              .sentSampleB.value = false;
-                                          addProjectController
-                                              .negotiatingB.value = false;
-                                          addProjectController.closeWonB.value =
+                                          projectController.sentSampleB.value =
                                               false;
-                                          addProjectController
-                                              .closedLostB.value = false;
-                                          addProjectController
+                                          projectController.negotiatingB.value =
+                                              false;
+                                          projectController.closeWonB.value =
+                                              false;
+                                          projectController.closedLostB.value =
+                                              false;
+                                          projectController
                                               .temporaryCloseB.value = false;
 
-                                          print(
-                                              addProjectController.leadB.value);
+                                          print(projectController.leadB.value);
                                         },
                                         title: 'All Projects',
                                         color: appColor,
@@ -249,25 +246,23 @@ class _AdminHomePageState extends State<AdminHomePage>
                                           filterController.visible.value =
                                               false;
 
-                                          addProjectController.leadB.value =
-                                              true;
-                                          addProjectController
-                                              .contactedB.value = false;
-                                          addProjectController.pitchedB.value =
+                                          projectController.leadB.value = true;
+                                          projectController.contactedB.value =
                                               false;
-                                          addProjectController
-                                              .sentSampleB.value = false;
-                                          addProjectController
-                                              .negotiatingB.value = false;
-                                          addProjectController.closeWonB.value =
+                                          projectController.pitchedB.value =
                                               false;
-                                          addProjectController
-                                              .closedLostB.value = false;
-                                          addProjectController
+                                          projectController.sentSampleB.value =
+                                              false;
+                                          projectController.negotiatingB.value =
+                                              false;
+                                          projectController.closeWonB.value =
+                                              false;
+                                          projectController.closedLostB.value =
+                                              false;
+                                          projectController
                                               .temporaryCloseB.value = false;
 
-                                          print(
-                                              addProjectController.leadB.value);
+                                          print(projectController.leadB.value);
                                         },
                                         title: 'Lead',
                                         color: leadColor,
@@ -294,24 +289,23 @@ class _AdminHomePageState extends State<AdminHomePage>
                                           filterController.visible.value =
                                               false;
 
-                                          addProjectController.leadB.value =
+                                          projectController.leadB.value = false;
+                                          projectController.contactedB.value =
+                                              true;
+                                          projectController.pitchedB.value =
                                               false;
-                                          addProjectController
-                                              .contactedB.value = true;
-                                          addProjectController.pitchedB.value =
+                                          projectController.sentSampleB.value =
                                               false;
-                                          addProjectController
-                                              .sentSampleB.value = false;
-                                          addProjectController
-                                              .negotiatingB.value = false;
-                                          addProjectController.closeWonB.value =
+                                          projectController.negotiatingB.value =
                                               false;
-                                          addProjectController
-                                              .closedLostB.value = false;
-                                          addProjectController
+                                          projectController.closeWonB.value =
+                                              false;
+                                          projectController.closedLostB.value =
+                                              false;
+                                          projectController
                                               .temporaryCloseB.value = false;
 
-                                          print(addProjectController
+                                          print(projectController
                                               .contactedB.value);
                                         },
                                         title: 'Contacted',
@@ -339,20 +333,19 @@ class _AdminHomePageState extends State<AdminHomePage>
                                           filterController.visible.value =
                                               false;
 
-                                          addProjectController.leadB.value =
+                                          projectController.leadB.value = false;
+                                          projectController.contactedB.value =
                                               false;
-                                          addProjectController
-                                              .contactedB.value = false;
-                                          addProjectController.pitchedB.value =
+                                          projectController.pitchedB.value =
                                               true;
-                                          addProjectController
-                                              .sentSampleB.value = false;
-                                          addProjectController
-                                              .negotiatingB.value = false;
-                                          addProjectController.closeWonB.value =
+                                          projectController.sentSampleB.value =
                                               false;
-                                          addProjectController
-                                              .closedLostB.value = false;
+                                          projectController.negotiatingB.value =
+                                              false;
+                                          projectController.closeWonB.value =
+                                              false;
+                                          projectController.closedLostB.value =
+                                              false;
                                         },
                                         title: 'Pitched',
                                         color: pitchedColor,
@@ -380,21 +373,20 @@ class _AdminHomePageState extends State<AdminHomePage>
                                           filterController.visible.value =
                                               false;
 
-                                          addProjectController.leadB.value =
+                                          projectController.leadB.value = false;
+                                          projectController.contactedB.value =
                                               false;
-                                          addProjectController
-                                              .contactedB.value = false;
-                                          addProjectController.pitchedB.value =
+                                          projectController.pitchedB.value =
                                               false;
-                                          addProjectController
-                                              .sentSampleB.value = true;
-                                          addProjectController
-                                              .negotiatingB.value = false;
-                                          addProjectController.closeWonB.value =
+                                          projectController.sentSampleB.value =
+                                              true;
+                                          projectController.negotiatingB.value =
                                               false;
-                                          addProjectController
-                                              .closedLostB.value = false;
-                                          addProjectController
+                                          projectController.closeWonB.value =
+                                              false;
+                                          projectController.closedLostB.value =
+                                              false;
+                                          projectController
                                               .temporaryCloseB.value = false;
                                         },
                                         color: sentSampleColor,
@@ -422,21 +414,20 @@ class _AdminHomePageState extends State<AdminHomePage>
                                           filterController.visible.value =
                                               false;
 
-                                          addProjectController.leadB.value =
+                                          projectController.leadB.value = false;
+                                          projectController.contactedB.value =
                                               false;
-                                          addProjectController
-                                              .contactedB.value = false;
-                                          addProjectController.pitchedB.value =
+                                          projectController.pitchedB.value =
                                               false;
-                                          addProjectController
-                                              .sentSampleB.value = false;
-                                          addProjectController
-                                              .negotiatingB.value = true;
-                                          addProjectController.closeWonB.value =
+                                          projectController.sentSampleB.value =
                                               false;
-                                          addProjectController
-                                              .closedLostB.value = false;
-                                          addProjectController
+                                          projectController.negotiatingB.value =
+                                              true;
+                                          projectController.closeWonB.value =
+                                              false;
+                                          projectController.closedLostB.value =
+                                              false;
+                                          projectController
                                               .temporaryCloseB.value = false;
                                         },
                                         color: negotiatingColor,
@@ -464,23 +455,22 @@ class _AdminHomePageState extends State<AdminHomePage>
                                           filterController.visible.value =
                                               false;
 
-                                          addProjectController.leadB.value =
+                                          projectController.leadB.value = false;
+                                          projectController.contactedB.value =
                                               false;
-                                          addProjectController
-                                              .contactedB.value = false;
-                                          addProjectController.pitchedB.value =
+                                          projectController.pitchedB.value =
                                               false;
-                                          addProjectController
-                                              .sentSampleB.value = false;
-                                          addProjectController
-                                              .negotiatingB.value = false;
-                                          addProjectController.closeWonB.value =
+                                          projectController.sentSampleB.value =
+                                              false;
+                                          projectController.negotiatingB.value =
+                                              false;
+                                          projectController.closeWonB.value =
                                               true;
-                                          addProjectController
+                                          projectController
                                               .temporaryCloseB.value = false;
 
-                                          addProjectController
-                                              .closedLostB.value = false;
+                                          projectController.closedLostB.value =
+                                              false;
                                         },
                                         color: wonColor,
                                         image: 'won.png'),
@@ -506,23 +496,22 @@ class _AdminHomePageState extends State<AdminHomePage>
                                               (_) => controller!.reverse());
                                           filterController.visible.value =
                                               false;
-                                          addProjectController
+                                          projectController
                                               .temporaryCloseB.value = false;
 
-                                          addProjectController.leadB.value =
+                                          projectController.leadB.value = false;
+                                          projectController.contactedB.value =
                                               false;
-                                          addProjectController
-                                              .contactedB.value = false;
-                                          addProjectController.pitchedB.value =
+                                          projectController.pitchedB.value =
                                               false;
-                                          addProjectController
-                                              .sentSampleB.value = false;
-                                          addProjectController
-                                              .negotiatingB.value = false;
-                                          addProjectController.closeWonB.value =
+                                          projectController.sentSampleB.value =
                                               false;
-                                          addProjectController
-                                              .closedLostB.value = true;
+                                          projectController.negotiatingB.value =
+                                              false;
+                                          projectController.closeWonB.value =
+                                              false;
+                                          projectController.closedLostB.value =
+                                              true;
                                         },
                                         color: lostColor,
                                         image: 'lost-items.png'),
@@ -549,22 +538,21 @@ class _AdminHomePageState extends State<AdminHomePage>
                                           filterController.visible.value =
                                               false;
 
-                                          addProjectController.leadB.value =
-                                              false;
-                                          addProjectController
+                                          projectController.leadB.value = false;
+                                          projectController
                                               .temporaryCloseB.value = true;
-                                          addProjectController
-                                              .contactedB.value = false;
-                                          addProjectController.pitchedB.value =
+                                          projectController.contactedB.value =
                                               false;
-                                          addProjectController
-                                              .sentSampleB.value = false;
-                                          addProjectController
-                                              .negotiatingB.value = false;
-                                          addProjectController.closeWonB.value =
+                                          projectController.pitchedB.value =
                                               false;
-                                          addProjectController
-                                              .closedLostB.value = false;
+                                          projectController.sentSampleB.value =
+                                              false;
+                                          projectController.negotiatingB.value =
+                                              false;
+                                          projectController.closeWonB.value =
+                                              false;
+                                          projectController.closedLostB.value =
+                                              false;
                                         },
                                         color: Colors.orangeAccent.shade200,
                                         image: 'lost-items.png'),
@@ -598,7 +586,7 @@ class _AdminHomePageState extends State<AdminHomePage>
                                         child: Padding(
                                           padding: const EdgeInsets.all(8.0),
                                           child: Text(
-                                            addProjectController
+                                            projectController
                                                 .projectAssignData.length
                                                 .toString(),
                                             style: const TextStyle(
@@ -618,8 +606,7 @@ class _AdminHomePageState extends State<AdminHomePage>
                                         child: Padding(
                                           padding: const EdgeInsets.all(8.0),
                                           child: Text(
-                                            addProjectController
-                                                .projectData.length
+                                            projectController.projectData.length
                                                 .toString(),
                                             style: const TextStyle(
                                                 color: Colors.white),
@@ -642,8 +629,7 @@ class _AdminHomePageState extends State<AdminHomePage>
                                   return Column(children: [
                                     for (var l in filterController.visible.value
                                         ? filterController.projectData
-                                        : addProjectController
-                                            .projectAssignData)
+                                        : projectController.projectAssignData)
                                       Padding(
                                         padding: const EdgeInsets.all(10.0),
                                         child: InkWell(
@@ -674,7 +660,7 @@ class _AdminHomePageState extends State<AdminHomePage>
                                   return Column(children: [
                                     for (var l in filterController.visible.value
                                         ? filterController.projectData
-                                        : data(addProjectController))
+                                        : data(projectController))
                                       Padding(
                                         padding: const EdgeInsets.all(10.0),
                                         child: InkWell(
@@ -714,21 +700,21 @@ class _AdminHomePageState extends State<AdminHomePage>
   }
 
   String titleTextAll() {
-    if (addProjectController.leadB.value) {
+    if (projectController.leadB.value) {
       return 'Lead';
-    } else if (addProjectController.contactedB.value) {
+    } else if (projectController.contactedB.value) {
       return 'Contacted';
-    } else if (addProjectController.pitchedB.value) {
+    } else if (projectController.pitchedB.value) {
       return 'Pitched';
-    } else if (addProjectController.sentSampleB.value) {
+    } else if (projectController.sentSampleB.value) {
       return 'Sent Sample';
-    } else if (addProjectController.negotiatingB.value) {
+    } else if (projectController.negotiatingB.value) {
       return 'Negotiating';
-    } else if (addProjectController.closeWonB.value) {
+    } else if (projectController.closeWonB.value) {
       return 'Close-Won';
-    } else if (addProjectController.closedLostB.value) {
+    } else if (projectController.closedLostB.value) {
       return 'Close-Lost';
-    } else if (addProjectController.temporaryCloseB.value) {
+    } else if (projectController.temporaryCloseB.value) {
       return 'Temporary Close';
     } else {
       return 'All Projects';
