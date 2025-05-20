@@ -15,6 +15,7 @@ class AlarmHelper {
       assetAudioPath: 'assets/audio/alarm.mp3',
       loopAudio: true,
       vibrate: true,
+      volumeEnforced: true,
       warningNotificationOnKill: Platform.isIOS,
       androidFullScreenIntent: true,
       volume: 1,
@@ -24,6 +25,7 @@ class AlarmHelper {
         stopButton: 'Stop Reminder',
         icon: 'notification_icon',
       ),
+      
     );
 
     await Alarm.set(alarmSettings: alarmSettings).then(
