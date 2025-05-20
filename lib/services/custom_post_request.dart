@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:leadmanagementsystem/constants/constants.dart';
 
@@ -10,16 +11,16 @@ class CustomPostRequest {
       var headers = {'accept': '*/*', 'Content-Type': 'application/json'};
 
       var urlPath = '$apiBaseUrl$url';
-
-      log('url--->$urlPath');
+      if (kDebugMode) log('url--->$urlPath');
 
       http.Response response = await http.post(Uri.parse(urlPath),
           body: json.encode(body), headers: headers);
+      if (kDebugMode) {
+        print('response--->${response.body}');
 
-      print('response--->${response.body}');
-
-      log('body---${response.body}');
-      log('statusCode---${response.statusCode}');
+        log('body---${response.body}');
+        log('statusCode---${response.statusCode}');
+      }
 
       var jsonDecoded = json.decode(response.body);
 

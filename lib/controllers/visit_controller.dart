@@ -1,7 +1,10 @@
 import 'dart:developer';
 
 import 'package:get/get.dart';
+import 'package:leadmanagementsystem/admin_module/admin_track_users.dart';
 import 'package:leadmanagementsystem/constants/api_urls.dart';
+import 'package:leadmanagementsystem/constants/user_roles.dart';
+import 'package:leadmanagementsystem/extensions/string_extensions.dart';
 import 'package:leadmanagementsystem/main.dart';
 import 'package:leadmanagementsystem/models/visit_detail_model.dart';
 
@@ -43,6 +46,9 @@ class VisitController extends GetxController {
       String? lastDate,
       String? siteName}) async {
     String? id = userId;
+    if (userId == null && loginStorage.getUserRole() == UserRole.CEO) {
+      id = loginStorage.getUserId();
+    }
     String url = "";
     if (firstDate != null ||
         lastDate != null ||
@@ -53,8 +59,10 @@ class VisitController extends GetxController {
       lastDate ?? "";
       siteName ?? "";
       url =
-          "${ApiUrls.getFilterReport}?userId=${id??""}&startDate=${firstDate??""}&endDate=${lastDate??""}&siteName=${siteName??""}";
+          "${ApiUrls.getFilterReport}?userId=${id ?? ""}&startDate=${firstDate ?? ""}&endDate=${lastDate ?? ""}&siteName=${siteName ?? ""}";
     } else {
+      id = loginStorage.getUserId();
+
       url = "${ApiUrls.getVisitReport}/$id";
     }
     try {
