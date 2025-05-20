@@ -38,12 +38,12 @@ class VisitController extends GetxController {
 
   /// Get visit reports
   Future<bool> getVisitReport(
-      {String? userId, String? firstDate, String? lastDate}) async {
+      {String? userId, String? firstDate, String? lastDate,String? siteName}) async {
     String? id = userId ?? loginStorage.getUserId();
     String url = "";
     if (firstDate != null && lastDate != null) {
       url =
-          "${ApiUrls.getFilterReport}/$id?startDate=$firstDate&endDate=$lastDate";
+          "${ApiUrls.getFilterReport}/$id?startDate=$firstDate&endDate=$lastDate&siteName=$siteName";
     } else {
       url = "${ApiUrls.getVisitReport}/$id";
     }
@@ -56,9 +56,10 @@ class VisitController extends GetxController {
 
       if (responce != null && responce['status'] == true) {
         visitReportModel = VisitReportModel.fromJson(responce);
-        if (firstDate != null && lastDate != null) {
-          visitReportAllModel = VisitReportModel.fromJson(responce);
-        }
+        visitReportAllModel = visitReportModel;
+        // if (firstDate != null && lastDate != null) {
+        //   visitReportAllModel = VisitReportModel.fromJson(responce);
+        // }
         return true;
       } else {
         return false;

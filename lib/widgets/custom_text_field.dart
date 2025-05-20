@@ -17,6 +17,7 @@ class CustomTextField extends StatefulWidget {
   int? maxLines;
   bool? isEnabled;
   final List<String>? autofillHints;
+  double? allSidesPadding;
 
   CustomTextField(
       {super.key,
@@ -33,6 +34,7 @@ class CustomTextField extends StatefulWidget {
       this.onValidate,
       this.inputType = TextInputType.text,
       this.autofillHints,
+      this.allSidesPadding,
       this.obscureText = false});
 
   @override
@@ -52,7 +54,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
     return Stack(
       children: [
         Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding:  EdgeInsets.all(widget.allSidesPadding??8),
           child: Container(
             decoration: BoxDecoration(
                 color: Colors.grey.shade100,

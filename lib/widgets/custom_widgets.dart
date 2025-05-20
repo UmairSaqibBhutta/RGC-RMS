@@ -49,3 +49,33 @@ class LoadingDialog extends StatelessWidget {
     );
   }
 }
+
+
+Future<DateTime?> pickDate({
+  required BuildContext context,
+  DateTime? initialDate,
+  required DateTime firstDate,
+  required DateTime lastDate,
+}) async {
+  final DateTime now = DateTime.now();
+  final DateTime? pickedDate = await showDatePicker(
+    context: context,
+    initialDate: initialDate ?? now,
+    firstDate: firstDate,
+    lastDate: lastDate,
+    builder: (BuildContext context, Widget? child) {
+      return Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: const ColorScheme.light(
+            primary: appColor,
+            onPrimary: Colors.white,
+            onSurface: Colors.black,
+          ),
+          dialogBackgroundColor: Colors.white,
+        ),
+        child: child!,
+      );
+    },
+  );
+  return pickedDate;
+}

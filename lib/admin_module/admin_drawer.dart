@@ -40,7 +40,7 @@ class _AdminDrawerState extends State<AdminDrawer> {
         child: SingleChildScrollView(
           child: Scrollbar(
             thickness: 6,
-            thumbVisibility: true,
+            // thumbVisibility: true,
             interactive: true,
             trackVisibility: true,
             child: Column(

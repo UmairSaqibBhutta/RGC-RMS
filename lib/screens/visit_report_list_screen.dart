@@ -52,6 +52,9 @@ class _VisitReportListScreenState extends State<VisitReportListScreen> {
     });
   }
 
+  bool isUserSelectionIncluded = true;
+  final siteNameCont = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -146,7 +149,33 @@ class _VisitReportListScreenState extends State<VisitReportListScreen> {
                                 });
                               },
                             ),
-                            const SizedBox(height: 16),
+                            // const SizedBox(height: 16),
+
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                const Text("Include User"),
+                                Switch(
+                                  activeColor: appColor,
+                                  value: isUserSelectionIncluded,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      isUserSelectionIncluded =
+                                          !isUserSelectionIncluded;
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+
+                            CustomTextField(
+                              controller: siteNameCont,
+                              hint: "Enter client / site name",
+                              allSidesPadding: 0,
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
                             Row(
                               children: [
                                 Expanded(
@@ -163,13 +192,11 @@ class _VisitReportListScreenState extends State<VisitReportListScreen> {
                                         ? 'Select First Date'
                                         : 'From: ${DateFormat.yMMMd().format(firstDate!)}'),
                                     onPressed: () async {
-                                      final picked = await showDatePicker(
-                                        context: context,
-                                        initialDate:
-                                            firstDate ?? DateTime.now(),
-                                        firstDate: DateTime(2000),
-                                        lastDate: DateTime.now(),
-                                      );
+                                      final picked = await pickDate(
+                                          context: context,
+                                          firstDate: DateTime(2024),
+                                          lastDate: DateTime(2026),
+                                          initialDate: DateTime.now());
                                       if (picked != null) {
                                         setState(() {
                                           firstDate = picked;
@@ -193,12 +220,11 @@ class _VisitReportListScreenState extends State<VisitReportListScreen> {
                                         ? 'Select Last Date'
                                         : 'To: ${DateFormat.yMMMd().format(lastDate!)}'),
                                     onPressed: () async {
-                                      final picked = await showDatePicker(
-                                        context: context,
-                                        initialDate: lastDate ?? DateTime.now(),
-                                        firstDate: DateTime(2000),
-                                        lastDate: DateTime.now(),
-                                      );
+                                      final picked = await pickDate(
+                                          context: context,
+                                          firstDate: DateTime(2024),
+                                          lastDate: DateTime(2026),
+                                          initialDate: DateTime.now());
                                       if (picked != null) {
                                         setState(() {
                                           lastDate = picked;
@@ -222,7 +248,8 @@ class _VisitReportListScreenState extends State<VisitReportListScreen> {
                                     ),
                                     onPressed: () {
                                       visitCont.getVisitReport(
-                                        userId: selectedUserId,
+                                        siteName: siteNameCont.text.trim(),
+                                        userId:isUserSelectionIncluded? selectedUserId:null,
                                         firstDate: firstDate?.toIso8601String(),
                                         lastDate: lastDate?.toIso8601String(),
                                       );
@@ -252,7 +279,7 @@ class _VisitReportListScreenState extends State<VisitReportListScreen> {
                                         lastDate = null;
                                         showFilter = !showFilter;
                                         myVisitReportModel =
-                                            visitCont.visitReportAllModel!.data;
+                                            visitCont.visitReportAllModel?.data;
                                       });
                                     },
                                     child: const Text("Cancel"),
@@ -312,6 +339,9 @@ class _VisitReportListScreenState extends State<VisitReportListScreen> {
                                 const SizedBox(width: 6),
                                 Text(
                                   "${myVisitReportModel![i].name} (${myVisitReportModel![i].role})",
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  softWrap: true,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 15,

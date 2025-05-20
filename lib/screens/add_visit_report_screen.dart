@@ -9,7 +9,6 @@ import 'package:leadmanagementsystem/constants/constants.dart';
 import 'package:leadmanagementsystem/constants/custom_alert_dialog.dart';
 import 'package:leadmanagementsystem/controllers/visit_controller.dart';
 import 'package:leadmanagementsystem/main.dart';
-import 'package:leadmanagementsystem/screens/visit_report_list_screen.dart';
 import 'package:leadmanagementsystem/widgets/custom_button.dart';
 import 'package:leadmanagementsystem/widgets/custom_text_field.dart';
 import 'package:leadmanagementsystem/widgets/custom_widgets.dart';
@@ -90,12 +89,12 @@ class _AddVisitReportScreenState extends State<AddVisitReportScreen> {
       // Navigator.pop(context);
       setState(() {
         visitDate = null;
-        visitEntries.forEach((entry) {
+        for (var entry in visitEntries) {
           entry.clientName.clear();
           entry.contactPerson.clear();
           entry.contactNumber.clear();
           entry.visitPlan.clear();
-        });
+        }
       });
     } else {
       Get.snackbar("Error", "Failed to submit visit Plan / Report");

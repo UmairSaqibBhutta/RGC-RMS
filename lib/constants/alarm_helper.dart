@@ -12,7 +12,7 @@ class AlarmHelper {
     final alarmSettings = AlarmSettings(
       id: dateTime.millisecondsSinceEpoch ~/ 1000,
       dateTime: dateTime,
-      assetAudioPath: 'images/alarm.mp3',
+      assetAudioPath: 'assets/audio/alarm.mp3',
       loopAudio: true,
       vibrate: true,
       warningNotificationOnKill: Platform.isIOS,
