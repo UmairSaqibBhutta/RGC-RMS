@@ -9,7 +9,8 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:8.3.0' // Use stable AGP version
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.google.gms:google-services:4.4.0' // Compatible Google Services plugin
+        classpath 'com.google.gms:google-services:4.4.1' // Compatible Google Services plugin
+         classpath 'com.google.firebase:firebase-crashlytics-gradle:3.0.3'
     }
 }
 

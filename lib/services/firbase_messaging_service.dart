@@ -14,7 +14,7 @@ class FirebaseMessagingService {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
   Future<void> initialize() async {
-    loginController.getNotifications();
+    // loginController.getNotifications();
     _firebaseMessaging.requestPermission();
     _firebaseMessaging.getAPNSToken().then((String? token) {
       fcmToken = token;
@@ -24,11 +24,11 @@ class FirebaseMessagingService {
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
-        const DarwinInitializationSettings iosInitilizeSettings = DarwinInitializationSettings(
-          requestSoundPermission: true,
-          requestAlertPermission: true,
-
-        );
+    const DarwinInitializationSettings iosInitilizeSettings =
+        DarwinInitializationSettings(
+      requestSoundPermission: true,
+      requestAlertPermission: true,
+    );
 
     const InitializationSettings initializationSettings =
         InitializationSettings(
@@ -80,8 +80,8 @@ class FirebaseMessagingService {
       badgeNumber: 1,
     );
 
-    NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics,iOS: iosNotiDetails);
+    NotificationDetails platformChannelSpecifics = NotificationDetails(
+        android: androidPlatformChannelSpecifics, iOS: iosNotiDetails);
     await flutterLocalNotificationsPlugin.show(
       0,
       message.notification?.title,

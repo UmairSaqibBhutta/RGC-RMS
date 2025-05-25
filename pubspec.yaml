@@ -70,6 +70,7 @@ dependencies:
   open_file_plus: ^3.4.1+1
   excel: ^4.0.6
   alarm: ^4.1.1
+  firebase_crashlytics: ^3.5.7
 
   # showcaseview: ^4.0.1
 
