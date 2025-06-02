@@ -18,7 +18,6 @@ import 'package:leadmanagementsystem/screens/add_user_screen.dart';
 import 'package:leadmanagementsystem/screens/profile_screen.dart';
 import 'package:leadmanagementsystem/screens/change_password_screen.dart';
 import 'package:leadmanagementsystem/screens/visit_report_list_screen.dart';
-import 'package:leadmanagementsystem/services/background_service.dart';
 import 'package:leadmanagementsystem/widgets/custom_decoration_container.dart';
 import 'package:leadmanagementsystem/widgets/custom_drawer_item.dart';
 
@@ -157,7 +156,7 @@ class _AdminDrawerState extends State<AdminDrawer> {
                     if (isLoggedOut) {
                       loginStorage.clearStorageData();
                       if (!kIsWeb) {
-                        await BackgroundService.stopService();
+                        // await BackgroundService.stopService();
                       }
 
                       Get.offAll(const LoginScreen());

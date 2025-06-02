@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -1095,7 +1096,13 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
     Navigator.of(context).pop();
     if (mounted && isUpdated) {
       await projectCont.getProjects(context);
-      Navigator.of(context).pop();
+      try {
+        Navigator.of(context).pop();
+      } catch (e, stack) {
+        FirebaseCrashlytics.instance.recordError(e, stack,
+            reason:
+                'Failed to pop Navigator in project details page _setProjectStatus ');
+      }
 
       setState(() {
         widget.project.status = status;

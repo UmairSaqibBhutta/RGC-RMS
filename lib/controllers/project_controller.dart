@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -101,20 +102,18 @@ class ProjectController extends GetxController {
 
   var priority = ''.obs;
   var company = ''.obs;
-  var filePath = ''.obs;//this
+  var filePath = ''.obs; //this
   var fileName = ''.obs;
 
   Future<void> addFileFunction() async {
-    final filePick = await FilePicker.platform.pickFiles(
-      allowMultiple: false
-    );
+    final filePick = await FilePicker.platform.pickFiles(allowMultiple: false);
 
     if (filePick != null && filePick.files.isNotEmpty) {
       final pickedFile = filePick.files.first;
       filePath.value = pickedFile.path ?? '';
       fileName.value = pickedFile.name;
 
-      log(" filePath.value = = ${ filePath.value}");
+      log(" filePath.value = = ${filePath.value}");
     }
   }
 
@@ -286,27 +285,34 @@ class ProjectController extends GetxController {
 
   getAssignedProjectUserList(String projectId, BuildContext context) async {
     // update();
+    try {
+      var res = await getRequest.customGetRequest(
+          apiPath: '${ApiUrls.getAssignProjects}/$projectId');
 
-    var res = await getRequest.customGetRequest(
-        apiPath: '${ApiUrls.getAssignProjects}/$projectId');
+      // update();
+      if (res['status'] == true) {
+        ProjectOrTaskAssignedUsersModel model =
+            ProjectOrTaskAssignedUsersModel.fromJson(res);
 
-    // update();
-    if (res['status'] == true) {
-      ProjectOrTaskAssignedUsersModel model =
-          ProjectOrTaskAssignedUsersModel.fromJson(res);
-
-      projectAssignedUserList = model.data?.first.users ?? [];
-      projectselectedUsers.clear();
-      for (var element in projectAssignedUserList) {
-        projectselectedUsers.add(element.sId!);
+        projectAssignedUserList = model.data?.first.users ?? [];
+        projectselectedUsers.clear();
+        for (var element in projectAssignedUserList) {
+          projectselectedUsers.add(element.sId!);
+        }
+        isAssigneesLoaded = true;
+      } else {
+        projectAssignedUserList = [];
+        isAssigneesLoaded = true;
       }
-      isAssigneesLoaded = true;
-    } else {
+
+      update();
+    } catch (error, stack) {
       projectAssignedUserList = [];
       isAssigneesLoaded = true;
+      update();
+      FirebaseCrashlytics.instance.recordError(error, stack,
+          fatal: true, reason: "Getting assigned project user list failed");
     }
-
-    update();
   }
 
   Future<bool> assignProject(BuildContext context, Map body) async {

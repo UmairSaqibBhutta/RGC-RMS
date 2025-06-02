@@ -1,5 +1,5 @@
 import 'package:geocoding/geocoding.dart' as geoCoding;
-import 'package:geolocator/geolocator.dart';
+// import 'package:geolocator/geolocator.dart';
 
 import 'dart:async';
 import 'dart:developer';
@@ -8,10 +8,14 @@ import 'package:get/get.dart';
 import 'package:leadmanagementsystem/constants/api_urls.dart';
 import 'package:leadmanagementsystem/main.dart';
 import 'package:leadmanagementsystem/models/users_location_model.dart';
+import 'package:location/location.dart';
 
 class LocationController extends GetxController {
   List<LocationsData> usersLocationList = [];
   bool loadUserLocations = false;
+  Location location = Location();
+
+  LocationData? locationData;
 
   /// fetch location other than ceo
   updateWorkerLocation() {
@@ -43,11 +47,14 @@ class LocationController extends GetxController {
   }
 
   Future<void> initializeLocation() async {
-    Position position = await Geolocator.getCurrentPosition();
+    // Position position = await Geolocator.getCurrentPosition();
+    locationData = await location.getLocation();
 
-    log("position = $position");
-    // _locationData = await location.getLocation();
-    uploadLocationToServer(position.latitude, position.longitude);
+    log("position = $locationData");
+    if (locationData != null) {
+      // _locationData = await location.getLocation();
+      uploadLocationToServer(locationData!.latitude!, locationData!.longitude!);
+    }
   }
 
   Future<void> uploadLocationToServer(double lat, double long) async {

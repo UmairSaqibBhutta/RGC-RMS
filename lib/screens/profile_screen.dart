@@ -8,7 +8,6 @@ import 'package:leadmanagementsystem/constants/user_roles.dart';
 import 'package:leadmanagementsystem/controllers/drawer_controller.dart';
 import 'package:leadmanagementsystem/controllers/login_controller.dart';
 import 'package:leadmanagementsystem/screens/login_screen.dart';
-import 'package:leadmanagementsystem/services/background_service.dart';
 import 'package:leadmanagementsystem/widgets/custom_decoration_container.dart';
 
 import '../main.dart';
@@ -95,7 +94,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 if (isLoggedOut) {
                                   loginStorage.clearStorageData();
                                   if (!kIsWeb) {
-                                    await BackgroundService.stopService();
+                                    // await BackgroundService.stopService();
                                   }
 
                                   Get.offAll(const LoginScreen());
