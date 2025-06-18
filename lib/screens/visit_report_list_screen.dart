@@ -249,7 +249,9 @@ class _VisitReportListScreenState extends State<VisitReportListScreen> {
                                     onPressed: () {
                                       visitCont.getVisitReport(
                                         siteName: siteNameCont.text.trim(),
-                                        userId:isUserSelectionIncluded? selectedUserId:null,
+                                        userId: isUserSelectionIncluded
+                                            ? selectedUserId
+                                            : null,
                                         firstDate: firstDate?.toIso8601String(),
                                         lastDate: lastDate?.toIso8601String(),
                                       );
@@ -475,6 +477,7 @@ class _VisitReportListScreenState extends State<VisitReportListScreen> {
       BuildContext context, VisitDetail visit, String visitReportId) {
     final TextEditingController reportController =
         TextEditingController(text: visit.visitReport ?? '');
+    String previousText = '';
 
     showModalBottomSheet(
       context: context,
@@ -483,56 +486,126 @@ class _VisitReportListScreenState extends State<VisitReportListScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return Padding(
-          padding:
-              EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    "Add Visit Report",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        return StatefulBuilder(
+          builder: (context, setStatesss) {
+            return Padding(
+              padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom),
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        "Add Visit Report",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 18),
+                      ),
+                      const SizedBox(height: 20),
+                      CustomTextField(
+                        controller: reportController,
+                        hint: "Enter visit report details...",
+                        maxLines: 5,
+                        inputType: TextInputType.multiline,
+                        suffix: reportController.text.isNotEmpty
+                            ? Icons.clear
+                            : null,
+                        suffixOnTap: () {
+                          reportController.clear();
+                          setStatesss(() {}); // update suffix
+                        },
+                        onChanged: (text) {
+                          // Update UI for suffix icon
+                          if (text.isEmpty || text.length == 1) {
+                            setStatesss(() {});
+                          }
+
+                          final isDeleting = text.length < previousText.length;
+
+                          // User cleared text completely
+                          if (text.isEmpty) {
+                            previousText = text;
+                            return;
+                          }
+
+                          // If user is deleting — do nothing special
+                          if (isDeleting) {
+                            previousText = text;
+                            return;
+                          }
+
+                          // If user hits Enter (inserting new line)
+                          if (text.endsWith('\n')) {
+                            final cursorPosition =
+                                reportController.selection.baseOffset;
+
+                            // Prevent adding multiple bullets after same line
+                            if (cursorPosition > 1 &&
+                                text.substring(
+                                        cursorPosition - 2, cursorPosition) ==
+                                    '• ') {
+                              previousText = text;
+                              return;
+                            }
+
+                            final newText =
+                                '${text.substring(0, cursorPosition)}• ${text.substring(cursorPosition)}';
+
+                            reportController.text = newText;
+                            reportController.selection =
+                                TextSelection.collapsed(
+                                    offset: cursorPosition + 2);
+                            previousText = newText;
+                            return;
+                          }
+
+                          // Insert first bullet at beginning (if not there)
+                          if (!text.startsWith('• ') && previousText.isEmpty) {
+                            reportController.text = '• $text';
+                            reportController.selection =
+                                TextSelection.collapsed(
+                                    offset: reportController.text.length);
+                            previousText = reportController.text;
+                            return;
+                          }
+
+                          previousText = text; // Always update at end
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      CustomButton(
+                        title: "Submit",
+                        onTap: () async {
+                          if (reportController.text.trim().isEmpty) {
+                            Get.snackbar(
+                                "Error", "Please enter visit report details");
+                            return;
+                          }
+
+                          Navigator.pop(context);
+
+                          Map<String, dynamic> body = {
+                            "visitReportId": visitReportId,
+                            "visitId": visit.sId,
+                            "visitReport": reportController.text.trim(),
+                          };
+
+                          // alertDialogueWithLoader(context);
+                          bool isAdded = await visitCont.addvisitReport(body);
+                          // Navigator.pop(context);
+
+                          if (isAdded) {
+                            visitCont.getVisitReport();
+                          }
+                        },
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 20),
-                  CustomTextField(
-                    controller: reportController,
-                    hint: "Enter visit report details...",
-                    maxLines: 5,
-                  ),
-                  const SizedBox(height: 20),
-                  CustomButton(
-                    title: "Submit",
-                    onTap: () async {
-                      if (reportController.text.trim().isEmpty) {
-                        Get.snackbar(
-                            "Error", "Please enter visit report details");
-                        return;
-                      }
-
-                      Navigator.pop(context);
-
-                      Map<String, dynamic> body = {
-                        "visitReportId": visitReportId,
-                        "visitId": visit.sId,
-                        "visitReport": reportController.text.trim(),
-                      };
-
-                      // alertDialogueWithLoader(context);
-                      bool isAdded = await visitCont.addvisitReport(body);
-                      // Navigator.pop(context);
-
-                      if (isAdded) {
-                        visitCont.getVisitReport();
-                      }
-                    },
-                  ),
-                ],
+                ),
               ),
-            ),
-          ),
+            );
+          },
         );
       },
     );

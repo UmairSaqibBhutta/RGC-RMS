@@ -113,6 +113,8 @@ class _AddVisitReportScreenState extends State<AddVisitReportScreen> {
     );
   }
 
+  /// for handling dots in textfield.
+  String previousText = '';
   bool shouldAllowExit() {
     log("visitEntries length = ${visitEntries.length}");
 
@@ -382,39 +384,68 @@ class _AddVisitReportScreenState extends State<AddVisitReportScreen> {
             style: TextStyle(fontWeight: FontWeight.w500)),
         const SizedBox(height: 6),
         CustomTextField(
-            controller: entry.visitPlan,
-            hint: "Enter visit details",
-            maxLines: 4,
-            inputType: TextInputType.multiline,
-            onChanged: (text) {
-              final controller = entry.visitPlan;
-              final cursorPos = controller.selection.baseOffset;
+          controller: entry.visitPlan,
+          hint: "Enter visit details",
+          maxLines: 4,
+          inputType: TextInputType.multiline,
+          suffix: entry.visitPlan.text.isNotEmpty ? Icons.clear : null,
+          suffixOnTap: () {
+            entry.visitPlan.clear();
+            setState(() {}); // update suffix
+          },
+          onChanged: (text) {
+            final controller = entry.visitPlan;
 
-              // If last character typed is newline, insert bullet
-              if (text.isNotEmpty && text.substring(text.length - 1) == '\n') {
-                final newText = '$text• ';
-                controller.text = newText;
+            // Update UI for suffix icon
+            if (text.isEmpty || text.length == 1) setState(() {});
 
-                // Move cursor after bullet
-                controller.selection = TextSelection.fromPosition(
-                  TextPosition(offset: newText.length),
-                );
+            final isDeleting = text.length < previousText.length;
+
+            // User cleared text completely
+            if (text.isEmpty) {
+              previousText = text;
+              return;
+            }
+
+            // If user is deleting — do nothing special
+            if (isDeleting) {
+              previousText = text;
+              return;
+            }
+
+            // If user hits Enter (inserting new line)
+            if (text.endsWith('\n')) {
+              final cursorPosition = controller.selection.baseOffset;
+
+              // Prevent adding multiple bullets after same line
+              if (cursorPosition > 1 &&
+                  text.substring(cursorPosition - 2, cursorPosition) == '• ') {
+                previousText = text;
+                return;
               }
 
-              // If it's empty and first character typed, insert bullet
-              else if (text.isEmpty) {
-                controller.text = '• ';
-                controller.selection = TextSelection.fromPosition(
-                  const TextPosition(offset: 2),
-                );
-              }
+              final newText =
+                  '${text.substring(0, cursorPosition)}• ${text.substring(cursorPosition)}';
 
-              // If user deletes everything but wants to start new
-              else if (text.length == 1 && text != '•') {
-                controller.text = '• ';
-                controller.selection = const TextSelection.collapsed(offset: 2);
-              }
-            }),
+              controller.text = newText;
+              controller.selection =
+                  TextSelection.collapsed(offset: cursorPosition + 2);
+              previousText = newText;
+              return;
+            }
+
+            // Insert first bullet at beginning (if not there)
+            if (!text.startsWith('• ') && previousText.isEmpty) {
+              controller.text = '• $text';
+              controller.selection =
+                  TextSelection.collapsed(offset: controller.text.length);
+              previousText = controller.text;
+              return;
+            }
+
+            previousText = text; // Always update at end
+          },
+        ),
         const SizedBox(height: 20),
       ],
     );

@@ -151,6 +151,7 @@ Future<void> main() async {
   postRequest = CustomPostRequest();
   await Hive.initFlutter();
   await Hive.openBox('login_hive');
+  await Hive.openBox('remindersBox');
   loginStorage = LoginStorage();
   FirebaseMessagingService().initialize();
   await Alarm.init();
@@ -190,6 +191,8 @@ class _MyAppState extends State<MyApp> {
           primaryColor: appColor,
           fontFamily: GoogleFonts.lato().fontFamily,
           textTheme: GoogleFonts.mulishTextTheme(),
+          floatingActionButtonTheme:
+              const FloatingActionButtonThemeData(backgroundColor: appColor),
           useMaterial3: false,
           appBarTheme:
               const AppBarTheme(iconTheme: IconThemeData(color: Colors.black))),

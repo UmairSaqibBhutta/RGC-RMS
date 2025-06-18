@@ -3,14 +3,17 @@ import 'dart:io';
 
 import 'package:alarm/alarm.dart';
 import 'package:leadmanagementsystem/controllers/project_controller.dart';
+import 'package:leadmanagementsystem/models/reminder_model.dart';
+import 'package:leadmanagementsystem/storage/reminder_storage.dart';
 
 class AlarmHelper {
   static setReminder(
       {required String title,
       required String desc,
       required DateTime dateTime}) async {
+    final reminderId = dateTime.millisecondsSinceEpoch ~/ 1000;
     final alarmSettings = AlarmSettings(
-      id: dateTime.millisecondsSinceEpoch ~/ 1000,
+      id: reminderId,
       dateTime: dateTime,
       assetAudioPath: 'assets/audio/alarm.mp3',
       loopAudio: true,
@@ -25,12 +28,17 @@ class AlarmHelper {
         stopButton: 'Stop Reminder',
         icon: 'notification_icon',
       ),
-      
     );
 
     await Alarm.set(alarmSettings: alarmSettings).then(
-      (value) {
+      (value) async {
         customSnackBar("Success", "Alarm set for $title");
+        await ReminderStorage.saveReminder(ReminderModel(
+          id: reminderId,
+          title: title,
+          description: desc,
+          dateTime: dateTime,
+        ));
       },
     ).onError(
       (error, stackTrace) {
@@ -38,5 +46,15 @@ class AlarmHelper {
         customSnackBar("Error", "Alarm could not be set for $error");
       },
     );
+  }
+
+  static Future<bool> deleteAlarm(int id) async {
+    try {
+      await Alarm.stop(id);
+      return true;
+    } catch (e) {
+      log("error in deleting alarm = ${e.toString()}");
+      return true;
+    }
   }
 }

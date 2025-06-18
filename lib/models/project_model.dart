@@ -158,8 +158,7 @@ class ProjectData {
     contractorPMPhone = json['contractorREPhone'];
     region = json['region'];
     role = json['role'];
-    contractorMEName =
-        json['contractorMEName']; //! this has issue of invalid data
+    contractorMEName = json['contractorMEName'];
     contractorMEPhone = json['contractorMEPhone'];
     clientName = json['clientName'];
     consultantName = json['consultantName'];

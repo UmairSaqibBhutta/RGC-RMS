@@ -142,36 +142,6 @@ class _ProjectListPageState extends State<ProjectListPage> {
                               ],
                             ),
                           ),
-
-                        // : Padding(
-                        //     padding: const EdgeInsets.all(12.0),
-                        //     child: ListView.builder(
-                        //       physics: const NeverScrollableScrollPhysics(),
-                        //       shrinkWrap: true,
-                        //       itemCount: controller.projectsData.length,
-                        //       itemBuilder: (context, index) {
-                        //         final project =
-                        //             controller.projectsData[index];
-                        //         return Padding(
-                        //           padding: const EdgeInsets.symmetric(
-                        //               vertical: 8.0),
-                        //           child: GestureDetector(
-                        //             onTap: () {
-                        //               // Handle project detail navigation
-                        //               Get.to(() => ProjectDetailsPage(
-                        //                     project: project,
-                        //                     updateProject: false,
-                        //                     receverId: '',
-                        //                     token: '',
-                        //                     senderName: '',
-                        //                   ));
-                        //             },
-                        //             child: ProjectsWidget(project: project),
-                        //           ),
-                        //         );
-                        //       },
-                        //     ),
-                        //   ),
                       ],
                     )
                         .animate()
