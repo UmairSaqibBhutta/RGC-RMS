@@ -33,7 +33,6 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
     super.initState();
     getFunctionality();
     reportController.getAllUsersService();
- 
   }
 
   List<ChartData> projectData = [];
@@ -77,7 +76,7 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
               ),
               body: CustomDecorationContainer(
                 child: controller.usersData.isEmpty
-                    ? const Center(child: CircularProgressIndicator())
+                    ? showSpinkit()
                     : SingleChildScrollView(
                         padding: const EdgeInsets.all(16.0),
                         child: SafeArea(
@@ -127,9 +126,9 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
                                       leading: CircleAvatar(
                                         radius: 25,
                                         backgroundColor:
-                                            Colors.blueAccent.withOpacity(0.2),
+                                            appColor.withOpacity(0.2),
                                         child: const Icon(CupertinoIcons.person,
-                                            color: Colors.blueAccent, size: 30),
+                                            color: appColor, size: 30),
                                       ),
                                       title: Text(
                                         controller.usersData[i].name.toString(),

@@ -13,7 +13,6 @@ import 'package:leadmanagementsystem/reports/reports_main_screen.dart';
 import 'package:leadmanagementsystem/screens/leaves_page.dart';
 import 'package:leadmanagementsystem/screens/login_screen.dart';
 import 'package:leadmanagementsystem/screens/reminders_list_page.dart';
-import 'package:leadmanagementsystem/screens/set_reminder_screen.dart';
 import 'package:leadmanagementsystem/screens/tasks_list_page.dart';
 import 'package:leadmanagementsystem/screens/add_user_screen.dart';
 import 'package:leadmanagementsystem/screens/profile_screen.dart';
