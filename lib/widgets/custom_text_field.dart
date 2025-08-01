@@ -54,7 +54,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
     return Stack(
       children: [
         Padding(
-          padding:  EdgeInsets.all(widget.allSidesPadding??8),
+          padding: EdgeInsets.all(widget.allSidesPadding ?? 8),
           child: Container(
             decoration: BoxDecoration(
                 color: Colors.grey.shade100,

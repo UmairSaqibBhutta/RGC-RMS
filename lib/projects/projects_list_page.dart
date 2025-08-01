@@ -1,16 +1,23 @@
+import 'dart:developer';
 import 'dart:io';
 
+import 'package:anim_search_bar/anim_search_bar.dart';
+import 'package:docx_template/docx_template.dart';
+import 'package:excel/excel.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 import 'package:leadmanagementsystem/admin_module/add_project_page.dart';
 import 'package:leadmanagementsystem/controllers/report_controller.dart';
+import 'package:leadmanagementsystem/extensions/string_extensions.dart';
 import 'package:leadmanagementsystem/main.dart';
 import 'package:leadmanagementsystem/models/project_model.dart';
 import 'package:leadmanagementsystem/projects/project_details_page.dart';
 import 'package:leadmanagementsystem/projects/projects_widget.dart';
 import 'package:leadmanagementsystem/constants/constants.dart';
+import 'package:leadmanagementsystem/widgets/custom_text_field.dart';
 import 'package:leadmanagementsystem/widgets/custom_widgets.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
@@ -20,6 +27,7 @@ import 'package:pdf/widgets.dart' as pw;
 class ProjectListPage extends StatefulWidget {
   String? projectId;
   String userId;
+  String? userName;
 
   bool findProjectsByUsers;
 
@@ -27,6 +35,7 @@ class ProjectListPage extends StatefulWidget {
       {super.key,
       this.projectId,
       required this.findProjectsByUsers,
+      required this.userName,
       required this.userId});
 
   @override
@@ -44,11 +53,14 @@ class _ProjectListPageState extends State<ProjectListPage> {
 
   Map<int, Widget> dataWidget = {
     0: const Text('My Projects'),
-    1: const Text('Assign Projects'),
+    1: const Text('Assigned'),
+    2: const Text('Team'),
   };
 
-  int currentIndex = 0;
+  List<ProjectData> searchedProjects = [];
 
+  int currentIndex = 0;
+  final searchCont = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return widget.findProjectsByUsers == true
@@ -59,7 +71,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
                 appBar: mAppbar("Projects", action: [
                   InkWell(
                     onTap: () {
-                      generateProjectPdf();
+                      generateProjectPdf(reportController.projectsData);
                     },
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
@@ -73,6 +85,38 @@ class _ProjectListPageState extends State<ProjectListPage> {
                       ),
                     ),
                   ),
+                  InkWell(
+                    onTap: () {
+                      generateProjectExcel(reportController.projectsData);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SizedBox(
+                        height: 30,
+                        width: 40,
+                        child: Image.asset(
+                          "images/excel.png",
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                  ),
+                  // InkWell(
+                  //   onTap: () {
+                  //     generateProjectDocx();
+                  //   },
+                  //   child: Padding(
+                  //     padding: const EdgeInsets.all(8.0),
+                  //     child: SizedBox(
+                  //       height: 30,
+                  //       width: 40,
+                  //       child: Image.asset(
+                  //         "images/word.png",
+                  //         fit: BoxFit.contain,
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
                 ]),
                 backgroundColor: Colors.white,
                 body: SafeArea(
@@ -82,10 +126,26 @@ class _ProjectListPageState extends State<ProjectListPage> {
                       scrollDirection: Axis.horizontal,
                       child: Column(
                         children: [
+                          if (widget.userName.isNotNullOrEmpty)
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    "Projects of ${widget.userName}",
+                                    style: const TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                      "Date: ${DateTime.now().toString().split(" ")[0]}",
+                                      style: const TextStyle(fontSize: 16)),
+                                ],
+                              ),
+                            ),
                           if (reportController.projectsData.isEmpty)
-                            const Center(
-                                child:
-                                    CircularProgressIndicator(color: appColor))
+                            const Center(child: Text("No Projects found"))
                           else
                             Padding(
                               padding: const EdgeInsets.all(8.0),
@@ -123,37 +183,154 @@ class _ProjectListPageState extends State<ProjectListPage> {
             })
         : Obx(() {
             return Scaffold(
-              appBar: mAppbar("Projects"),
-              body: projectsController.projectData.isEmpty
+              appBar: mAppbar("Projects", action: [
+                if (searchedProjects.isNotEmpty)
+                  InkWell(
+                    onTap: () {
+                      generateProjectPdf(searchedProjects);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SizedBox(
+                        height: 30,
+                        width: 40,
+                        child: Image.asset(
+                          "images/pdf.png",
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                  ),
+                if (searchedProjects.isNotEmpty)
+                  InkWell(
+                    onTap: () {
+                      generateProjectExcel(searchedProjects);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SizedBox(
+                        height: 30,
+                        width: 40,
+                        child: Image.asset(
+                          "images/excel.png",
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                  ),
+              ]),
+              body: projectsController.myProjects.isEmpty
                   ? const Center(child: Text("No Project found"))
                   : Padding(
                       padding: const EdgeInsets.all(12.0),
                       child: SingleChildScrollView(
                         child: Column(
                           children: [
-                            SizedBox(
-                              width: Get.width,
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: CupertinoSlidingSegmentedControl(
-                                    padding: const EdgeInsets.all(10),
-                                    children: dataWidget,
-                                    groupValue: currentIndex,
-                                    onValueChanged: (val) {
-                                      currentIndex = val!;
-                                      setState(() {});
-                                    }),
-                              ),
+                            const Text(
+                              "ⓘ Search projects by title, company, manager, contractor, client, consultant, location, status, notes, budget, or related contacts.",
+                              style: TextStyle(
+                                  fontStyle: FontStyle.italic, fontSize: 16),
                             ),
-                            if (currentIndex == 0)
+                            Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: CustomTextField(
+                                  controller: searchCont,
+                                  hint: "Search anything related to project",
+                                  onChanged: (p0) {
+                                    if (p0.isNotEmpty) {
+                                      searchProject(p0);
+                                    } else {
+                                      searchedProjects.clear();
+                                      setState(() {});
+                                    }
+                                  },
+                                  suffix: Icons.clear,
+                                  suffixOnTap: () {
+                                    searchCont.clear();
+                                    searchedProjects.clear();
+                                    setState(() {});
+                                  },
+                                )),
+                            if (searchCont.text.isEmpty)
+                              SizedBox(
+                                width: Get.width,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: CupertinoSlidingSegmentedControl(
+                                      padding: const EdgeInsets.all(10),
+                                      children: dataWidget,
+                                      groupValue: currentIndex,
+                                      onValueChanged: (val) {
+                                        setState(() {
+                                          currentIndex = val!;
+                                        });
+                                      }),
+                                ),
+                              ),
+                            if (searchedProjects.isNotEmpty ||
+                                searchCont.text.isNotEmpty)
+                              ListView.builder(
+                                physics: const NeverScrollableScrollPhysics(),
+                                shrinkWrap: true,
+                                itemCount: searchedProjects.length,
+                                itemBuilder: (context, index) {
+                                  final project = searchedProjects[index];
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 8.0),
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        // Handle project detail navigation
+                                        Get.to(() => ProjectDetailsPage(
+                                              project: project,
+                                              updateProject: false,
+                                              receverId: '',
+                                              token: '',
+                                              senderName: '',
+                                            ));
+                                      },
+                                      child: ProjectsWidget(project: project),
+                                    ),
+                                  );
+                                },
+                              )
+                            else if (currentIndex == 0)
+                              ListView.builder(
+                                physics: const NeverScrollableScrollPhysics(),
+                                shrinkWrap: true,
+                                itemCount: projectsController.myProjects.length,
+                                itemBuilder: (context, index) {
+                                  final project =
+                                      projectsController.myProjects[index];
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 8.0),
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        // Handle project detail navigation
+                                        Get.to(() => ProjectDetailsPage(
+                                              project: project,
+                                              updateProject: false,
+                                              receverId: '',
+                                              token: '',
+                                              senderName: '',
+                                            ));
+                                      },
+                                      child: ProjectsWidget(project: project),
+                                    ),
+                                  );
+                                },
+                              )
+                            else if (currentIndex == 1)
                               ListView.builder(
                                 physics: const NeverScrollableScrollPhysics(),
                                 shrinkWrap: true,
                                 itemCount:
-                                    projectsController.projectData.length,
+                                    projectsController.assignedProjects.length,
                                 itemBuilder: (context, index) {
-                                  final project =
-                                      projectsController.projectData[index];
+                                  final project = projectsController
+                                      .assignedProjects[index];
                                   return Padding(
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 8.0),
@@ -176,8 +353,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
                             else
                               Obx(() {
                                 return Column(children: [
-                                  for (var l
-                                      in projectsController.projectAssignData)
+                                  for (var l in projectsController.teamProjects)
                                     Padding(
                                       padding: const EdgeInsets.all(10.0),
                                       child: InkWell(
@@ -215,6 +391,36 @@ class _ProjectListPageState extends State<ProjectListPage> {
           });
   }
 
+  void searchProject(String query) {
+    final lowerQuery = query.toLowerCase().trim();
+    log("project search query = $lowerQuery");
+    setState(() {
+      searchedProjects = projectsController.allProjects.where((project) {
+        return (project.contractorName ?? '')
+                .toLowerCase()
+                .contains(lowerQuery) ||
+            (project.contractorPMName ?? '')
+                .toLowerCase()
+                .contains(lowerQuery) ||
+            (project.notes ?? '').toLowerCase().contains(lowerQuery) ||
+            (project.description ?? '').toLowerCase().contains(lowerQuery) ||
+            (project.budget ?? '').toLowerCase().contains(lowerQuery) ||
+            (project.title ?? '').toLowerCase().contains(lowerQuery) ||
+            (project.name ?? '').toLowerCase().contains(lowerQuery) ||
+            (project.projectManager ?? '').toLowerCase().contains(lowerQuery) ||
+            (project.location ?? '').toLowerCase().contains(lowerQuery) ||
+            (project.clientName ?? '').toLowerCase().contains(lowerQuery) ||
+            (project.company ?? '').toLowerCase().contains(lowerQuery) ||
+            (project.consultantName ?? '').toLowerCase().contains(lowerQuery) ||
+            (project.creatorName ?? '').toLowerCase().contains(lowerQuery) ||
+            (project.consultantMEName ?? '')
+                .toLowerCase()
+                .contains(lowerQuery) ||
+            (project.status ?? '').toLowerCase().contains(lowerQuery);
+      }).toList();
+    });
+  }
+
   TableRow buildProjectTableHeader() {
     return const TableRow(
       decoration: BoxDecoration(
@@ -224,7 +430,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
         TableHeaderCell('Project Name'),
         TableHeaderCell('Contractor'),
         TableHeaderCell('Consultant'),
-        TableHeaderCell('Project Manager\n(Name Number Email)'),
+        TableHeaderCell('Project Manager'), //\n(Name Number Email)
         TableHeaderCell('Material Engr\n(Name Number Email)'),
         TableHeaderCell('Resident Engr\n(Name Number Email)'),
         TableHeaderCell('Consultant Material Engr\n(Name Number Email)'),
@@ -264,8 +470,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child:
-                Text('${l.projectManager ?? ''}\n${l.contractorPMPhone ?? ''}'),
+            child: Text('${l.projectManager}'),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -299,9 +504,9 @@ class _ProjectListPageState extends State<ProjectListPage> {
     }).toList();
   }
 
-  void generateProjectPdf() async {
+  void generateProjectPdf(List<ProjectData> projectsData) async {
     final pdf = pw.Document();
-    final projects = reportController.projectsData;
+    final projects = projectsData;
 
     pdf.addPage(
       pw.MultiPage(
@@ -316,26 +521,45 @@ class _ProjectListPageState extends State<ProjectListPage> {
           ),
           pw.SizedBox(height: 20),
 
-          // Custom Table
+          pw.Padding(
+            padding: const pw.EdgeInsets.all(8.0),
+            child: pw.Text(
+              widget.userName.isNotNullOrEmpty
+                  ? "Projects of ${widget.userName}"
+                  : "Projects",
+              style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold),
+            ),
+          ),
+
+          // Custom Table with Serial Number
           pw.Table(
             border: pw.TableBorder.all(),
             columnWidths: {
-              0: const pw.FixedColumnWidth(150),
-              1: const pw.FixedColumnWidth(120),
+              0: const pw.FixedColumnWidth(40), // Serial No.
+              1: const pw.FixedColumnWidth(150),
               2: const pw.FixedColumnWidth(120),
-              3: const pw.FixedColumnWidth(160),
+              3: const pw.FixedColumnWidth(120),
               4: const pw.FixedColumnWidth(160),
               5: const pw.FixedColumnWidth(160),
               6: const pw.FixedColumnWidth(160),
-              7: const pw.FixedColumnWidth(100),
-              8: const pw.FixedColumnWidth(150),
-              9: const pw.FixedColumnWidth(200),
+              7: const pw.FixedColumnWidth(160),
+              8: const pw.FixedColumnWidth(100),
+              9: const pw.FixedColumnWidth(150),
+              10: const pw.FixedColumnWidth(200),
             },
             children: [
               // Header Row
               pw.TableRow(
                 decoration: const pw.BoxDecoration(color: PdfColors.blueGrey),
                 children: [
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(4),
+                    child: pw.Text('#',
+                        style: pw.TextStyle(
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColors.white,
+                            fontSize: 10)),
+                  ),
                   for (final title in [
                     'Project Name',
                     'Contractor',
@@ -360,9 +584,15 @@ class _ProjectListPageState extends State<ProjectListPage> {
               ),
 
               // Data Rows
-              ...projects.map((project) {
+              ...projects.asMap().entries.map((entry) {
+                final index = entry.key + 1;
+                final project = entry.value;
                 return pw.TableRow(
                   children: [
+                    pw.Padding(
+                        padding: const pw.EdgeInsets.all(4),
+                        child: pw.Text(index.toString(),
+                            style: const pw.TextStyle(fontSize: 9))),
                     pw.Padding(
                         padding: const pw.EdgeInsets.all(4),
                         child: pw.Text(project.title ?? '',
@@ -378,7 +608,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
                     pw.Padding(
                         padding: const pw.EdgeInsets.all(4),
                         child: pw.Text(
-                            '${project.projectManager ?? ''}\n${project.contractorPMPhone ?? ''}',
+                            '${project.projectManager ?? ''}\n${project.projectManager ?? ''}',
                             style: const pw.TextStyle(fontSize: 9))),
                     pw.Padding(
                         padding: const pw.EdgeInsets.all(4),
@@ -427,6 +657,153 @@ class _ProjectListPageState extends State<ProjectListPage> {
     final file = File('$path/projects.pdf');
     await file.writeAsBytes(await pdf.save());
     OpenFile.open(file.path);
+  }
+
+  void generateProjectExcel(List<ProjectData> projectsData) async {
+    final projects = projectsData;
+
+    final excel = Excel.createExcel();
+    final Sheet sheet = excel['Project Report'];
+
+    // Title
+    sheet.merge(CellIndex.indexByString("A1"), CellIndex.indexByString("J1"));
+    sheet.updateCell(
+      CellIndex.indexByString("A1"),
+      TextCellValue('Project Report'),
+      cellStyle: CellStyle(
+        bold: true,
+        fontSize: 18,
+        horizontalAlign: HorizontalAlign.Center,
+      ),
+    );
+
+    // User Name
+    sheet.merge(CellIndex.indexByString("A2"), CellIndex.indexByString("J2"));
+    sheet.updateCell(
+      CellIndex.indexByString("A2"),
+      widget.userName.isNotNullOrEmpty
+          ? TextCellValue('Projects')
+          : TextCellValue('Projects of ${widget.userName}'),
+      cellStyle: CellStyle(
+        bold: true,
+        fontSize: 14,
+      ),
+    );
+
+    // Header Row
+    const headers = [
+      'Project Name',
+      'Contractor',
+      'Consultant',
+      'Project Manager',
+      'Material Engr',
+      'Resident Engr',
+      'Consultant Material Engr',
+      'Status',
+      'Notes',
+      'Description',
+    ];
+
+    for (int i = 0; i < headers.length; i++) {
+      sheet.updateCell(
+        CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 3),
+        TextCellValue(headers[i]),
+        cellStyle: CellStyle(
+          backgroundColorHex: ExcelColor.fromHexString('#CCCCCC'),
+          bold: true,
+          horizontalAlign: HorizontalAlign.Center,
+        ),
+      );
+    }
+
+    // Data Rows
+    for (int rowIndex = 0; rowIndex < projects.length; rowIndex++) {
+      final project = projects[rowIndex];
+      final row = rowIndex + 4;
+
+      final data = [
+        project.title ?? '',
+        project.contractorName ?? '',
+        project.consultantName ?? '',
+        '${project.projectManager ?? ''}\n${project.projectManager ?? ''}',
+        '${project.contractorMEName ?? ''}\n${project.contractorMEPhone ?? ''}',
+        '${project.consultantREName ?? ''}\n${project.consultantREPhone ?? ''}',
+        '${project.consultantMEName ?? ''}\n${project.consultantMEPhone ?? ''}',
+        project.status ?? '',
+        project.notes ?? '',
+        project.description ?? '',
+      ];
+
+      for (int col = 0; col < data.length; col++) {
+        sheet.updateCell(
+          CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row),
+          TextCellValue(data[col]),
+        );
+      }
+    }
+
+    // Generated timestamp
+    final lastRow = projects.length + 5;
+    sheet.merge(
+      CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: lastRow),
+      CellIndex.indexByColumnRow(columnIndex: 9, rowIndex: lastRow),
+    );
+    sheet.updateCell(
+      CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: lastRow),
+      TextCellValue('Generated on ${DateTime.now()}'),
+    );
+
+    // Save file
+    final dir = await getApplicationDocumentsDirectory();
+    final file = File('${dir.path}/projects.xlsx');
+    await file.writeAsBytes(excel.encode()!);
+
+    // Open file
+    await OpenFile.open(file.path);
+  }
+
+  Future<void> generateProjectDocx() async {
+    final bytes =
+        (await rootBundle.load('assets/template.docx')).buffer.asUint8List();
+    final docx = await DocxTemplate.fromBytes(bytes);
+    final projects = reportController.projectsData;
+
+    final List<RowContent> rows = projects.map((p) {
+      return RowContent()
+        ..add(TextContent('project_name', p.title ?? ''))
+        ..add(TextContent('contractor', p.contractorName ?? ''))
+        ..add(TextContent('consultant', p.consultantName ?? ''))
+        ..add(TextContent('project_manager', p.projectManager ?? ''))
+        ..add(TextContent('manager_phone', p.contractorPMPhone ?? ''))
+        ..add(TextContent('material_engr', p.contractorMEName ?? ''))
+        ..add(TextContent('material_phone', p.contractorMEPhone ?? ''))
+        ..add(TextContent('resident_engr', p.consultantREName ?? ''))
+        ..add(TextContent('resident_phone', p.consultantREPhone ?? ''))
+        ..add(TextContent('consultant_material', p.consultantMEName ?? ''))
+        ..add(
+            TextContent('consultant_material_phone', p.consultantMEPhone ?? ''))
+        ..add(TextContent('status', p.status ?? ''))
+        ..add(TextContent('notes', p.notes ?? ''))
+        ..add(TextContent('description', p.description ?? ''));
+    }).toList();
+
+    final c = Content()
+      ..add(TextContent('report_title', 'Project Report'))
+      ..add(TextContent('user_name', widget.userName ?? ""))
+      ..add(TableContent('project_row', rows));
+
+    final generated = await docx.generate(c, tagPolicy: TagPolicy.removeAll);
+
+    if (generated == null) {
+      throw Exception('Failed to generate docx');
+    }
+
+    final dir = await getApplicationDocumentsDirectory();
+    final file = File('${dir.path}/projects_report.docx');
+    await file.writeAsBytes(generated);
+
+    // Optionally open it if you're using package like open_file:
+    // OpenFile.open(file.path);
   }
 }
 

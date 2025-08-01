@@ -45,8 +45,10 @@ class ProjectController extends GetxController {
 
   var workScope = <WorkScopeModel>[].obs;
 
-  var projectData = <ProjectData>[].obs;
-  var projectAssignData = <ProjectData>[].obs;
+  var myProjects = <ProjectData>[].obs;
+  var assignedProjects = <ProjectData>[].obs;
+  var teamProjects = <ProjectData>[].obs;
+  var allProjects = <ProjectData>[];
 
   var lead = <ProjectData>[].obs;
   var contacted = <ProjectData>[].obs;
@@ -141,11 +143,22 @@ class ProjectController extends GetxController {
       if (res['status'] != false) {
         ProjectModel projectModel = ProjectModel.fromJson(res);
         // projectData.clear();
-        projectData.value = projectModel.projectData ?? [];
 
-        projectAssignData.value = projectModel.assignProjects ?? [];
+        var mProjects = projectModel.myProjects ?? [];
+        var aProjects = projectModel.assignedProjects ?? [];
+        var tProjects = projectModel.teamProjects ?? [];
 
-        _categorizeProjects(projectData);
+        allProjects = [...mProjects, ...aProjects, ...tProjects];
+
+        myProjects.value = sortProjectsByStatus(mProjects);
+        assignedProjects.value = sortProjectsByStatus(aProjects);
+        teamProjects.value = sortProjectsByStatus(tProjects);
+
+        log("myProjects length = ${myProjects.length}");
+        log("assignedProjects length = ${assignedProjects.length}");
+        log("teamProjects length = ${teamProjects.length}");
+
+        _categorizeProjects(myProjects);
 
         return true;
       } else {
@@ -156,6 +169,31 @@ class ProjectController extends GetxController {
       // Get.snackbar('Error', 'Something went wrong. Please try again later.');
       return false;
     }
+  }
+
+  List<ProjectData> sortProjectsByStatus(List<ProjectData> projects) {
+    const List<String> statusOrder = [
+      'Lead',
+      'Pitched',
+      'Contacted',
+      'Sent Sample',
+      'Negotiating',
+      'Closed-Won',
+      'Closed-Lost',
+      'Temporary Close',
+    ];
+
+    final Map<String, int> orderMap = {
+      for (int i = 0; i < statusOrder.length; i++) statusOrder[i]: i
+    };
+
+    projects.sort((a, b) {
+      final aIndex = orderMap[a.status] ?? statusOrder.length;
+      final bIndex = orderMap[b.status] ?? statusOrder.length;
+      return aIndex.compareTo(bIndex);
+    });
+
+    return projects;
   }
 
   void _categorizeProjects(List<ProjectData> projects) {
@@ -195,7 +233,7 @@ class ProjectController extends GetxController {
           temporaryClose.add(project);
           break;
         default:
-          projectData.add(project);
+          myProjects.add(project);
       }
     }
   }

@@ -29,7 +29,7 @@ class ReportController extends GetxController {
     }
   }
 
-    getAllUsersExceptCeo() async {
+  getAllUsersExceptCeo() async {
     var res = await getRequest.customGetRequest(
         apiPath:
             'getAllUserExceptCeo?role=${loginStorage.getUserRole()}&company=${loginStorage.getUserCompany()}');
@@ -59,7 +59,7 @@ class ReportController extends GetxController {
     }
   }
 
-  getProjectData(BuildContext context, String userId) async {
+  getProjectData(BuildContext context, String userId, String userName) async {
     alertDialogueWithLoader(context);
 
     var res = await getRequest.customGetRequest(
@@ -73,6 +73,7 @@ class ReportController extends GetxController {
       Get.to(ProjectListPage(
         findProjectsByUsers: true,
         userId: userId,
+        userName: userName,
       ));
       projectsData = getProjectByUserIdModel.projectData!;
       update();

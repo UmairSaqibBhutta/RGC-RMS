@@ -24,7 +24,7 @@ class FilterController extends GetxController {
 
       visible.value = true;
 
-      projectData.value = projectModel.projectData ?? [];
+      projectData.value = projectModel.myProjects ?? [];
 
       print('val--->${projectData.value}');
     } else {
