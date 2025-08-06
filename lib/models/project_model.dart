@@ -66,7 +66,7 @@ class ProjectData {
   String? budget;
   String? company;
   String? projectCreatedDate;
-  String? tentativeCode;
+  String? tentativeCost;
   String? location;
   String? notes;
   String? personName;
@@ -112,7 +112,7 @@ class ProjectData {
       this.workForce,
       this.budget,
       this.company,
-      this.tentativeCode,
+      this.tentativeCost,
       this.location,
       this.notes,
       this.personName,
@@ -161,7 +161,7 @@ class ProjectData {
     workForce = json['workForce'];
     budget = json['budget'];
     company = json['company'];
-    tentativeCode = json['tentativeCode'];
+    tentativeCost = json['tentativeCode'];
     location = json['location'];
     notes = json['notes'];
     personName = json['personName'];
@@ -217,7 +217,7 @@ class ProjectData {
     data['workForce'] = workForce;
     data['budget'] = budget;
     data['company'] = company;
-    data['tentativeCode'] = tentativeCode;
+    data['tentativeCode'] = tentativeCost;
     data['location'] = location;
     data['notes'] = notes;
     data['personName'] = personName;

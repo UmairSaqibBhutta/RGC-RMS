@@ -1,7 +1,6 @@
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:anim_search_bar/anim_search_bar.dart';
 import 'package:docx_template/docx_template.dart';
 import 'package:excel/excel.dart';
 import 'package:flutter/cupertino.dart';
@@ -151,17 +150,19 @@ class _ProjectListPageState extends State<ProjectListPage> {
                               padding: const EdgeInsets.all(8.0),
                               child: Table(
                                 columnWidths: const {
-                                  0: FixedColumnWidth(150), // Project Name
-                                  1: FixedColumnWidth(120), // Contractor
-                                  2: FixedColumnWidth(120), // Consultant
-                                  3: FixedColumnWidth(160), // Project Manager
-                                  4: FixedColumnWidth(160), // Material Engr
-                                  5: FixedColumnWidth(160), // Resident Engr
-                                  6: FixedColumnWidth(
+                                  0: FixedColumnWidth(60), // Sr. No
+                                  1: FixedColumnWidth(150), // Project Name
+                                  2: FixedColumnWidth(120), // Contractor
+                                  3: FixedColumnWidth(120), // Consultant
+                                  4: FixedColumnWidth(160), // Project Manager
+                                  5: FixedColumnWidth(160), // Material Engr
+                                  6: FixedColumnWidth(160), // Resident Engr
+                                  7: FixedColumnWidth(
                                       160), // Consultant Material Engr
-                                  7: FixedColumnWidth(100), // Status
-                                  8: FixedColumnWidth(150), // Notes
-                                  9: FixedColumnWidth(200), // Description
+                                  8: FixedColumnWidth(100), // Status
+                                  9: FixedColumnWidth(100), // Status
+                                  10: FixedColumnWidth(150), // Notes
+                                  11: FixedColumnWidth(200), // Description
                                 },
                                 children: [
                                   buildProjectTableHeader(),
@@ -225,9 +226,10 @@ class _ProjectListPageState extends State<ProjectListPage> {
                       padding: const EdgeInsets.all(12.0),
                       child: SingleChildScrollView(
                         child: Column(
+                          //! add estimated cost in reports of project also
                           children: [
                             const Text(
-                              "ⓘ Search projects by title, company, manager, contractor, client, consultant, location, status, notes, budget, or related contacts.",
+                              "ⓘ Search projects by project creator, title, company, manager, contractor, client, consultant, location, status, notes or budget",
                               style: TextStyle(
                                   fontStyle: FontStyle.italic, fontSize: 16),
                             ),
@@ -427,6 +429,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
         color: Color(0xFFE0E0E0),
       ),
       children: [
+        TableHeaderCell('Sr. No'),
         TableHeaderCell('Project Name'),
         TableHeaderCell('Contractor'),
         TableHeaderCell('Consultant'),
@@ -435,6 +438,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
         TableHeaderCell('Resident Engr\n(Name Number Email)'),
         TableHeaderCell('Consultant Material Engr\n(Name Number Email)'),
         TableHeaderCell('Project Status'),
+        TableHeaderCell('Project Estimate'),
         TableHeaderCell('Notes'),
         TableHeaderCell('Description'),
       ],
@@ -442,9 +446,17 @@ class _ProjectListPageState extends State<ProjectListPage> {
   }
 
   List<TableRow> buildProjectRows(List<ProjectData> projects) {
-    return projects.map((l) {
+    projects = projectsController.sortProjectsByStatus(projects);
+    return projects.asMap().entries.map((entry) {
+      final index = entry.key + 1; // Sr. No starts from 1
+      final l = entry.value;
+
       return TableRow(
         children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(index.toString()), // Sr. No
+          ),
           InkWell(
             onTap: () {
               Get.to(() => ProjectDetailsPage(
@@ -493,6 +505,10 @@ class _ProjectListPageState extends State<ProjectListPage> {
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
+            child: Text(l.tentativeCost ?? ''),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
             child: Text(l.notes ?? ''),
           ),
           Padding(
@@ -506,7 +522,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
 
   void generateProjectPdf(List<ProjectData> projectsData) async {
     final pdf = pw.Document();
-    final projects = projectsData;
+    final projects = projectsController.sortProjectsByStatus(projectsData);
 
     pdf.addPage(
       pw.MultiPage(
@@ -545,7 +561,8 @@ class _ProjectListPageState extends State<ProjectListPage> {
               7: const pw.FixedColumnWidth(160),
               8: const pw.FixedColumnWidth(100),
               9: const pw.FixedColumnWidth(150),
-              10: const pw.FixedColumnWidth(200),
+              10: const pw.FixedColumnWidth(150),
+              11: const pw.FixedColumnWidth(200),
             },
             children: [
               // Header Row
@@ -569,6 +586,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
                     'Resident Engr',
                     'Consultant Material Engr',
                     'Status',
+                    'Project Estimate',
                     'Notes',
                     'Description'
                   ])
@@ -631,6 +649,10 @@ class _ProjectListPageState extends State<ProjectListPage> {
                             style: const pw.TextStyle(fontSize: 9))),
                     pw.Padding(
                         padding: const pw.EdgeInsets.all(4),
+                        child: pw.Text(project.tentativeCost ?? '',
+                            style: const pw.TextStyle(fontSize: 9))),
+                    pw.Padding(
+                        padding: const pw.EdgeInsets.all(4),
                         child: pw.Text(project.notes ?? '',
                             style: const pw.TextStyle(fontSize: 9))),
                     pw.Padding(
@@ -660,7 +682,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
   }
 
   void generateProjectExcel(List<ProjectData> projectsData) async {
-    final projects = projectsData;
+    final projects = projectsController.sortProjectsByStatus(projectsData);
 
     final excel = Excel.createExcel();
     final Sheet sheet = excel['Project Report'];
@@ -700,6 +722,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
       'Resident Engr',
       'Consultant Material Engr',
       'Status',
+      'Project Estimate',
       'Notes',
       'Description',
     ];
@@ -730,6 +753,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
         '${project.consultantREName ?? ''}\n${project.consultantREPhone ?? ''}',
         '${project.consultantMEName ?? ''}\n${project.consultantMEPhone ?? ''}',
         project.status ?? '',
+        project.tentativeCost ?? '',
         project.notes ?? '',
         project.description ?? '',
       ];
@@ -783,6 +807,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
         ..add(
             TextContent('consultant_material_phone', p.consultantMEPhone ?? ''))
         ..add(TextContent('status', p.status ?? ''))
+        ..add(TextContent('Project Estimate', p.tentativeCost ?? ''))
         ..add(TextContent('notes', p.notes ?? ''))
         ..add(TextContent('description', p.description ?? ''));
     }).toList();
