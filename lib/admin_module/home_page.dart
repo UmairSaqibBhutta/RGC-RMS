@@ -879,9 +879,9 @@ class PieChart2State extends State<PieChartSample2> {
                           ),
                         ),
                       ),
-                // const SizedBox(
-                //   width: 1,
-                // ),
+             if(Platform.isIOS)   const SizedBox(
+                  width: 10,
+                ),
 
                 addProjectController.projectData.isEmpty
                     ? const Spacer()
