@@ -750,11 +750,11 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
               FontAwesomeIcons.rupeeSign,
               Colors.green,
             ),
-          if (widget.project.tentativeCode.isNotNullOrEmpty)
+          if (widget.project.tentativeCost.isNotNullOrEmpty)
             _buildInfoCard(
               context,
               "Tentative Cost",
-              formatAmount(double.parse(widget.project.tentativeCode!)),
+              formatAmount(double.parse(widget.project.tentativeCost!)),
               FontAwesomeIcons.rupeeSign,
               Colors.red,
             ),

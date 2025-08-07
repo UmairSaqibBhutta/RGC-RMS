@@ -66,6 +66,7 @@ class _AdminDrawerState extends State<AdminDrawer> {
                   onTap: () {
                     Get.back();
                     Get.to(ProjectListPage(
+                      userName: "",
                       findProjectsByUsers: false,
                       userId: '',
                     ));

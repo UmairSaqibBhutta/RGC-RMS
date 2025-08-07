@@ -86,7 +86,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Map<int, Widget> dataWidget = {
     0: const Text('My Projects'),
-    1: const Text('Assigned Projects'),
+    1: const Text('Assigned'),
+    2: const Text('Team'),
   };
 
   int currentIndex = 0;
@@ -571,8 +572,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                           children: dataWidget,
                                           groupValue: currentIndex,
                                           onValueChanged: (val) {
-                                            currentIndex = val!;
-                                            setState(() {});
+                                            setState(() {
+                                              currentIndex = val!;
+                                              log("current index of switch = $currentIndex");
+                                            });
                                           }),
                                     ),
                                   ),
@@ -587,7 +590,27 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                           padding: const EdgeInsets.all(8.0),
                                           child: Text(
                                             projectController
-                                                .projectAssignData.length
+                                                .teamProjects.length
+                                                .toString(),
+                                            style: const TextStyle(
+                                                color: Colors.white),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                  Obx(() {
+                                    return Positioned(
+                                      left: Get.width * .45,
+                                      child: Container(
+                                        decoration: const BoxDecoration(
+                                            color: Colors.amber,
+                                            shape: BoxShape.circle),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text(
+                                            projectController
+                                                .assignedProjects.length
                                                 .toString(),
                                             style: const TextStyle(
                                                 color: Colors.white),
@@ -606,7 +629,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                         child: Padding(
                                           padding: const EdgeInsets.all(8.0),
                                           child: Text(
-                                            projectController.projectData.length
+                                            projectController.myProjects.length
                                                 .toString(),
                                             style: const TextStyle(
                                                 color: Colors.white),
@@ -624,12 +647,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                   child: titleText(titleTextAll()),
                                 );
                               }),
-                              if (currentIndex == 1)
+                              if (currentIndex == 0)
                                 Obx(() {
+                                  log("currentIndex in obx 0 = $currentIndex");
                                   return Column(children: [
                                     for (var l in filterController.visible.value
                                         ? filterController.projectData
-                                        : projectController.projectAssignData)
+                                        : projectController.myProjects)
                                       Padding(
                                         padding: const EdgeInsets.all(10.0),
                                         child: InkWell(
@@ -654,13 +678,48 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                 })),
                                       )
                                   ]);
-                                })
-                              else
+                                }),
+                              if (currentIndex == 1)
                                 Obx(() {
+                                  log("currentIndex in obx 1 = $currentIndex");
+
                                   return Column(children: [
                                     for (var l in filterController.visible.value
                                         ? filterController.projectData
-                                        : data(projectController))
+                                        : projectController.assignedProjects)
+                                      Padding(
+                                        padding: const EdgeInsets.all(10.0),
+                                        child: InkWell(
+                                            onTap: () {
+                                              Get.to(ProjectDetailsPage(
+                                                updateProject: false,
+                                                receverId: '',
+                                                token: '',
+                                                senderName: '',
+                                                project: l,
+                                              ));
+                                            },
+                                            child: AnimatedBuilder(
+                                                animation: animation!,
+                                                builder: (BuildContext context,
+                                                    Widget? child) {
+                                                  return Transform.translate(
+                                                      offset: Offset(
+                                                          0, animation!.value!),
+                                                      child: ProjectsWidget(
+                                                          project: l));
+                                                })),
+                                      )
+                                  ]);
+                                }),
+                              if (currentIndex == 2)
+                                Obx(() {
+                                  log("currentIndex in obx 2 = $currentIndex");
+
+                                  return Column(children: [
+                                    for (var l in filterController.visible.value
+                                        ? filterController.projectData
+                                        : projectController.teamProjects)
                                       Padding(
                                         padding: const EdgeInsets.all(10.0),
                                         child: InkWell(
@@ -717,7 +776,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     } else if (projectController.temporaryCloseB.value) {
       return 'Temporary Close';
     } else {
-      return 'All Projects';
+      return '';
     }
   }
 
@@ -739,7 +798,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     } else if (addProjectController.temporaryCloseB.value == true) {
       return addProjectController.temporaryClose;
     } else {
-      return addProjectController.projectData;
+      return addProjectController.myProjects;
     }
   }
 }
@@ -830,7 +889,7 @@ class PieChart2State extends State<PieChartSample2> {
                   height: 18,
                 ),
 
-                addProjectController.projectData.isEmpty
+                addProjectController.myProjects.isEmpty
                     ? Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 18.0),
                         child: Container(
@@ -883,7 +942,7 @@ class PieChart2State extends State<PieChartSample2> {
                   width: 10,
                 ),
 
-                addProjectController.projectData.isEmpty
+                addProjectController.myProjects.isEmpty
                     ? const Spacer()
                     : const SizedBox.shrink(),
 
@@ -929,7 +988,7 @@ class PieChart2State extends State<PieChartSample2> {
                   padding: const EdgeInsets.all(13.0),
                   child: Row(
                     children: [
-                      Text('Total: ${addProjectController.projectData.length}')
+                      Text('Total: ${addProjectController.myProjects.length}')
                     ],
                   ),
                 ),

@@ -177,7 +177,7 @@ class _AddProjectPageState extends State<AddProjectPage> {
       projectController.workForceControl.text = widget.projectData!.workForce!;
       projectController.budgetCont.text = widget.projectData!.budget!;
       projectController.tentativeCostCont.text =
-          widget.projectData!.tentativeCode!;
+          widget.projectData!.tentativeCost!;
       projectController.locationCont.text = widget.projectData!.location!;
       projectController.notesCont.text = widget.projectData!.notes!;
       projectController.contactPersonPhoneCont.text =
@@ -718,7 +718,7 @@ class _AddProjectPageState extends State<AddProjectPage> {
                 controller: projectController.tentativeCostCont,
                 prefixIcon: CupertinoIcons.money_dollar_circle,
                 inputType: TextInputType.number,
-                hint: 'Tentative Cost',
+                hint: 'Project Estimate',
                 prefixColor: Colors.red,
               ),
               if (isTentativeCostError)
@@ -921,7 +921,7 @@ class _AddProjectPageState extends State<AddProjectPage> {
       isClientError = true;
       isValid = false;
     }
-  
+
     setState(() {});
     return isValid;
   }

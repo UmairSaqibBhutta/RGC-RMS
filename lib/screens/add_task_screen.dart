@@ -73,10 +73,11 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   String priorityErrorString = '';
 
   // String statusErrorString = '';
-ValueNotifier<String> estimatedTime = ValueNotifier("");
-  /// for task estimated time 
-  /// 
-     int selectedMonths = 0;
+  ValueNotifier<String> estimatedTime = ValueNotifier("");
+
+  /// for task estimated time
+  ///
+  int selectedMonths = 0;
   int selectedDays = 0;
   int selectedHours = 0;
 
@@ -152,19 +153,18 @@ ValueNotifier<String> estimatedTime = ValueNotifier("");
                   ),
                 ),
                 if (isDateTimeError) formErrorText(error: dateTimeErrorString),
-              const Padding(
-      padding: EdgeInsets.all(8.0),
-      child: CustomDurationPickerTile(
-      ),
-    ),
-        if (isEstimatedTimeError)
-          Padding(
-            padding: const EdgeInsets.only(left: 16.0, top: 4.0),
-            child: Text(
-              estimatedTimeErrorString,
-              style: const TextStyle(color: Colors.red, fontSize: 14),
-            ),
-          ),
+                const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: CustomDurationPickerTile(),
+                ),
+                if (isEstimatedTimeError)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16.0, top: 4.0),
+                    child: Text(
+                      estimatedTimeErrorString,
+                      style: const TextStyle(color: Colors.red, fontSize: 14),
+                    ),
+                  ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Container(
@@ -182,11 +182,11 @@ ValueNotifier<String> estimatedTime = ValueNotifier("");
                             ? "Select Project *"
                             : taskCont.project.value),
                         items: [
-                          ...projCont.projectData.value.map((e) {
+                          ...projCont.myProjects.value.map((e) {
                             return DropdownMenuItem(
                                 value: e.name, child: Text(e.name.toString()));
                           }).toList(),
-                          ...projCont.projectAssignData.value.map((e) {
+                          ...projCont.assignedProjects.value.map((e) {
                             return DropdownMenuItem(
                                 value: e.name,
                                 child: Column(
@@ -369,8 +369,6 @@ ValueNotifier<String> estimatedTime = ValueNotifier("");
   }
 
   void showDurationPicker() {
-
-  
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(

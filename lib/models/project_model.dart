@@ -1,22 +1,31 @@
 class ProjectModel {
   bool? status;
-  List<ProjectData>? assignProjects;
-  List<ProjectData>? projectData;
+  List<ProjectData>? assignedProjects;
+  List<ProjectData>? myProjects;
+  List<ProjectData>? teamProjects;
 
-  ProjectModel({this.status, this.assignProjects, this.projectData});
+  ProjectModel(
+      {this.status, this.assignedProjects, this.myProjects, this.teamProjects});
 
   ProjectModel.fromJson(Map<String, dynamic> json) {
     status = json['status'];
     if (json['assignProjects'] != null) {
-      assignProjects = <ProjectData>[];
+      assignedProjects = <ProjectData>[];
       json['assignProjects'].forEach((v) {
-        assignProjects!.add(ProjectData.fromJson(v));
+        assignedProjects!.add(ProjectData.fromJson(v));
       });
     }
     if (json['projectData'] != null) {
-      projectData = <ProjectData>[];
+      teamProjects = <ProjectData>[];
       json['projectData'].forEach((v) {
-        projectData!.add(ProjectData.fromJson(v));
+        teamProjects!.add(ProjectData.fromJson(v));
+      });
+    }
+
+    if (json['myProjects'] != null) {
+      myProjects = <ProjectData>[];
+      json['myProjects'].forEach((v) {
+        myProjects!.add(ProjectData.fromJson(v));
       });
     }
   }
@@ -24,11 +33,16 @@ class ProjectModel {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['status'] = status;
-    if (assignProjects != null) {
-      data['assignProjects'] = assignProjects!.map((v) => v.toJson()).toList();
+    if (assignedProjects != null) {
+      data['assignProjects'] =
+          assignedProjects!.map((v) => v.toJson()).toList();
     }
-    if (projectData != null) {
-      data['projectData'] = projectData!.map((v) => v.toJson()).toList();
+    if (myProjects != null) {
+      data['myProjects'] = myProjects!.map((v) => v.toJson()).toList();
+    }
+
+    if (teamProjects != null) {
+      data['projectData'] = teamProjects!.map((v) => v.toJson()).toList();
     }
     return data;
   }
@@ -52,7 +66,7 @@ class ProjectData {
   String? budget;
   String? company;
   String? projectCreatedDate;
-  String? tentativeCode;
+  String? tentativeCost;
   String? location;
   String? notes;
   String? personName;
@@ -98,7 +112,7 @@ class ProjectData {
       this.workForce,
       this.budget,
       this.company,
-      this.tentativeCode,
+      this.tentativeCost,
       this.location,
       this.notes,
       this.personName,
@@ -147,7 +161,7 @@ class ProjectData {
     workForce = json['workForce'];
     budget = json['budget'];
     company = json['company'];
-    tentativeCode = json['tentativeCode'];
+    tentativeCost = json['tentativeCode'];
     location = json['location'];
     notes = json['notes'];
     personName = json['personName'];
@@ -203,7 +217,7 @@ class ProjectData {
     data['workForce'] = workForce;
     data['budget'] = budget;
     data['company'] = company;
-    data['tentativeCode'] = tentativeCode;
+    data['tentativeCode'] = tentativeCost;
     data['location'] = location;
     data['notes'] = notes;
     data['personName'] = personName;

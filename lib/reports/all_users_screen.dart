@@ -176,10 +176,14 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
                                                     onChartTouchInteractionDown:
                                                         (val) {
                                                       controller.getProjectData(
-                                                          context,
-                                                          controller
-                                                              .usersData[i].sId
-                                                              .toString());
+                                                        context,
+                                                        controller
+                                                            .usersData[i].sId
+                                                            .toString(),
+                                                        controller
+                                                            .usersData[i].name
+                                                            .toString(),
+                                                      );
                                                     },
                                                     enableMultiSelection: true,
                                                     margin:
