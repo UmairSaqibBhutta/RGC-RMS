@@ -53,38 +53,37 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
             "Location tracking is not available on the web.");
         return;
       }
+      if (loginStorage.getUserRole() != UserRole.CEO) {
+        // Check location permission status
+        var status = await Permission.location.status;
 
-      // Check location permission status
-      var status = await Permission.location.status;
-
-      // Check if location services are enabled
-      serviceEnabled = await location.serviceEnabled();
-      if (!serviceEnabled) {
-        serviceEnabled = await location.requestService();
+        // Check if location services are enabled
+        serviceEnabled = await location.serviceEnabled();
         if (!serviceEnabled) {
-          return;
+          serviceEnabled = await location.requestService();
+          if (!serviceEnabled) {
+            return;
+          }
         }
-      }
 
-      permissionGranted = await location.hasPermission();
-      if (permissionGranted == PermissionStatus.denied) {
-        permissionGranted = await location.requestPermission();
-        if (permissionGranted != PermissionStatus.granted) {
-          return;
+        permissionGranted = await location.hasPermission();
+        if (permissionGranted == PermissionStatus.denied) {
+          permissionGranted = await location.requestPermission();
+          if (permissionGranted != PermissionStatus.granted) {
+            return;
+          }
         }
-      }
 
-      // Log current permission and service status
-      log("🔍 Location Permission Status: $status");
-      log("📍 Location Service Enabled: $serviceEnabled");
+        // Log current permission and service status
+        log("🔍 Location Permission Status: $status");
+        log("📍 Location Service Enabled: $serviceEnabled");
 
-      // If permission is denied, permanently denied, location service is off, or background service is not running
-      if (status.isDenied || status.isPermanentlyDenied || !serviceEnabled
-          //  ||
-          // !await bgService.isRunning()
-          ) {
-        // Show location dialog only for non-web users and non-Group Director-CEO roles
-        if (loginStorage.getUserRole() != UserRole.CEO) {
+        // If permission is denied, permanently denied, location service is off, or background service is not running
+        if (status.isDenied || status.isPermanentlyDenied || !serviceEnabled
+            //  ||
+            // !await bgService.isRunning()
+            ) {
+          // Show location dialog only for non-web users and non-Group Director-CEO roles
           waitForProjectLoadingToClose(context);
         }
       }

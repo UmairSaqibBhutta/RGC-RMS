@@ -9,6 +9,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 import 'package:leadmanagementsystem/admin_module/add_project_page.dart';
+import 'package:leadmanagementsystem/constants/companies_strings.dart';
+import 'package:leadmanagementsystem/controllers/filter_controller.dart';
+import 'package:leadmanagementsystem/controllers/filter_variable_controller.dart';
 import 'package:leadmanagementsystem/controllers/report_controller.dart';
 import 'package:leadmanagementsystem/extensions/string_extensions.dart';
 import 'package:leadmanagementsystem/main.dart';
@@ -18,6 +21,7 @@ import 'package:leadmanagementsystem/projects/projects_widget.dart';
 import 'package:leadmanagementsystem/constants/constants.dart';
 import 'package:leadmanagementsystem/widgets/custom_text_field.dart';
 import 'package:leadmanagementsystem/widgets/custom_widgets.dart';
+import 'package:leadmanagementsystem/widgets/random_widget.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
@@ -57,9 +61,24 @@ class _ProjectListPageState extends State<ProjectListPage> {
   };
 
   List<ProjectData> searchedProjects = [];
-
+  FilterVariableController filterVariableController =
+      Get.put(FilterVariableController());
   int currentIndex = 0;
   final searchCont = TextEditingController();
+  String? gvCompanies;
+  String? gvStatues;
+
+  List<String> statuses = [
+    'Lead',
+    'Contracted',
+    'Pitched',
+    'Sent Sample',
+    'Negotiating',
+    'Closed-Won',
+    'Closed-Lost',
+    'Temporary Close'
+  ];
+
   @override
   Widget build(BuildContext context) {
     return widget.findProjectsByUsers == true
@@ -185,6 +204,21 @@ class _ProjectListPageState extends State<ProjectListPage> {
         : Obx(() {
             return Scaffold(
               appBar: mAppbar("Projects", action: [
+                // GetBuilder<FilterVariableController>(
+                //   init: filterVariableController,
+                //   builder: (filter) {
+                //     return InkWell(
+                //       onTap: () {
+                //         filter.onChanged();
+                //       },
+                //       child: Image.asset(
+                //         'images/filter.png',
+                //         width: 25,
+                //         height: 25,
+                //       ),
+                //     );
+                //   },
+                // ),
                 if (searchedProjects.isNotEmpty)
                   InkWell(
                     onTap: () {
@@ -219,6 +253,9 @@ class _ProjectListPageState extends State<ProjectListPage> {
                       ),
                     ),
                   ),
+                const SizedBox(
+                  width: 10,
+                )
               ]),
               body: projectsController.myProjects.isEmpty
                   ? const Center(child: Text("No Project found"))
@@ -226,152 +263,314 @@ class _ProjectListPageState extends State<ProjectListPage> {
                       padding: const EdgeInsets.all(12.0),
                       child: SingleChildScrollView(
                         child: Column(
-                          //! add estimated cost in reports of project also
                           children: [
-                            const Text(
-                              "ⓘ Search projects by project creator, title, company, manager, contractor, client, consultant, location, status, notes or budget",
-                              style: TextStyle(
-                                  fontStyle: FontStyle.italic, fontSize: 16),
-                            ),
-                            Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8.0),
-                                child: CustomTextField(
-                                  controller: searchCont,
-                                  hint: "Search anything related to project",
-                                  onChanged: (p0) {
-                                    if (p0.isNotEmpty) {
-                                      searchProject(p0);
-                                    } else {
-                                      searchedProjects.clear();
-                                      setState(() {});
-                                    }
-                                  },
-                                  suffix: Icons.clear,
-                                  suffixOnTap: () {
-                                    searchCont.clear();
-                                    searchedProjects.clear();
-                                    setState(() {});
-                                  },
-                                )),
-                            if (searchCont.text.isEmpty)
-                              SizedBox(
-                                width: Get.width,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: CupertinoSlidingSegmentedControl(
-                                      padding: const EdgeInsets.all(10),
-                                      children: dataWidget,
-                                      groupValue: currentIndex,
-                                      onValueChanged: (val) {
-                                        setState(() {
-                                          currentIndex = val!;
-                                        });
-                                      }),
-                                ),
-                              ),
-                            if (searchedProjects.isNotEmpty ||
-                                searchCont.text.isNotEmpty)
-                              ListView.builder(
-                                physics: const NeverScrollableScrollPhysics(),
-                                shrinkWrap: true,
-                                itemCount: searchedProjects.length,
-                                itemBuilder: (context, index) {
-                                  final project = searchedProjects[index];
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 8.0),
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        // Handle project detail navigation
-                                        Get.to(() => ProjectDetailsPage(
-                                              project: project,
-                                              updateProject: false,
-                                              receverId: '',
-                                              token: '',
-                                              senderName: '',
-                                            ));
-                                      },
-                                      child: ProjectsWidget(project: project),
-                                    ),
-                                  );
-                                },
-                              )
-                            else if (currentIndex == 0)
-                              ListView.builder(
-                                physics: const NeverScrollableScrollPhysics(),
-                                shrinkWrap: true,
-                                itemCount: projectsController.myProjects.length,
-                                itemBuilder: (context, index) {
-                                  final project =
-                                      projectsController.myProjects[index];
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 8.0),
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        // Handle project detail navigation
-                                        Get.to(() => ProjectDetailsPage(
-                                              project: project,
-                                              updateProject: false,
-                                              receverId: '',
-                                              token: '',
-                                              senderName: '',
-                                            ));
-                                      },
-                                      child: ProjectsWidget(project: project),
-                                    ),
-                                  );
-                                },
-                              )
-                            else if (currentIndex == 1)
-                              ListView.builder(
-                                physics: const NeverScrollableScrollPhysics(),
-                                shrinkWrap: true,
-                                itemCount:
-                                    projectsController.assignedProjects.length,
-                                itemBuilder: (context, index) {
-                                  final project = projectsController
-                                      .assignedProjects[index];
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 8.0),
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        // Handle project detail navigation
-                                        Get.to(() => ProjectDetailsPage(
-                                              project: project,
-                                              updateProject: false,
-                                              receverId: '',
-                                              token: '',
-                                              senderName: '',
-                                            ));
-                                      },
-                                      child: ProjectsWidget(project: project),
-                                    ),
-                                  );
-                                },
-                              )
-                            else
-                              Obx(() {
-                                return Column(children: [
-                                  for (var l in projectsController.teamProjects)
-                                    Padding(
-                                      padding: const EdgeInsets.all(10.0),
-                                      child: InkWell(
-                                          onTap: () {
-                                            Get.to(ProjectDetailsPage(
-                                              updateProject: false,
-                                              receverId: '',
-                                              token: '',
-                                              senderName: '',
-                                              project: l,
-                                            ));
+                            // const FilterUI(),
+                            GetBuilder(
+                                init: filterVariableController,
+                                builder: (controller) {
+                                  if (!controller.expand) {
+                                    return Column(
+                                      children: [
+                                        const Text(
+                                          "ⓘ Search projects by project creator, title, company, manager, contractor, client, consultant, location, status, notes or budget",
+                                          style: TextStyle(
+                                              fontStyle: FontStyle.italic,
+                                              fontSize: 16),
+                                        ),
+                                        Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8.0),
+                                            child: CustomTextField(
+                                              controller: searchCont,
+                                              hint:
+                                                  "Search anything related to project",
+                                              onChanged: (p0) {
+                                                if (p0.isNotEmpty) {
+                                                  searchProject(p0);
+                                                } else {
+                                                  searchedProjects.clear();
+
+                                                  setState(() {});
+                                                }
+                                              },
+                                              suffix: Icons.clear,
+                                              suffixOnTap: () {
+                                                searchCont.clear();
+                                                searchedProjects.clear();
+                                                gvCompanies = null;
+                                                gvStatues = null;
+                                                setState(() {});
+                                              },
+                                            )),
+                                        const SizedBox(height: 8),
+                                        Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: titleText(
+                                            "Company :",
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Row(
+                                          children: [
+                                            if (Company.getRoleBasedCompanies()
+                                                .contains(Company.ROOFLINE))
+                                              RadioWithImage(
+                                                  groupValue: gvCompanies,
+                                                  value: '1',
+                                                  onChanged: (val) {
+                                                    gvCompanies = val;
+                                                    gvStatues = null;
+
+                                                    searchCont.text = Company
+                                                        .ROOFLINE
+                                                        .toLowerCase();
+                                                    searchProject(
+                                                        searchCont.text);
+                                                  },
+                                                  image: 'roofline.jpg',
+                                                  title: Company.ROOFLINE),
+                                            if (Company.getRoleBasedCompanies()
+                                                .contains(Company.RADIANT))
+                                              RadioWithImage(
+                                                  groupValue: gvCompanies,
+                                                  value: '2',
+                                                  onChanged: (val) {
+                                                    gvCompanies = val;
+                                                    searchCont.text = Company
+                                                        .RADIANT
+                                                        .toLowerCase();
+                                                    gvStatues = null;
+
+                                                    searchProject(
+                                                        searchCont.text);
+                                                  },
+                                                  image: 'radiant.png',
+                                                  title: Company.RADIANT),
+                                            if (Company.getRoleBasedCompanies()
+                                                .contains(Company.MAMZ))
+                                              RadioWithImage(
+                                                  groupValue: gvCompanies,
+                                                  value: '3',
+                                                  onChanged: (val) {
+                                                    gvCompanies = val;
+                                                    searchCont.text = Company
+                                                        .MAMZ
+                                                        .toLowerCase();
+                                                    gvStatues = null;
+
+                                                    searchProject(
+                                                        searchCont.text);
+                                                  },
+                                                  image: 'mamz.png',
+                                                  title: Company.MAMZ)
+                                          ],
+                                        ),
+                                        Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: titleText(
+                                            "Project Status :",
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        SingleChildScrollView(
+                                          scrollDirection: Axis.horizontal,
+                                          child: Row(
+                                            children: [
+                                              for (var l in statuses)
+                                                CustomRadioButton(
+                                                  value: l,
+                                                  groupValue: gvStatues,
+                                                  title: l,
+                                                  onChanged: (v) {
+                                                    gvStatues = v;
+                                                    searchCont.text = v!;
+                                                    gvCompanies = null;
+                                                    searchProject(v);
+                                                  },
+                                                ),
+                                            ],
+                                          ),
+                                        ),
+                                        if (searchCont.text.isEmpty)
+                                          SizedBox(
+                                            width: Get.width,
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child:
+                                                  CupertinoSlidingSegmentedControl(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              10),
+                                                      children: dataWidget,
+                                                      groupValue: currentIndex,
+                                                      onValueChanged: (val) {
+                                                        setState(() {
+                                                          currentIndex = val!;
+                                                        });
+                                                      }),
+                                            ),
+                                          ),
+                                        if (searchedProjects.isNotEmpty ||
+                                            searchCont.text.isNotEmpty)
+                                          ListView.builder(
+                                            physics:
+                                                const NeverScrollableScrollPhysics(),
+                                            shrinkWrap: true,
+                                            itemCount: searchedProjects.length,
+                                            itemBuilder: (context, index) {
+                                              final project =
+                                                  searchedProjects[index];
+                                              return Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 8.0),
+                                                child: GestureDetector(
+                                                  onTap: () {
+                                                    // Handle project detail navigation
+                                                    Get.to(() =>
+                                                        ProjectDetailsPage(
+                                                          project: project,
+                                                          updateProject: false,
+                                                          receverId: '',
+                                                          token: '',
+                                                          senderName: '',
+                                                        ));
+                                                  },
+                                                  child: ProjectsWidget(
+                                                      project: project),
+                                                ),
+                                              );
+                                            },
+                                          )
+                                        else if (currentIndex == 0)
+                                          ListView.builder(
+                                            physics:
+                                                const NeverScrollableScrollPhysics(),
+                                            shrinkWrap: true,
+                                            itemCount: projectsController
+                                                .myProjects.length,
+                                            itemBuilder: (context, index) {
+                                              final project = projectsController
+                                                  .myProjects[index];
+                                              return Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 8.0),
+                                                child: GestureDetector(
+                                                  onTap: () {
+                                                    // Handle project detail navigation
+                                                    Get.to(() =>
+                                                        ProjectDetailsPage(
+                                                          project: project,
+                                                          updateProject: false,
+                                                          receverId: '',
+                                                          token: '',
+                                                          senderName: '',
+                                                        ));
+                                                  },
+                                                  child: ProjectsWidget(
+                                                      project: project),
+                                                ),
+                                              );
+                                            },
+                                          )
+                                        else if (currentIndex == 1)
+                                          ListView.builder(
+                                            physics:
+                                                const NeverScrollableScrollPhysics(),
+                                            shrinkWrap: true,
+                                            itemCount: projectsController
+                                                .assignedProjects.length,
+                                            itemBuilder: (context, index) {
+                                              final project = projectsController
+                                                  .assignedProjects[index];
+                                              return Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 8.0),
+                                                child: GestureDetector(
+                                                  onTap: () {
+                                                    // Handle project detail navigation
+                                                    Get.to(() =>
+                                                        ProjectDetailsPage(
+                                                          project: project,
+                                                          updateProject: false,
+                                                          receverId: '',
+                                                          token: '',
+                                                          senderName: '',
+                                                        ));
+                                                  },
+                                                  child: ProjectsWidget(
+                                                      project: project),
+                                                ),
+                                              );
+                                            },
+                                          )
+                                        else
+                                          Obx(() {
+                                            return Column(children: [
+                                              for (var l in projectsController
+                                                  .teamProjects)
+                                                Padding(
+                                                  padding: const EdgeInsets.all(
+                                                      10.0),
+                                                  child: InkWell(
+                                                      onTap: () {
+                                                        Get.to(
+                                                            ProjectDetailsPage(
+                                                          updateProject: false,
+                                                          receverId: '',
+                                                          token: '',
+                                                          senderName: '',
+                                                          project: l,
+                                                        ));
+                                                      },
+                                                      child: ProjectsWidget(
+                                                          project: l)),
+                                                )
+                                            ]);
+                                          })
+                                      ],
+                                    );
+                                  } else {
+                                    return GetBuilder(
+                                      init: FilterController(),
+                                      builder: (controller) {
+                                        return ListView.builder(
+                                          physics:
+                                              const NeverScrollableScrollPhysics(),
+                                          shrinkWrap: true,
+                                          itemCount: controller
+                                              .filteredProjectDataList.length,
+                                          itemBuilder: (context, index) {
+                                            final project = controller
+                                                .filteredProjectDataList[index];
+                                            return Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 8.0),
+                                              child: GestureDetector(
+                                                onTap: () {
+                                                  Get.to(
+                                                      () => ProjectDetailsPage(
+                                                            project: project,
+                                                            updateProject: true,
+                                                            receverId: '',
+                                                            token: '',
+                                                            senderName: '',
+                                                          ));
+                                                },
+                                                child: ProjectsWidget(
+                                                    project: project),
+                                              ),
+                                            );
                                           },
-                                          child: ProjectsWidget(project: l)),
-                                    )
-                                ]);
-                              })
+                                        );
+                                      },
+                                    );
+                                  }
+                                }),
                           ],
                         ),
                       ),
@@ -829,23 +1028,5 @@ class _ProjectListPageState extends State<ProjectListPage> {
 
     // Optionally open it if you're using package like open_file:
     // OpenFile.open(file.path);
-  }
-}
-
-class TableHeaderCell extends StatelessWidget {
-  final String title;
-
-  const TableHeaderCell(this.title, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Text(
-        title,
-        style: const TextStyle(fontWeight: FontWeight.bold),
-        textAlign: TextAlign.center,
-      ),
-    );
   }
 }

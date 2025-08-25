@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:get/get.dart';
 import 'package:leadmanagementsystem/main.dart';
 import 'package:leadmanagementsystem/models/project_model.dart';
@@ -8,7 +10,7 @@ class FilterController extends GetxController {
 
   RxBool expand = false.obs;
 
-  var projectData = <ProjectData>[].obs;
+  var filteredProjectDataList = <ProjectData>[].obs;
 
   getProjectsFilter(String? projectManager, String? status, String? budget,
       String? projectName, String? company) async {
@@ -17,16 +19,18 @@ class FilterController extends GetxController {
     var res = await getRequest.customGetRequest(
         apiPath:
             'filterProjects?projectManager=${projectManager ?? ''}&status=${status ?? ''}&budget=${budget ?? ''}&name=${projectName ?? ''}&company=${company ?? loginStorage.getUserCompany()}');
-
+    log("filtered projects response: $res");
     if (res['status'] != false) {
-      ProjectModel projectModel = ProjectModel.fromJson(res);
       loading.value = false;
-
       visible.value = true;
 
-      projectData.value = projectModel.myProjects ?? [];
+      List jsonProject = res["projectData"];
 
-      print('val--->${projectData.value}');
+      filteredProjectDataList.value = jsonProject
+          .map((e) => ProjectData.fromJson(e as Map<String, dynamic>))
+          .toList();
+
+      log("filtered projects length: ${filteredProjectDataList.length}");
     } else {
       return false;
     }
