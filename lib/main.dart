@@ -142,6 +142,7 @@ Future<void> main() async {
     FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
     return true;
   };
+  
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
   projectsController = Get.put(ProjectController(), permanent: true);
