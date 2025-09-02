@@ -10,6 +10,8 @@ import 'package:leadmanagementsystem/main.dart';
 import 'package:leadmanagementsystem/projects/projects_list_page.dart';
 import 'package:leadmanagementsystem/constants/constants.dart';
 import 'package:leadmanagementsystem/reports/reports_main_screen.dart';
+import 'package:leadmanagementsystem/screens/attendance/employess_list_screen.dart';
+import 'package:leadmanagementsystem/screens/attendance/mark_attendance_screen.dart';
 import 'package:leadmanagementsystem/screens/leaves_page.dart';
 import 'package:leadmanagementsystem/screens/login_screen.dart';
 import 'package:leadmanagementsystem/screens/reminders_list_page.dart';
@@ -90,6 +92,22 @@ class _AdminDrawerState extends State<AdminDrawer> {
                   },
                   title: "Tasks",
                 ),
+                if (loginStorage.getUserRole() != UserRole.CEO)
+                  CustomDrawerItem(
+                    icon: CupertinoIcons.clock,
+                    onTap: () {
+                      Get.to(const MarkAttendanceScreen());
+                    },
+                    title: "Mark Attendance",
+                  ),
+                if (loginStorage.getUserRole() == UserRole.CEO)
+                  CustomDrawerItem(
+                    icon: CupertinoIcons.group_solid,
+                    onTap: () {
+                      Get.to(const EmployeeListScreen());
+                    },
+                    title: "View Employees Attendance",
+                  ),
                 CustomDrawerItem(
                   icon: CupertinoIcons.chart_bar,
                   onTap: () {

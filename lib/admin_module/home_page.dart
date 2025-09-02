@@ -1,17 +1,11 @@
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 import 'package:leadmanagementsystem/admin_module/admin_drawer.dart';
-import 'package:leadmanagementsystem/constants/companies_strings.dart';
-import 'package:leadmanagementsystem/constants/size_config.dart';
-import 'package:leadmanagementsystem/controllers/filter_controller.dart';
-import 'package:leadmanagementsystem/controllers/filter_variable_controller.dart';
 import 'package:leadmanagementsystem/controllers/login_controller.dart';
 import 'package:leadmanagementsystem/projects/project_details_page.dart';
 import 'package:leadmanagementsystem/projects/projects_widget.dart';
@@ -19,7 +13,6 @@ import 'package:leadmanagementsystem/constants/constants.dart';
 import 'package:leadmanagementsystem/controllers/project_controller.dart';
 import 'package:leadmanagementsystem/models/project_model.dart';
 import 'package:leadmanagementsystem/screens/notification_screen.dart';
-import 'package:leadmanagementsystem/widgets/custom_text_field.dart';
 import 'package:leadmanagementsystem/widgets/custom_widgets.dart';
 import 'package:leadmanagementsystem/widgets/random_widget.dart';
 

@@ -36,4 +36,10 @@ class ApiUrls {
   static const String getVisitReport = 'getVisit';
   static const String getFilterReport = 'filterVisit';
   static const String addVisitReport = 'addVisitReport';
+
+  // Attendance
+
+  static const String markAttendance = 'markAttendance';
+  static const String getTodayAttendance = 'getTodayAttendance';
+  static const String singleUserAttendance = 'singleUserAttendance';
 }

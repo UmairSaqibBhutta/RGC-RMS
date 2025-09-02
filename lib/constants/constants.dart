@@ -25,6 +25,9 @@ const lostColor = Colors.red;
 
 const String appName = "RGC RMS";
 
+String checkInString = "CheckIn";
+String checkOutString = "CheckOut";
+
 const apiBaseUrl = 'https://leadmanagementapi.vercel.app/api/';
 // const apiBaseUrl = 'http://192.168.100.36:4000/api/';
 // const apiBaseUrl =

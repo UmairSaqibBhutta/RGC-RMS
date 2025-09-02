@@ -9,7 +9,6 @@ import 'package:leadmanagementsystem/constants/constants.dart';
 import 'package:leadmanagementsystem/constants/size_config.dart';
 import 'package:leadmanagementsystem/controllers/filter_controller.dart';
 import 'package:leadmanagementsystem/controllers/filter_variable_controller.dart';
-import 'package:leadmanagementsystem/controllers/project_controller.dart';
 import 'package:leadmanagementsystem/models/project_model.dart';
 import 'package:leadmanagementsystem/widgets/custom_text_field.dart';
 

@@ -23,4 +23,19 @@ class UrlLauncherHelper {
       customSnackBar("Error", "Unable to make a call to: $phoneNumber");
     }
   }
+
+  static Future<void> openMap(
+      {required double latitude, required double longitude}) async {
+    final googleMapsUrl =
+        "https://www.google.com/maps/search/?api=1&query=$latitude,$longitude";
+    if (await canLaunchUrl(Uri.parse(googleMapsUrl))) {
+      await launchUrl(
+          Uri.parse(
+            googleMapsUrl,
+          ),
+          mode: LaunchMode.externalApplication);
+    } else {
+      throw 'Could not open the map.';
+    }
+  }
 }
