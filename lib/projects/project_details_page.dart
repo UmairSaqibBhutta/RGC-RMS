@@ -55,8 +55,6 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
 
   LoginController loginController = Get.find();
 
-  UrlLauncherHelper launcherHelper = UrlLauncherHelper();
-
   @override
   void initState() {
     super.initState();
@@ -550,7 +548,7 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
   }
 
   Future<void> _downloadFile(String fileUrl) async {
-    launcherHelper.launchURL(fileUrl);
+    UrlLauncherHelper.launchURL(fileUrl);
     // await launchUrl(Uri.parse(fileUrl), mode: LaunchMode.externalApplication);
 
     print('Downloading file from: $fileUrl');
@@ -664,8 +662,8 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
             ),
           if (widget.project.consultantREPhone.isNotNullOrEmpty)
             InkWell(
-              onTap: () => launcherHelper
-                  .makePhoneCall(widget.project.consultantREPhone!),
+              onTap: () => UrlLauncherHelper.makePhoneCall(
+                  widget.project.consultantREPhone!),
               child: _buildInfoCard(
                 context,
                 "Consultant RE Phone",
@@ -684,8 +682,8 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
             ),
           if (widget.project.consultantMEPhone.isNotNullOrEmpty)
             InkWell(
-              onTap: () => launcherHelper
-                  .makePhoneCall(widget.project.consultantMEPhone!),
+              onTap: () => UrlLauncherHelper.makePhoneCall(
+                  widget.project.consultantMEPhone!),
               child: _buildInfoCard(
                 context,
                 "Consultant ME Phone",
@@ -712,8 +710,8 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
             ),
           if (widget.project.contractorMEPhone.isNotNullOrEmpty)
             InkWell(
-              onTap: () => launcherHelper
-                  .makePhoneCall(widget.project.contractorMEPhone!),
+              onTap: () => UrlLauncherHelper.makePhoneCall(
+                  widget.project.contractorMEPhone!),
               child: _buildInfoCard(
                 context,
                 "Contractor ME Phone",
@@ -732,8 +730,8 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
             ),
           if (widget.project.contractorPMPhone.isNotNullOrEmpty)
             InkWell(
-              onTap: () => launcherHelper
-                  .makePhoneCall(widget.project.contractorPMPhone!),
+              onTap: () => UrlLauncherHelper.makePhoneCall(
+                  widget.project.contractorPMPhone!),
               child: _buildInfoCard(
                 context,
                 "Contractor PM Phone",
@@ -776,8 +774,8 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
             ),
           if (widget.project.precourmentPhone.isNotNullOrEmpty)
             InkWell(
-              onTap: () => launcherHelper
-                  .makePhoneCall(widget.project.precourmentPhone!),
+              onTap: () => UrlLauncherHelper.makePhoneCall(
+                  widget.project.precourmentPhone!),
               child: _buildInfoCard(
                 context,
                 "Procurement Officer Phone",
@@ -796,8 +794,8 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
             ),
           if (widget.project.accountOfficerPhone.isNotNullOrEmpty)
             InkWell(
-              onTap: () => launcherHelper
-                  .makePhoneCall(widget.project.accountOfficerPhone!),
+              onTap: () => UrlLauncherHelper.makePhoneCall(
+                  widget.project.accountOfficerPhone!),
               child: _buildInfoCard(
                 context,
                 "Account Officer Phone",
@@ -893,7 +891,7 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
           if (widget.project.personContacts.isNotNullOrEmpty)
             GestureDetector(
               onTap: () {
-                launcherHelper.makePhoneCall(widget.project.personContacts!);
+                UrlLauncherHelper.makePhoneCall(widget.project.personContacts!);
               },
               child: _buildInfoCard(
                 context,

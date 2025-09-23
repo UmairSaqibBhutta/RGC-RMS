@@ -121,7 +121,7 @@ class TaskController extends GetxController {
     }
 
     http.MultipartRequest request =
-        http.MultipartRequest('POST', Uri.parse('${apiBaseUrl}addTask'));
+        http.MultipartRequest('POST', Uri.parse('${baseUrl}addTask'));
 
     loading.value = true;
 

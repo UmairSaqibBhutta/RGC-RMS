@@ -14,6 +14,7 @@ import '../widgets/custom_text_field.dart';
 const appColor = Color(0xFF00a569);
 const whiteColor = Colors.white;
 const blackColor = Colors.black;
+const greyColor = Colors.grey;
 
 const leadColor = Colors.amber;
 const contactedColor = Colors.indigo;
@@ -28,7 +29,8 @@ const String appName = "RGC RMS";
 String checkInString = "CheckIn";
 String checkOutString = "CheckOut";
 
-const apiBaseUrl = 'https://leadmanagementapi.vercel.app/api/';
+const baseUrl = 'http://108.60.209.39:8030/api/';
+// const imageBaseUrl = 'http://108.60.209.39:8030/api/';
 // const apiBaseUrl = 'http://192.168.100.36:4000/api/';
 // const apiBaseUrl =
 //     'http://108.60.209.39:8030/api/'; //! window server testing url

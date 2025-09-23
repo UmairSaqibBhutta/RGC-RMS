@@ -46,9 +46,9 @@ dependencies:
   get: ^4.6.6
   url_launcher: ^6.3.0
   date_time_picker: ^2.1.0
-  flutter_svg: ^1.0.0
+  flutter_svg: ^2.2.0
   flutter_local_notifications: ^18.0.1
-  firebase_messaging: ^14.9.3
+  firebase_messaging: ^14.7.10
   firebase_core: ^2.4.1
   # cloud_firestore: ^4.3.1
   flutter_animate: ^4.5.0
@@ -73,6 +73,8 @@ dependencies:
   docx_template: ^0.4.0
   anim_search_bar: ^2.0.3
   table_calendar: ^3.2.0
+  cloud_firestore: ^4.17.5
+  chatview: ^2.5.0
 
 
   # showcaseview: ^4.0.1

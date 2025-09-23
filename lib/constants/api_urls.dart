@@ -42,4 +42,9 @@ class ApiUrls {
   static const String markAttendance = 'markAttendance';
   static const String getTodayAttendance = 'getTodayAttendance';
   static const String singleUserAttendance = 'singleUserAttendance';
+
+  // chats
+
+  static const String getChatMembers = 'getChat';
+  static const String uploadImage = 'addImage';
 }

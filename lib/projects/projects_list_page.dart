@@ -286,7 +286,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
                                                   "Search anything related to project",
                                               onChanged: (p0) {
                                                 if (p0.isNotEmpty) {
-                                                  searchProject(p0);
+                                                  searchProject();
                                                 } else {
                                                   searchedProjects.clear();
 
@@ -319,13 +319,12 @@ class _ProjectListPageState extends State<ProjectListPage> {
                                                   value: '1',
                                                   onChanged: (val) {
                                                     gvCompanies = val;
-                                                    gvStatues = null;
+                                                    // gvStatues = null;
 
-                                                    searchCont.text = Company
-                                                        .ROOFLINE
-                                                        .toLowerCase();
-                                                    searchProject(
-                                                        searchCont.text);
+                                                    // searchCont.text = Company
+                                                    //     .ROOFLINE
+                                                    //     .toLowerCase();
+                                                    searchProject();
                                                   },
                                                   image: 'roofline.jpg',
                                                   title: Company.ROOFLINE),
@@ -336,13 +335,11 @@ class _ProjectListPageState extends State<ProjectListPage> {
                                                   value: '2',
                                                   onChanged: (val) {
                                                     gvCompanies = val;
-                                                    searchCont.text = Company
-                                                        .RADIANT
-                                                        .toLowerCase();
-                                                    gvStatues = null;
+                                                    // searchCont.text = Company
+                                                    //     .RADIANT
+                                                    //     .toLowerCase();
 
-                                                    searchProject(
-                                                        searchCont.text);
+                                                    searchProject();
                                                   },
                                                   image: 'radiant.png',
                                                   title: Company.RADIANT),
@@ -353,13 +350,11 @@ class _ProjectListPageState extends State<ProjectListPage> {
                                                   value: '3',
                                                   onChanged: (val) {
                                                     gvCompanies = val;
-                                                    searchCont.text = Company
-                                                        .MAMZ
-                                                        .toLowerCase();
-                                                    gvStatues = null;
+                                                    // searchCont.text = Company
+                                                    //     .MAMZ
+                                                    //     .toLowerCase();
 
-                                                    searchProject(
-                                                        searchCont.text);
+                                                    searchProject();
                                                   },
                                                   image: 'mamz.png',
                                                   title: Company.MAMZ)
@@ -383,9 +378,9 @@ class _ProjectListPageState extends State<ProjectListPage> {
                                                   title: l,
                                                   onChanged: (v) {
                                                     gvStatues = v;
-                                                    searchCont.text = v!;
-                                                    gvCompanies = null;
-                                                    searchProject(v);
+                                                    // searchCont.text = v!;
+                                                    // gvCompanies = null;
+                                                    searchProject();
                                                   },
                                                 ),
                                             ],
@@ -412,7 +407,9 @@ class _ProjectListPageState extends State<ProjectListPage> {
                                             ),
                                           ),
                                         if (searchedProjects.isNotEmpty ||
-                                            searchCont.text.isNotEmpty)
+                                            searchCont.text.isNotEmpty ||
+                                            gvCompanies != null ||
+                                            gvStatues != null)
                                           ListView.builder(
                                             physics:
                                                 const NeverScrollableScrollPhysics(),
@@ -592,32 +589,73 @@ class _ProjectListPageState extends State<ProjectListPage> {
           });
   }
 
-  void searchProject(String query) {
-    final lowerQuery = query.toLowerCase().trim();
-    log("project search query = $lowerQuery");
+  void searchProject() {
+    final lowerQuery = searchCont.text.toLowerCase().trim();
+    String company = "";
+    switch (gvCompanies) {
+      case '1':
+        company = Company.ROOFLINE;
+        break;
+      case '2':
+        company = Company.RADIANT;
+        break;
+      case '3':
+        company = Company.MAMZ;
+        break;
+      default:
+        company = "";
+    }
+    final lowerCompany = company.toLowerCase().trim();
+    final lowerStatus = (gvStatues ?? '').toLowerCase().trim();
+
+    log("project search query = $lowerQuery, company = $lowerCompany, status = $lowerStatus");
+
     setState(() {
       searchedProjects = projectsController.allProjects.where((project) {
-        return (project.contractorName ?? '')
-                .toLowerCase()
-                .contains(lowerQuery) ||
-            (project.contractorPMName ?? '')
-                .toLowerCase()
-                .contains(lowerQuery) ||
-            (project.notes ?? '').toLowerCase().contains(lowerQuery) ||
-            (project.description ?? '').toLowerCase().contains(lowerQuery) ||
-            (project.budget ?? '').toLowerCase().contains(lowerQuery) ||
-            (project.title ?? '').toLowerCase().contains(lowerQuery) ||
-            (project.name ?? '').toLowerCase().contains(lowerQuery) ||
-            (project.projectManager ?? '').toLowerCase().contains(lowerQuery) ||
-            (project.location ?? '').toLowerCase().contains(lowerQuery) ||
-            (project.clientName ?? '').toLowerCase().contains(lowerQuery) ||
-            (project.company ?? '').toLowerCase().contains(lowerQuery) ||
-            (project.consultantName ?? '').toLowerCase().contains(lowerQuery) ||
-            (project.creatorName ?? '').toLowerCase().contains(lowerQuery) ||
-            (project.consultantMEName ?? '')
-                .toLowerCase()
-                .contains(lowerQuery) ||
-            (project.status ?? '').toLowerCase().contains(lowerQuery);
+        final contractorName = (project.contractorName ?? '').toLowerCase();
+        final contractorPMName = (project.contractorPMName ?? '').toLowerCase();
+        final notes = (project.notes ?? '').toLowerCase();
+        final description = (project.description ?? '').toLowerCase();
+        final budget = (project.budget ?? '').toLowerCase();
+        final title = (project.title ?? '').toLowerCase();
+        final name = (project.name ?? '').toLowerCase();
+        final projectManager = (project.projectManager ?? '').toLowerCase();
+        final location = (project.location ?? '').toLowerCase();
+        final clientName = (project.clientName ?? '').toLowerCase();
+        final company = (project.company ?? '').toLowerCase();
+        final consultantName = (project.consultantName ?? '').toLowerCase();
+        final creatorName = (project.creatorName ?? '').toLowerCase();
+        final consultantMEName = (project.consultantMEName ?? '').toLowerCase();
+        final status = (project.status ?? '').toLowerCase();
+
+        // ✅ Match text query (optional)
+        final matchesQuery = lowerQuery.isEmpty ||
+            contractorName.contains(lowerQuery) ||
+            contractorPMName.contains(lowerQuery) ||
+            notes.contains(lowerQuery) ||
+            description.contains(lowerQuery) ||
+            budget.contains(lowerQuery) ||
+            title.contains(lowerQuery) ||
+            name.contains(lowerQuery) ||
+            projectManager.contains(lowerQuery) ||
+            location.contains(lowerQuery) ||
+            clientName.contains(lowerQuery) ||
+            company.contains(lowerQuery) ||
+            consultantName.contains(lowerQuery) ||
+            creatorName.contains(lowerQuery) ||
+            consultantMEName.contains(lowerQuery) ||
+            status.contains(lowerQuery);
+
+        // ✅ Company filter (only if selected)
+        final matchesCompany =
+            lowerCompany.isEmpty || company.contains(lowerCompany);
+
+        // ✅ Status filter (only if selected)
+        final matchesStatus =
+            lowerStatus.isEmpty || status.contains(lowerStatus);
+
+        // ✅ Combine all (ignore null/empty filters)
+        return matchesQuery && matchesCompany && matchesStatus;
       }).toList();
     });
   }

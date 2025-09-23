@@ -125,9 +125,7 @@ const notiId = 393;
 
 Future<void> main() async {
   HttpOverrides.global = MyHttpOverrides();
-
   WidgetsFlutterBinding.ensureInitialized();
-
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -142,7 +140,7 @@ Future<void> main() async {
     FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
     return true;
   };
-  
+
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
   projectsController = Get.put(ProjectController(), permanent: true);

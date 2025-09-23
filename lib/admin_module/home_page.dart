@@ -6,12 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 import 'package:leadmanagementsystem/admin_module/admin_drawer.dart';
+import 'package:leadmanagementsystem/controllers/chat_controller.dart';
 import 'package:leadmanagementsystem/controllers/login_controller.dart';
 import 'package:leadmanagementsystem/projects/project_details_page.dart';
 import 'package:leadmanagementsystem/projects/projects_widget.dart';
 import 'package:leadmanagementsystem/constants/constants.dart';
 import 'package:leadmanagementsystem/controllers/project_controller.dart';
 import 'package:leadmanagementsystem/models/project_model.dart';
+import 'package:leadmanagementsystem/screens/chat/chat_page.dart';
 import 'package:leadmanagementsystem/screens/notification_screen.dart';
 import 'package:leadmanagementsystem/widgets/custom_widgets.dart';
 import 'package:leadmanagementsystem/widgets/random_widget.dart';
@@ -30,6 +32,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Animation? animation;
 
   LoginController loginController = Get.put(LoginController());
+
+  final chatCont = Get.put(MyChatController());
 
   @override
   void initState() {
@@ -121,6 +125,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             ),
                           ),
                         ),
+                      ),
+                      InkWell(
+                        onTap: () async {
+                          await chatCont.getChatMembers();
+                          Get.to(const ChatPage());
+                        },
+                        child: Padding(
+                            padding: const EdgeInsets.all(15.0),
+                            child: Image.asset("images/chat.png")),
                       )
                     ],
                     elevation: 0,

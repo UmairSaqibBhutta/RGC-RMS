@@ -8,7 +8,7 @@ import 'package:leadmanagementsystem/constants/constants.dart';
 class CustomGetRequest {
   Future customGetRequest({required String apiPath}) async {
     try {
-      final api = '$apiBaseUrl$apiPath';
+      final api = '$baseUrl$apiPath';
 
       if (kDebugMode) log('api-->$api');
 

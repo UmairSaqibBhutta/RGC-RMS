@@ -244,7 +244,7 @@ class ProjectController extends GetxController {
 
       final multipartRequest = http.MultipartRequest(
         'POST',
-        Uri.parse('${apiBaseUrl}addProject'),
+        Uri.parse('${baseUrl}addProject'),
       );
 
       multipartRequest.fields.addAll({
@@ -463,7 +463,7 @@ class ProjectController extends GetxController {
 
     // Create the multipart request
     http.MultipartRequest request =
-        http.MultipartRequest('POST', Uri.parse('${apiBaseUrl}updateProject'));
+        http.MultipartRequest('POST', Uri.parse('${baseUrl}updateProject'));
 
     // Add fields to the request
     request.fields.addAll({
