@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:leadmanagementsystem/constants/api_urls.dart';
 import 'package:leadmanagementsystem/constants/user_roles.dart';
@@ -13,7 +14,7 @@ class VisitController extends GetxController {
   bool isLoading = false;
 
   updateLoading(bool value) {
-    isLoading = value;
+    firstTimeVisitLoading = value;
     update();
   }
 
@@ -36,6 +37,10 @@ class VisitController extends GetxController {
       return false;
     }
   }
+
+  List<VisitReportDetails> visitDetailWIthPagination = [];
+
+  bool firstTimeVisitLoading= false;
 
   /// Get visit reports
   Future<bool> getVisitReport(
@@ -61,7 +66,7 @@ class VisitController extends GetxController {
     } else {
       id = loginStorage.getUserId();
 
-      url = "${ApiUrls.getVisitReport}/$id";
+      url = "${ApiUrls.getVisitReport}/$id?page=${page}&limit=5";
     }
     try {
       updateLoading(true);
@@ -73,6 +78,9 @@ class VisitController extends GetxController {
       if (responce != null && responce['status'] == true) {
         visitReportModel = VisitReportModel.fromJson(responce);
         visitReportAllModel = visitReportModel;
+
+        visitDetailWIthPagination.addAll(visitReportModel!.data!);
+        update();
         // if (firstDate != null && lastDate != null) {
         //   visitReportAllModel = VisitReportModel.fromJson(responce);
         // }
@@ -82,10 +90,31 @@ class VisitController extends GetxController {
       }
     } catch (e) {
       print("Get Visit Reports Error: ${e.toString()}");
-      updateLoading(false);
+      // updateLoading(false);
 
       return false;
     }
+  }
+
+  ScrollController scrollController = ScrollController();
+  bool hasLoading = false;
+
+  int page = 1;
+
+  paginationData() {
+    scrollController.addListener(() async {
+      if (scrollController.position.pixels >=
+              scrollController.position.maxScrollExtent - 200 &&
+          !hasLoading) {
+        page++;
+        hasLoading = true;
+        update();
+        await getVisitReport();
+
+        hasLoading = false;
+        update();
+      }
+    });
   }
 
   /// Add visit report to the server

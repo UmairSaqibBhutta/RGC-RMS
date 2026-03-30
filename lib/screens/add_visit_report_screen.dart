@@ -36,9 +36,9 @@ class _AddVisitReportScreenState extends State<AddVisitReportScreen> {
     final picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
-      firstDate: DateTime(2025),
-      lastDate: DateTime(2026),
-      builder: (context, child) {
+      firstDate:DateTime.now().subtract(Duration(days: 9650)),
+        lastDate: DateTime.now().add(Duration(days: 9650)),
+                 builder: (context, child) {
         return Theme(
           data: ThemeData.light().copyWith(
             primaryColor: appColor,

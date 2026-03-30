@@ -33,7 +33,7 @@ class ApiUrls {
   /// visit report apis
   ///
   static const String addVisit = 'addVisit';
-  static const String getVisitReport = 'getVisit';
+  static const String getVisitReport = '/getVisit';
   static const String getFilterReport = 'filterVisit';
   static const String addVisitReport = 'addVisitReport';
 
