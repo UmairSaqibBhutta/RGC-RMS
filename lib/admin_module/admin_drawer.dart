@@ -130,14 +130,14 @@ class _AdminDrawerState extends State<AdminDrawer> {
                   },
                   title: "Set Reminder",
                 ),
-                if (loginStorage.getUserRole() == UserRole.CEO)
-                  CustomDrawerItem(
-                    icon: CupertinoIcons.location,
-                    onTap: () {
-                      Get.to(const AdminTrackUsers());
-                    },
-                    title: "Locate Workers",
-                  ),
+                // if (loginStorage.getUserRole() == UserRole.CEO)
+                //   CustomDrawerItem(
+                //     icon: CupertinoIcons.location,
+                //     onTap: () {
+                //       Get.to(const AdminTrackUsers());
+                //     },
+                //     title: "Locate Workers",
+                //   ),
                 if (loginStorage.getUserRole() == UserRole.CEO)
                   CustomDrawerItem(
                     icon: CupertinoIcons.group,

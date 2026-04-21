@@ -30,7 +30,9 @@ String checkInString = "CheckIn";
 String checkOutString = "CheckOut";
 
 // const baseUrl = 'http://108.60.209.39:8030/api/';
+// const baseUrl = 'http://38.247.129.79:8030/api/';
 const baseUrl = 'http://38.247.129.79:8030/api/';
+// http://
 // const imageBaseUrl = 'http://108.60.209.39:8030/api/';
 // const apiBaseUrl = 'http://192.168.100.36:4000/api/';
 // const apiBaseUrl =

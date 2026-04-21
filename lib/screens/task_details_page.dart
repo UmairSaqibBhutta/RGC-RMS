@@ -429,7 +429,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
     };
 
     log("body at check in = $body");
-    taskCont.checkIn(body);
+  await  taskCont.checkIn(body);
   }
 
   Future<void> checkOut() async {
@@ -480,6 +480,6 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
     };
 
     log("body at check out = $body");
-    taskCont.checkOut(body);
+   await taskCont.checkOut(body);
   }
 }
