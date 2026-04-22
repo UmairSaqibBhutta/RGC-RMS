@@ -1,144 +1,198 @@
 import 'dart:developer';
-
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:leadmanagementsystem/constants/api_urls.dart';
-import 'package:leadmanagementsystem/constants/user_roles.dart';
+import 'package:leadmanagementsystem/controllers/project_controller.dart';
 import 'package:leadmanagementsystem/main.dart';
-import 'package:leadmanagementsystem/models/visit_detail_model.dart';
+import 'package:leadmanagementsystem/models/visit_report_model.dart';
 
 class VisitController extends GetxController {
-  VisitReportModel? visitReportModel;
-  VisitReportModel? visitReportAllModel;
+  /// Controllers
+  final townPhaseCont = TextEditingController();
+  final blockCont = TextEditingController();
+  final siteCont = TextEditingController();
+  final gcoCont = TextEditingController();
+  final keyPNCont = TextEditingController();
+  final keyPCCont = TextEditingController();
+  final architectCont = TextEditingController();
+  final callResultCont = TextEditingController();
 
+  /// Loading
   bool isLoading = false;
+  VisitReportModel? visitReportModel;
+  List<VisitData> visitList = [];
 
-  updateLoading(bool value) {
-    firstTimeVisitLoading = value;
-    update();
+  bool isReportLoading = false;
+
+  /// ✅ Validation
+  String? validate() {
+    if (townPhaseCont.text.trim().isEmpty) {
+      return "Town / Phase is required";
+    }
+    if (siteCont.text.trim().isEmpty) {
+      return "Site is required";
+    }
+    if (keyPCCont.text.isNotEmpty && keyPCCont.text.length < 11) {
+      return "Invalid phone number";
+    }
+    return null;
   }
 
-  /// Add visit report to the server
-  Future<bool> addvisit(Map<String, dynamic> body) async {
-    log("Visit Report Body: ${body.toString()}");
+  /// ✅ Create Visit
+  Future<void> submitData() async {
+    final error = validate();
+    if (error != null) {
+      customSnackBar("Error", error);
+      return;
+    }
+
     try {
-      var responce = await postRequest.customPostRequest(
-        url: ApiUrls.addVisit,
+      /// Start loading
+      isLoading = true;
+      update();
+
+      /// Clean payload
+      final Map<String, dynamic> body = {
+        "townPahse": townPhaseCont.text.trim(),
+        if (blockCont.text.trim().isNotEmpty) "block": blockCont.text.trim(),
+        "site": siteCont.text.trim(),
+        if (gcoCont.text.trim().isNotEmpty) "gco": gcoCont.text.trim(),
+        if (keyPNCont.text.trim().isNotEmpty) "keyPN": keyPNCont.text.trim(),
+        if (keyPCCont.text.trim().isNotEmpty) "keyPC": keyPCCont.text.trim(),
+        if (architectCont.text.trim().isNotEmpty)
+          "architect": architectCont.text.trim(),
+        if (callResultCont.text.trim().isNotEmpty)
+          "callResult": callResultCont.text.trim(),
+      };
+
+      log("📤 Create Visit Payload: $body");
+
+      final response = await postRequest.customPostRequest(
+        url: ApiUrls.addNewVisitReport,
         body: body,
       );
 
-      if (responce != null && responce['status'] == true) {
-        return true;
-      } else {
-        return false;
+      log("📥 API Response: $response");
+
+      /// ❌ Handle failure properly
+      if (response == null) {
+        customSnackBar("Error", "No response from server");
+        return;
       }
+
+      if (response['success'] != true) {
+        customSnackBar(
+          "Error",
+          response['message'] ?? "Failed to create visit",
+        );
+        return;
+      }
+
+      /// ✅ Success
+      customSnackBar("Success", response['message'] ?? "Visit Created");
+
+      clearForm();
+      Get.back();
     } catch (e) {
-      print("Visit Report Error: ${e.toString()}");
-      return false;
+      log("❌ Exception: $e");
+      customSnackBar("Error", "Something went wrong");
+    } finally {
+      isLoading = false;
+      update();
     }
   }
 
-  List<VisitReportDetails> visitDetailWIthPagination = [];
+  /// ✅ Clear Form
+  void clearForm() {
+    townPhaseCont.clear();
+    blockCont.clear();
+    siteCont.clear();
+    gcoCont.clear();
+    keyPNCont.clear();
+    keyPCCont.clear();
+    architectCont.clear();
+    callResultCont.clear();
+  }
 
-  bool firstTimeVisitLoading= false;
-
-  /// Get visit reports
-  Future<bool> getVisitReport(
-      {String? userId,
-      String? firstDate,
-      String? lastDate,
-      String? siteName}) async {
-    String? id = userId;
-    if (userId == null && loginStorage.getUserRole() == UserRole.CEO) {
-      id = loginStorage.getUserId();
-    }
-    String url = "";
-    if (firstDate != null ||
-        lastDate != null ||
-        userId != null ||
-        siteName != null) {
-      id ?? "";
-      firstDate ?? "";
-      lastDate ?? "";
-      siteName ?? "";
-      url =
-          "${ApiUrls.getFilterReport}?userId=${id ?? ""}&startDate=${firstDate ?? ""}&endDate=${lastDate ?? ""}&siteName=${siteName ?? ""}";
-    } else {
-      id = loginStorage.getUserId();
-
-      url = "${ApiUrls.getVisitReport}/$id?page=${page}&limit=5";
-    }
+  /// ✅ Update Visit (Check-In / Check-Out)
+  Future<void> updateVisitStatus({
+    required String visitId,
+    String? checkIn,
+    String? checkOut,
+  }) async {
     try {
-      updateLoading(true);
-      var responce = await getRequest.customGetRequest(
-        apiPath: url,
-      );
-      updateLoading(false);
+      isLoading = true;
+      update();
 
-      if (responce != null && responce['status'] == true) {
-        visitReportModel = VisitReportModel.fromJson(responce);
-        visitReportAllModel = visitReportModel;
+      final body = {
+        "visitId": visitId,
+        if (checkIn != null) "checkIn": checkIn,
+        if (checkOut != null) "checkOut": checkOut,
+      };
 
-        visitDetailWIthPagination.addAll(visitReportModel!.data!);
-        update();
-        // if (firstDate != null && lastDate != null) {
-        //   visitReportAllModel = VisitReportModel.fromJson(responce);
-        // }
-        return true;
-      } else {
-        return false;
-      }
+      log("📤 Update Visit Payload: $body");
+
+      // final response = await postRequest.customPostRequest(
+      //   url: ApiUrls.updateVisitStatus, // make sure exists
+      //   body: body,
+      // );
+
+      // log("📥 Update Response: $response");
+
+      // if (response == null || response['success'] != true) {
+      //   customSnackBar(
+      //     "Error",
+      //     response?['message'] ?? "Failed to update visit",
+      //   );
+      //   return;
+      // }
+
+      customSnackBar("Success", "Visit Updated");
     } catch (e) {
-      print("Get Visit Reports Error: ${e.toString()}");
-      // updateLoading(false);
-
-      return false;
+      log("❌ Update Exception: $e");
+      customSnackBar("Error", "Something went wrong");
+    } finally {
+      isLoading = false;
+      update();
     }
   }
 
-  ScrollController scrollController = ScrollController();
-  bool hasLoading = false;
-
-  int page = 1;
-
-  paginationData() {
-    scrollController.addListener(() async {
-      if (scrollController.position.pixels >=
-              scrollController.position.maxScrollExtent - 200 &&
-          !hasLoading) {
-        page++;
-        hasLoading = true;
-        update();
-        await getVisitReport();
-
-        hasLoading = false;
-        update();
-      }
-    });
-  }
-
-  /// Add visit report to the server
-  Future<bool> addvisitReport(Map<String, dynamic> body) async {
-    log("Visit Report Body: ${body.toString()}");
+  Future<void> getVisitReports() async {
     try {
-      var responce = await postRequest.customPostRequest(
-        url: ApiUrls.addVisitReport,
-        body: body,
+      isReportLoading = true;
+      update();
+
+      final response = await getRequest.customGetRequest(
+        apiPath: ApiUrls.getNewVisitReport,
       );
 
-      if (responce != null && responce['status'] == true) {
-        Get.snackbar("Success", "Visit report added successfully");
-        return true;
-      } else {
-        Get.snackbar("Error", "Visit report could not be added");
+      log("📥 Visit Reports Raw: $response");
 
-        return false;
+      if (response == null) {
+        customSnackBar("Error", "No response from server");
+        return;
+      }
+
+      /// ✅ Parse Model
+      visitReportModel = VisitReportModel.fromJson(response);
+
+      /// ✅ Extract list safely
+      visitList = visitReportModel?.data ?? [];
+
+      log("✅ Parsed Visits Count: ${visitList.length}");
+
+      /// Optional: Debug first item
+      if (visitList.isNotEmpty) {
+        log("📌 First Visit Site: ${visitList.first.site}");
+        log("⏱ CheckIn: ${visitList.first.checkIn?.time}");
+        log("⏱ CheckOut: ${visitList.first.checkOut?.time}");
       }
     } catch (e) {
-      Get.snackbar("Error", "Visit report could not be added");
-
-      print("Visit Report Error: ${e.toString()}");
-      return false;
+      log("❌ getVisitReports Exception: $e");
+      customSnackBar("Error", "Failed to fetch visits");
+    } finally {
+      isReportLoading = false;
+      update();
     }
   }
 }
