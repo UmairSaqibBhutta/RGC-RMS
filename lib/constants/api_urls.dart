@@ -41,7 +41,8 @@ class ApiUrls {
 
   static const String addNewVisitReport = 'addNewVisit';
   static const String getNewVisitReport = 'getNewVisit';
-  //
+  static const String visitCheckIn = 'visitCheckIn';
+  static const String visitCheckOut = 'visitCheckOut ';
 
   // Attendance
 

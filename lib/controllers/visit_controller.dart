@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:leadmanagementsystem/constants/api_urls.dart';
+import 'package:leadmanagementsystem/controllers/location_controller.dart';
 import 'package:leadmanagementsystem/controllers/project_controller.dart';
 import 'package:leadmanagementsystem/main.dart';
 import 'package:leadmanagementsystem/models/visit_report_model.dart';
@@ -53,6 +54,7 @@ class VisitController extends GetxController {
 
       /// Clean payload
       final Map<String, dynamic> body = {
+        "userId": loginStorage.getUserId()!,
         "townPahse": townPhaseCont.text.trim(),
         if (blockCont.text.trim().isNotEmpty) "block": blockCont.text.trim(),
         "site": siteCont.text.trim(),
@@ -80,7 +82,7 @@ class VisitController extends GetxController {
         return;
       }
 
-      if (response['success'] != true) {
+      if (response['success'] == false) {
         customSnackBar(
           "Error",
           response['message'] ?? "Failed to create visit",
@@ -88,11 +90,10 @@ class VisitController extends GetxController {
         return;
       }
 
-      /// ✅ Success
-      customSnackBar("Success", response['message'] ?? "Visit Created");
-
+      customSnackBar("Success", response['message'] ?? "Visit Report Added");
       clearForm();
-      Get.back();
+      getVisitReports();
+      Navigator.of(Get.context!).pop();
     } catch (e) {
       log("❌ Exception: $e");
       customSnackBar("Error", "Something went wrong");
@@ -102,7 +103,6 @@ class VisitController extends GetxController {
     }
   }
 
-  /// ✅ Clear Form
   void clearForm() {
     townPhaseCont.clear();
     blockCont.clear();
@@ -114,11 +114,9 @@ class VisitController extends GetxController {
     callResultCont.clear();
   }
 
-  /// ✅ Update Visit (Check-In / Check-Out)
-  Future<void> updateVisitStatus({
+  Future<void> checkInVisit({
     required String visitId,
-    String? checkIn,
-    String? checkOut,
+    required LocationModel locationModel,
   }) async {
     try {
       isLoading = true;
@@ -126,30 +124,88 @@ class VisitController extends GetxController {
 
       final body = {
         "visitId": visitId,
-        if (checkIn != null) "checkIn": checkIn,
-        if (checkOut != null) "checkOut": checkOut,
+        "time": locationModel.address,
+        "lat": locationModel.lat,
+        "long": locationModel.long,
       };
 
-      log("📤 Update Visit Payload: $body");
+      log("📤 Check-In Body: $body");
 
-      // final response = await postRequest.customPostRequest(
-      //   url: ApiUrls.updateVisitStatus, // make sure exists
-      //   body: body,
-      // );
+      final response = await postRequest.customPostRequest(
+        url: ApiUrls.visitCheckIn,
+        body: body,
+      );
 
-      // log("📥 Update Response: $response");
+      log("📥 Check-In Response: $response");
 
-      // if (response == null || response['success'] != true) {
-      //   customSnackBar(
-      //     "Error",
-      //     response?['message'] ?? "Failed to update visit",
-      //   );
-      //   return;
-      // }
+      if (response == null) {
+        customSnackBar("Error", "No response from server");
+        return;
+      }
 
-      customSnackBar("Success", "Visit Updated");
+      if (response['success'] != true) {
+        customSnackBar(
+          "Error",
+          response['message'] ?? "Check-In failed",
+        );
+        return;
+      }
+
+      customSnackBar("Success", "Checked In Successfully");
+
+      getVisitReports();
     } catch (e) {
-      log("❌ Update Exception: $e");
+      log("❌ Check-In Exception: $e");
+      customSnackBar("Error", "Something went wrong");
+    } finally {
+      isLoading = false;
+      update();
+    }
+  }
+
+  Future<void> checkOutVisit({
+    required String visitId,
+    required LocationModel locationModel,
+  }) async {
+    try {
+      isLoading = true;
+      update();
+
+      final body = {
+        "visitId": visitId,
+        "time": locationModel.address,
+        "lat": locationModel.lat,
+        "long": locationModel.long,
+      };
+
+      log("📤 Check-Out Body: $body");
+
+      final response = await postRequest.customPostRequest(
+        url: ApiUrls.visitCheckOut,
+        body: body,
+      );
+
+      log("📥 Check-Out Response: $response");
+
+      if (response == null) {
+        customSnackBar("Error", "No response from server");
+        return;
+      }
+
+      if (response['success'] != true) {
+        customSnackBar(
+          "Error",
+          response['message'] ?? "Check-Out failed",
+        );
+        return;
+      }
+
+      customSnackBar("Success", "Checked Out Successfully");
+
+      /// 🔄 Refresh list
+      await getVisitReports();
+    } catch (e) {
+      log("❌ Check-Out Exception: $e");
       customSnackBar("Error", "Something went wrong");
     } finally {
       isLoading = false;
@@ -184,7 +240,6 @@ class VisitController extends GetxController {
       /// Optional: Debug first item
       if (visitList.isNotEmpty) {
         log("📌 First Visit Site: ${visitList.first.site}");
-        log("⏱ CheckIn: ${visitList.first.checkIn?.time}");
         log("⏱ CheckOut: ${visitList.first.checkOut?.time}");
       }
     } catch (e) {

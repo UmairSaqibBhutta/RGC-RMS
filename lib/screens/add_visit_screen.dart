@@ -4,6 +4,7 @@ import 'package:leadmanagementsystem/constants/constants.dart';
 import 'package:leadmanagementsystem/controllers/visit_controller.dart';
 import 'package:leadmanagementsystem/widgets/custom_button.dart';
 import 'package:leadmanagementsystem/widgets/custom_text_field.dart';
+import 'package:leadmanagementsystem/widgets/custom_widgets.dart';
 
 class AddVisitScreen extends StatefulWidget {
   const AddVisitScreen({super.key});
@@ -23,11 +24,7 @@ class _AddVisitScreenState extends State<AddVisitScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Add Visit"),
-        backgroundColor: appColor,
-      ),
-      backgroundColor: Colors.grey.shade100,
+      appBar: mAppbar("Add Visit Report"),
       body: GetBuilder<VisitController>(
         builder: (cont) {
           return SingleChildScrollView(
@@ -80,7 +77,7 @@ class _AddVisitScreenState extends State<AddVisitScreen> {
                 ),
                 const SizedBox(height: 20),
                 cont.isLoading
-                    ? const CircularProgressIndicator()
+                    ? showSpinkit()
                     : CustomButton(
                         title: "Submit",
                         onTap: cont.submitData,

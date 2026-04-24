@@ -108,4 +108,72 @@ class LocationController extends GetxController {
       Get.snackbar("Failed", "User list could not be fetched");
     }
   }
+
+  Future<LocationModel?> getCurrentAddress() async {
+    try {
+      bool serviceEnabled = await location.serviceEnabled();
+      if (!serviceEnabled) {
+        serviceEnabled = await location.requestService();
+        if (!serviceEnabled) {
+          Get.snackbar("Error", "Location service disabled");
+          return null;
+        }
+      }
+
+      PermissionStatus permission = await location.hasPermission();
+      if (permission == PermissionStatus.denied) {
+        permission = await location.requestPermission();
+        if (permission != PermissionStatus.granted) {
+          Get.snackbar("Error", "Location permission denied");
+          return null;
+        }
+      }
+
+      /// 📍 Get Location
+      LocationData? locationData = await location.getLocation();
+
+      if (locationData == null) {
+        Get.snackbar("Error", "Unable to fetch location");
+        return null;
+      }
+
+      double lat = locationData.latitude!;
+      double long = locationData.longitude!;
+
+      /// 🌍 Convert to Address
+      List<geoCoding.Placemark> placemarks =
+          await geoCoding.placemarkFromCoordinates(lat, long);
+
+      final place = placemarks.first;
+
+      String address =
+          "${place.locality ?? ""} ${place.subLocality ?? ""} ${place.name ?? ""}"
+              .trim();
+
+      log("📍 Current Address: $address");
+
+      /// ✅ Return LocationModel
+      return LocationModel(
+        address: address,
+        lat: lat.toString(),
+        long: long.toString(),
+      );
+    } catch (e) {
+      log("❌ Location Exception: $e");
+      Get.snackbar("Error", "Failed to get location");
+      return null;
+    }
+  }
+}
+
+class LocationModel {
+  String? address;
+  String? lat;
+  String? long;
+
+  LocationModel({
+    this.address,
+    this.lat,
+    this.long,
+  });
 }
