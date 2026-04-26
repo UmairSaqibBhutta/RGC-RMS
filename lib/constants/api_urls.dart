@@ -37,6 +37,13 @@ class ApiUrls {
   static const String getFilterReport = 'filterVisit';
   static const String addVisitReport = 'addVisitReport';
 
+  // new visit report apis
+
+  static const String addNewVisitReport = 'addNewVisit';
+  static const String getNewVisitReport = 'getNewVisit';
+  static const String visitCheckIn = 'visitCheckIn';
+  static const String visitCheckOut = 'visitCheckOut';
+
   // Attendance
 
   static const String markAttendance = 'markAttendance';
@@ -47,4 +54,9 @@ class ApiUrls {
 
   static const String getChatMembers = 'getChat';
   static const String uploadImage = 'addImage';
+
+  // daily distance
+  static const String dailyDistanceCheckIn = 'checkInNew';
+  static const String dailyDistanceCheckOut = 'checkOutNew';
+  static const String getDailyDistance = 'getCheckNew';
 }

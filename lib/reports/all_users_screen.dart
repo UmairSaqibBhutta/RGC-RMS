@@ -189,7 +189,7 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
                                                     margin:
                                                         const EdgeInsets.all(
                                                             10),
-                                                    legend: Legend(
+                                                    legend: const Legend(
                                                       isVisible: true,
                                                       position:
                                                           LegendPosition.bottom,
@@ -256,7 +256,7 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
                                                     margin:
                                                         const EdgeInsets.all(
                                                             10),
-                                                    legend: Legend(
+                                                    legend: const Legend(
                                                       isResponsive: true,
                                                       isVisible: true,
                                                       position:
