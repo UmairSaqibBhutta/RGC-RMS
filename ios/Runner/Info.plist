@@ -45,7 +45,7 @@
 
 		<!-- Camera -->
 		<key>NSCameraUsageDescription</key>
-		<string>This app requires camera access to take photos.</string>
+		<string>This app requires camera access to take photos for chat</string>
 
 		<!-- Location (Foreground only) -->
 		<key>NSLocationWhenInUseUsageDescription</key>
@@ -53,11 +53,11 @@
 
 		<!-- Photos -->
 		<key>NSPhotoLibraryUsageDescription</key>
-		<string>App needs access to photos to upload files.</string>
+		<string>App needs access to photos to upload files for projects or chat.</string>
 
 		<!-- Microphone -->
 		<key>NSMicrophoneUsageDescription</key>
-		<string>This app requires microphone access to record audio.</string>
+		<string>This app requires microphone access to record audio for chat</string>
 
 		<key>UIApplicationSupportsIndirectInputEvents</key>
 		<true />
