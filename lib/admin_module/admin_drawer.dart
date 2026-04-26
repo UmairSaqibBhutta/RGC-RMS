@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:leadmanagementsystem/admin_module/admin_track_users.dart';
 import 'package:leadmanagementsystem/admin_module/managers/managers_page.dart';
 import 'package:leadmanagementsystem/constants/user_roles.dart';
 import 'package:leadmanagementsystem/controllers/drawer_controller.dart';
@@ -10,9 +9,9 @@ import 'package:leadmanagementsystem/main.dart';
 import 'package:leadmanagementsystem/projects/projects_list_page.dart';
 import 'package:leadmanagementsystem/constants/constants.dart';
 import 'package:leadmanagementsystem/reports/reports_main_screen.dart';
-import 'package:leadmanagementsystem/screens/add_visit_screen.dart';
 import 'package:leadmanagementsystem/screens/attendance/employess_list_screen.dart';
 import 'package:leadmanagementsystem/screens/attendance/mark_attendance_screen.dart';
+import 'package:leadmanagementsystem/screens/daily_distance_screen.dart';
 import 'package:leadmanagementsystem/screens/leaves_page.dart';
 import 'package:leadmanagementsystem/screens/login_screen.dart';
 import 'package:leadmanagementsystem/screens/visit_report_screen.dart';
@@ -85,6 +84,15 @@ class _AdminDrawerState extends State<AdminDrawer> {
                   },
                   title: "Visit Plan / Reports",
                 ),
+                CustomDrawerItem(
+                  icon: CupertinoIcons.chart_bar_alt_fill,
+                  onTap: () {
+                    Get.to(const DailyDistanceScreen());
+                    //
+                  },
+                  title: "Distance Calculation",
+                ),
+                //
                 CustomDrawerItem(
                   icon: CupertinoIcons.checkmark_alt,
                   onTap: () {

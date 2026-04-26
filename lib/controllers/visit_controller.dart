@@ -119,6 +119,7 @@ class VisitController extends GetxController {
     required LocationModel locationModel,
   }) async {
     try {
+      // Start loading
       isLoading = true;
       update();
 
@@ -153,13 +154,15 @@ class VisitController extends GetxController {
 
       customSnackBar("Success", "Checked In Successfully");
 
-      getVisitReports();
+      // Refresh visits
+      await getVisitReports();
     } catch (e) {
       log("❌ Check-In Exception: $e");
       customSnackBar("Error", "Something went wrong");
     } finally {
+      // Ensure loading state is reset
       isLoading = false;
-      update();
+      update(); // This is critical to stop showing the loading spinner
     }
   }
 

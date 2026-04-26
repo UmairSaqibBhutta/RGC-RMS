@@ -133,17 +133,11 @@ class _VisitListScreenState extends State<VisitListScreen> {
 
     if (confirm != true) return;
 
-    Get.dialog(
-      const Center(child: CircularProgressIndicator()),
-      barrierDismissible: false,
-    );
-
     try {
       final LocationModel? locationModel =
           await locationController.getCurrentAddress();
 
       if (locationModel == null) {
-        Get.back();
         Get.snackbar(
           "Location Error",
           "Unable to get your current location. Please try again.",
@@ -159,8 +153,6 @@ class _VisitListScreenState extends State<VisitListScreen> {
         locationModel: locationModel,
       );
 
-      Get.back();
-
       Get.snackbar(
         "Checked In ✅",
         "Location recorded successfully.",
@@ -169,10 +161,7 @@ class _VisitListScreenState extends State<VisitListScreen> {
         colorText: Colors.green.shade900,
         icon: const Icon(Icons.check_circle, color: Colors.green),
       );
-
-      controller.getVisitReports();
     } catch (e) {
-      Get.back();
       Get.snackbar(
         "Error",
         "Failed to check in: ${e.toString()}",
@@ -219,17 +208,11 @@ class _VisitListScreenState extends State<VisitListScreen> {
 
     if (confirm != true) return;
 
-    Get.dialog(
-      const Center(child: CircularProgressIndicator()),
-      barrierDismissible: false,
-    );
-
     try {
       final LocationModel? locationModel =
           await locationController.getCurrentAddress();
 
       if (locationModel == null) {
-        Get.back();
         Get.snackbar(
           "Location Error",
           "Unable to get your current location. Please try again.",
@@ -245,8 +228,6 @@ class _VisitListScreenState extends State<VisitListScreen> {
         locationModel: locationModel,
       );
 
-      Get.back();
-
       Get.snackbar(
         "Checked Out ✅",
         "Visit closed successfully.",
@@ -255,10 +236,7 @@ class _VisitListScreenState extends State<VisitListScreen> {
         colorText: Colors.blue.shade900,
         icon: const Icon(Icons.check_circle, color: Colors.blue),
       );
-
-      controller.getVisitReports();
     } catch (e) {
-      Get.back();
       Get.snackbar(
         "Error",
         "Failed to check out: ${e.toString()}",

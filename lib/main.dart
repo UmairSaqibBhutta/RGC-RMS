@@ -186,6 +186,7 @@ class _MyAppState extends State<MyApp> {
           child: child!,
         );
       },
+
       theme: ThemeData(
           primaryColor: appColor,
           fontFamily: GoogleFonts.lato().fontFamily,

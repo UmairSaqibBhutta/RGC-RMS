@@ -132,11 +132,6 @@ class LocationController extends GetxController {
       /// 📍 Get Location
       LocationData? locationData = await location.getLocation();
 
-      if (locationData == null) {
-        Get.snackbar("Error", "Unable to fetch location");
-        return null;
-      }
-
       double lat = locationData.latitude!;
       double long = locationData.longitude!;
 

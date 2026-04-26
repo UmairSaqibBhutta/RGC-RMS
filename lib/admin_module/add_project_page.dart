@@ -89,9 +89,10 @@ class _AddProjectPageState extends State<AddProjectPage> {
     'Mamz Ready Cold Asphalt',
     'Mamz Slurry Seal',
     'Mamz BituLasti',
+    'Aqua Proof RC 18KG Tin',
   ];
 
-  List<String> products = [
+  List<String> radiantProducts = [
     // Admixtures
     'ConAd WP 1000 / Powder Admixture',
     'ConAd WP 682 / Liquid Admixture',
@@ -141,6 +142,7 @@ class _AddProjectPageState extends State<AddProjectPage> {
     'ConTile Bond',
     'ConTile Grout',
     'ConTile Grout EP',
+    'ConAd WP 5000',
   ];
 
   List<String> rooflineProducts = [
@@ -156,6 +158,14 @@ class _AddProjectPageState extends State<AddProjectPage> {
     "ELASTOGRIP RL-300",
     "ELASTOGRIP RL-300",
     "ELASTOGRIP RL-400"
+        "DPC Membrane 9 Inch"
+        "DPC Membrane 4.5 Inch"
+        "DPC Membrane 13 Inch"
+        "DPC Membrane 6 Inch"
+        "Thermaline XPS 1 inch"
+        "Thermaline XPS 1.5 inch"
+        "Thermaline XPS 2 inch"
+        "Thermaline XPS 3 inch"
   ];
 
   List<String> region = ['Centre', 'North', 'South'];
@@ -236,8 +246,8 @@ class _AddProjectPageState extends State<AddProjectPage> {
           if (index >= 0 && index < mamzBool.length) {
             mamzBool[index] = true;
           }
-        } else if (products.contains(element.name)) {
-          int index = products.indexOf(element.name!);
+        } else if (radiantProducts.contains(element.name)) {
+          int index = radiantProducts.indexOf(element.name!);
           if (index >= 0 && index < productsBool.length) {
             productsBool[index] = true;
           }
@@ -288,7 +298,7 @@ class _AddProjectPageState extends State<AddProjectPage> {
 
       // Reset all work scope selections
       mamzBool = List.generate(mamzProducts.length, (index) => false);
-      productsBool = List.generate(products.length, (index) => false);
+      productsBool = List.generate(radiantProducts.length, (index) => false);
       rooflineBool = List.generate(rooflineProducts.length, (index) => false);
 
       projectController.priority.value = ''; // Clear priority
@@ -303,7 +313,7 @@ class _AddProjectPageState extends State<AddProjectPage> {
     super.initState();
 
     mamzBool = List.generate(mamzProducts.length, (index) => false);
-    productsBool = List.generate(products.length, (index) => false);
+    productsBool = List.generate(radiantProducts.length, (index) => false);
     rooflineBool = List.generate(rooflineProducts.length, (index) => false);
 
     getUpdateProjectData();
@@ -571,7 +581,7 @@ class _AddProjectPageState extends State<AddProjectPage> {
                       const Divider(),
                       Wrap(
                         children: [
-                          for (int i = 0; i < products.length; i++)
+                          for (int i = 0; i < radiantProducts.length; i++)
                             ProductsCard(
                                 selected: productsBool[i],
                                 onTap: () {
@@ -579,17 +589,19 @@ class _AddProjectPageState extends State<AddProjectPage> {
 
                                   if (productsBool[i] == true) {
                                     projectController.addWorkScope(
-                                        WorkScopeModel(name: products[i]));
+                                        WorkScopeModel(
+                                            name: radiantProducts[i]));
                                   } else {
                                     projectController.workScope.removeWhere(
                                         (workScope) =>
-                                            workScope.name == products[i]);
+                                            workScope.name ==
+                                            radiantProducts[i]);
                                   }
                                   print(
                                       'products--->${json.encode(projectController.workScope)}');
                                   setState(() {});
                                 },
-                                title: products[i]),
+                                title: radiantProducts[i]),
                         ],
                       ),
                       const Divider(),
