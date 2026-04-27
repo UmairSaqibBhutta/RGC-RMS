@@ -130,45 +130,45 @@ class ProjectController extends GetxController {
 
     String url = '';
 
-    try {
-      url =
-          'getProject?role=${loginStorage.getUserRole()}&company=${loginStorage.getUserCompany()}&userId=${loginStorage.getUserId()}';
+    // try {
+    url =
+        'getProject?role=${loginStorage.getUserRole()}&company=${loginStorage.getUserCompany()}&userId=${loginStorage.getUserId()}';
 
-      print('url--->$url');
+    print('url--->$url');
 
-      final res = await getRequest.customGetRequest(apiPath: url);
-      Navigator.pop(context!);
-      isProjectLoadingClosed = true;
+    final res = await getRequest.customGetRequest(apiPath: url);
+    Navigator.pop(context!);
+    isProjectLoadingClosed = true;
 
-      if (res['status'] != false) {
-        ProjectModel projectModel = ProjectModel.fromJson(res);
-        // projectData.clear();
+    if (res != null && res['status'] != false) {
+      ProjectModel projectModel = ProjectModel.fromJson(res);
+      // projectData.clear();
 
-        var mProjects = projectModel.myProjects ?? [];
-        var aProjects = projectModel.assignedProjects ?? [];
-        var tProjects = projectModel.teamProjects ?? [];
+      var mProjects = projectModel.myProjects ?? [];
+      var aProjects = projectModel.assignedProjects ?? [];
+      var tProjects = projectModel.teamProjects ?? [];
 
-        allProjects = [...mProjects, ...aProjects, ...tProjects];
+      allProjects = [...mProjects, ...aProjects, ...tProjects];
 
-        myProjects.value = sortProjectsByStatus(mProjects);
-        assignedProjects.value = sortProjectsByStatus(aProjects);
-        teamProjects.value = sortProjectsByStatus(tProjects);
+      myProjects.value = sortProjectsByStatus(mProjects);
+      assignedProjects.value = sortProjectsByStatus(aProjects);
+      teamProjects.value = sortProjectsByStatus(tProjects);
 
-        log("myProjects length = ${myProjects.length}");
-        log("assignedProjects length = ${assignedProjects.length}");
-        log("teamProjects length = ${teamProjects.length}");
+      log("myProjects length = ${myProjects.length}");
+      log("assignedProjects length = ${assignedProjects.length}");
+      log("teamProjects length = ${teamProjects.length}");
 
-        _categorizeProjects(myProjects);
+      _categorizeProjects(myProjects);
 
-        return true;
-      } else {
-        Get.snackbar('Error', 'Failed to fetch projects');
-        return false;
-      }
-    } catch (e) {
-      // Get.snackbar('Error', 'Something went wrong. Please try again later.');
+      return true;
+    } else {
+      Get.snackbar('Error', 'Failed to fetch projects');
       return false;
     }
+    // } catch (e) {
+    //   // Get.snackbar('Error', 'Something went wrong. Please try again later.');
+    //   return false;
+    // }
   }
 
   List<ProjectData> sortProjectsByStatus(List<ProjectData> projects) {

@@ -47,8 +47,13 @@ class _DailyDistanceScreenState extends State<DailyDistanceScreen> {
     );
     if (confirm != true) return;
 
+    controller.isCheckInLoading = true;
+    controller.update();
+
     final locationModel = await locationController.getCurrentAddress();
     if (locationModel == null) {
+      controller.isCheckInLoading = false;
+      controller.update();
       Get.snackbar(
         "Location Error",
         "Unable to get your current location. Please try again.",
@@ -96,8 +101,13 @@ class _DailyDistanceScreenState extends State<DailyDistanceScreen> {
     );
     if (confirm != true) return;
 
+    controller.isCheckOutLoading = true;
+    controller.update();
+
     final locationModel = await locationController.getCurrentAddress();
     if (locationModel == null) {
+      controller.isCheckOutLoading = false;
+      controller.update();
       Get.snackbar(
         "Location Error",
         "Unable to get your current location. Please try again.",
@@ -166,23 +176,107 @@ class _DailyDistanceScreenState extends State<DailyDistanceScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  _todaySectionLabel(),
+                  const SizedBox(height: 10),
                   _distanceSummaryCard(cont),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
                   _actionButtons(cont),
-                  const SizedBox(height: 20),
-                  if (cont.hasAnyCheckIn) _checkInHistoryCard(cont),
+                  const SizedBox(height: 16),
+                  if (cont.hasAnyCheckIn) _entriesCard(
+                    title: "Today's Check Ins",
+                    count: cont.todayRecord!.checkIns.length,
+                    entries: cont.todayRecord!.checkIns,
+                    color: Colors.green,
+                    icon: Icons.login,
+                  ),
                   if (cont.hasCheckedOut) ...[
                     const SizedBox(height: 12),
-                    _checkOutHistoryCard(cont),
+                    _entriesCard(
+                      title: "Today's Check Outs",
+                      count: cont.todayRecord!.checkOuts.length,
+                      entries: cont.todayRecord!.checkOuts,
+                      color: Colors.red,
+                      icon: Icons.logout,
+                    ),
                     const SizedBox(height: 12),
                     _dayClosedBanner(),
                   ],
+                  if (cont.historyRecords.isNotEmpty) ...[
+                    const SizedBox(height: 24),
+                    _historySectionLabel(),
+                    const SizedBox(height: 10),
+                    ...cont.historyRecords.map((record) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _historyDateCard(record),
+                      );
+                    }),
+                  ],
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
           );
         },
       ),
+    );
+  }
+
+  Widget _todaySectionLabel() {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: appColor,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.today, size: 14, color: Colors.white),
+              SizedBox(width: 6),
+              Text(
+                "Today",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _historySectionLabel() {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.blueGrey.shade700,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.history, size: 14, color: Colors.white),
+              SizedBox(width: 6),
+              Text(
+                "History",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -261,11 +355,12 @@ class _DailyDistanceScreenState extends State<DailyDistanceScreen> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            "$label: ",
-            style: TextStyle(
-                fontSize: 11, color: color, fontWeight: FontWeight.w500),
-          ),
+          if (label.isNotEmpty)
+            Text(
+              "$label: ",
+              style: TextStyle(
+                  fontSize: 11, color: color, fontWeight: FontWeight.w500),
+            ),
           Text(
             value,
             style: TextStyle(
@@ -362,8 +457,13 @@ class _DailyDistanceScreenState extends State<DailyDistanceScreen> {
     );
   }
 
-  Widget _checkInHistoryCard(DailyDistanceController cont) {
-    final checkIns = cont.todayRecord!.checkIns;
+  Widget _entriesCard({
+    required String title,
+    required int count,
+    required List<DailyDistanceEntry> entries,
+    required Color color,
+    required IconData icon,
+  }) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -374,10 +474,10 @@ class _DailyDistanceScreenState extends State<DailyDistanceScreen> {
           children: [
             Row(
               children: [
-                const Icon(Icons.login, size: 16, color: Colors.green),
+                Icon(icon, size: 16, color: color),
                 const SizedBox(width: 6),
                 Text(
-                  "Check In History (${checkIns.length})",
+                  "$title ($count)",
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 13,
@@ -386,149 +486,160 @@ class _DailyDistanceScreenState extends State<DailyDistanceScreen> {
               ],
             ),
             const SizedBox(height: 10),
-            ...checkIns.asMap().entries.map((entry) {
-              final i = entry.key;
-              final item = entry.value;
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 22,
-                      height: 22,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: Colors.green.shade100,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Text(
-                        "${i + 1}",
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (item.user != null && item.user!.name.isNotEmpty)
-                            Text(
-                              item.user!.name,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          Text(
-                            item.time.isNotEmpty ? item.time : "-",
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                          if (item.lat.isNotEmpty && item.long.isNotEmpty)
-                            Text(
-                              "Lat: ${item.lat}, Long: ${item.long}",
-                              style: const TextStyle(
-                                  fontSize: 10, color: Colors.black45),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }),
+            ...entries.asMap().entries.map((e) =>
+                _entryRow(e.value, e.key, color)),
           ],
         ),
       ),
     );
   }
 
-  Widget _checkOutHistoryCard(DailyDistanceController cont) {
-    final checkOuts = cont.todayRecord!.checkOuts;
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.logout, size: 16, color: Colors.red),
-                const SizedBox(width: 6),
-                Text(
-                  "Check Out History (${checkOuts.length})",
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
+  Widget _entryRow(DailyDistanceEntry item, int index, Color color) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 22,
+            height: 22,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
             ),
-            const SizedBox(height: 10),
-            ...checkOuts.asMap().entries.map((entry) {
-              final i = entry.key;
-              final item = entry.value;
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            child: Text(
+              "${index + 1}",
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Container(
-                      width: 22,
-                      height: 22,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: Colors.red.shade100,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Text(
-                        "${i + 1}",
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.red,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (item.user != null && item.user!.name.isNotEmpty)
-                            Text(
-                              item.user!.name,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          Text(
-                            item.time.isNotEmpty ? item.time : "-",
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                          if (item.lat.isNotEmpty && item.long.isNotEmpty)
-                            Text(
-                              "Lat: ${item.lat}, Long: ${item.long}",
-                              style: const TextStyle(
-                                  fontSize: 10, color: Colors.black45),
-                            ),
-                        ],
+                    Icon(Icons.access_time, size: 12, color: color),
+                    const SizedBox(width: 4),
+                    Text(
+                      item.formattedTime,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: color,
                       ),
                     ),
                   ],
                 ),
-              );
-            }),
+                if (item.address.isNotEmpty) ...[
+                  const SizedBox(height: 3),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.location_on,
+                          size: 12, color: Colors.black45),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          item.address,
+                          style: const TextStyle(
+                              fontSize: 11, color: Colors.black54),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _historyDateCard(DailyDistanceRecord record) {
+    final distKm = record.distanceKm.toStringAsFixed(2);
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+          childrenPadding:
+              const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: appColor.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.calendar_today, size: 18, color: appColor),
+          ),
+          title: Text(
+            record.dateLabel,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+          ),
+          subtitle: Text(
+            "$distKm km  •  ${record.checkIns.length} in  •  ${record.checkOuts.length} out",
+            style: const TextStyle(fontSize: 11, color: Colors.black54),
+          ),
+          children: [
+            if (record.checkIns.isNotEmpty) ...[
+              _historyEntriesBlock(
+                label: "Check Ins",
+                entries: record.checkIns,
+                color: Colors.green,
+                icon: Icons.login,
+              ),
+              const SizedBox(height: 6),
+            ],
+            if (record.checkOuts.isNotEmpty) ...[
+              _historyEntriesBlock(
+                label: "Check Outs",
+                entries: record.checkOuts,
+                color: Colors.red,
+                icon: Icons.logout,
+              ),
+            ],
+            const SizedBox(height: 8),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _historyEntriesBlock({
+    required String label,
+    required List<DailyDistanceEntry> entries,
+    required Color color,
+    required IconData icon,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 13, color: color),
+            const SizedBox(width: 5),
+            Text(
+              "$label (${entries.length})",
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        ...entries.asMap().entries.map((e) => _entryRow(e.value, e.key, color)),
+      ],
     );
   }
 
