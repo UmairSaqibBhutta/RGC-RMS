@@ -184,8 +184,8 @@ class _DailyDistanceScreenState extends State<DailyDistanceScreen> {
                   const SizedBox(height: 16),
                   if (cont.hasAnyCheckIn) _entriesCard(
                     title: "Today's Check Ins",
-                    count: cont.todayRecord!.checkIns.length,
-                    entries: cont.todayRecord!.checkIns,
+                    count: cont.todayCheckIns.length,
+                    entries: cont.todayCheckIns,
                     color: Colors.green,
                     icon: Icons.login,
                   ),
@@ -193,8 +193,8 @@ class _DailyDistanceScreenState extends State<DailyDistanceScreen> {
                     const SizedBox(height: 12),
                     _entriesCard(
                       title: "Today's Check Outs",
-                      count: cont.todayRecord!.checkOuts.length,
-                      entries: cont.todayRecord!.checkOuts,
+                      count: cont.todayCheckOuts.length,
+                      entries: cont.todayCheckOuts,
                       color: Colors.red,
                       icon: Icons.logout,
                     ),
@@ -309,13 +309,13 @@ class _DailyDistanceScreenState extends State<DailyDistanceScreen> {
               children: [
                 _statChip(
                   label: "Check Ins",
-                  value: "${cont.todayRecord?.checkIns.length ?? 0}",
+                  value: "${cont.todayCheckIns.length}",
                   color: Colors.green,
                 ),
                 const SizedBox(width: 10),
                 _statChip(
                   label: "Check Outs",
-                  value: "${cont.todayRecord?.checkOuts.length ?? 0}",
+                  value: "${cont.todayCheckOuts.length}",
                   color: Colors.red,
                 ),
                 const SizedBox(width: 10),

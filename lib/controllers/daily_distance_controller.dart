@@ -102,10 +102,14 @@ class DailyDistanceRecord {
   }
 
   bool get isToday {
-    final d = date;
-    if (d == null) return false;
     final now = DateTime.now();
-    return d.year == now.year && d.month == now.month && d.day == now.day;
+    return checkIns.any((e) {
+      final dt = e.parsedDateTime;
+      return dt != null &&
+          dt.year == now.year &&
+          dt.month == now.month &&
+          dt.day == now.day;
+    });
   }
 
   String get dateLabel {
@@ -120,14 +124,29 @@ class DailyDistanceRecord {
   }
 
   double get distanceKm {
-    final points = [...checkIns, ...checkOuts];
-    if (points.length < 2) return 0.0;
+    // For days with no checkout, calculate distance from check-ins only.
+    final points = checkOuts.isNotEmpty
+        ? [...checkIns, ...checkOuts]
+        : [...checkIns];
+    return calcDistance(points);
+  }
+
+  static double calcDistance(List<DailyDistanceEntry> points) {
+    final sorted = [...points]..sort((a, b) {
+        final da = a.parsedDateTime;
+        final db = b.parsedDateTime;
+        if (da == null && db == null) return 0;
+        if (da == null) return 1;
+        if (db == null) return -1;
+        return da.compareTo(db);
+      });
+    if (sorted.length < 2) return 0.0;
     double total = 0.0;
-    for (int i = 0; i < points.length - 1; i++) {
-      final lat1 = double.tryParse(points[i].lat) ?? 0;
-      final lon1 = double.tryParse(points[i].long) ?? 0;
-      final lat2 = double.tryParse(points[i + 1].lat) ?? 0;
-      final lon2 = double.tryParse(points[i + 1].long) ?? 0;
+    for (int i = 0; i < sorted.length - 1; i++) {
+      final lat1 = double.tryParse(sorted[i].lat) ?? 0;
+      final lon1 = double.tryParse(sorted[i].long) ?? 0;
+      final lat2 = double.tryParse(sorted[i + 1].lat) ?? 0;
+      final lon2 = double.tryParse(sorted[i + 1].long) ?? 0;
       total += _haversineKm(lat1, lon1, lat2, lon2);
     }
     return total;
@@ -154,24 +173,82 @@ class DailyDistanceController extends GetxController {
   List<DailyDistanceRecord> allRecords = [];
   DailyDistanceRecord? todayRecord;
 
-  bool get hasCheckedOut =>
-      todayRecord != null && todayRecord!.checkOuts.isNotEmpty;
+  // Only today's check-ins — guards against multi-day records from a missed checkout.
+  List<DailyDistanceEntry> get todayCheckIns {
+    if (todayRecord == null) return [];
+    final now = DateTime.now();
+    return todayRecord!.checkIns.where((e) {
+      final dt = e.parsedDateTime;
+      return dt != null &&
+          dt.year == now.year &&
+          dt.month == now.month &&
+          dt.day == now.day;
+    }).toList();
+  }
 
-  bool get hasAnyCheckIn =>
-      todayRecord != null && todayRecord!.checkIns.isNotEmpty;
+  // Only today's check-outs — prevents an old checkout from marking today as closed.
+  List<DailyDistanceEntry> get todayCheckOuts {
+    if (todayRecord == null) return [];
+    final now = DateTime.now();
+    return todayRecord!.checkOuts.where((e) {
+      final dt = e.parsedDateTime;
+      return dt != null &&
+          dt.year == now.year &&
+          dt.month == now.month &&
+          dt.day == now.day;
+    }).toList();
+  }
 
-  List<DailyDistanceRecord> get historyRecords =>
-      allRecords.where((r) => !r.isToday).toList()
-        ..sort((a, b) {
-          final da = a.date;
-          final db = b.date;
-          if (da == null && db == null) return 0;
-          if (da == null) return 1;
-          if (db == null) return -1;
-          return db.compareTo(da);
-        });
+  bool get hasCheckedOut => todayCheckOuts.isNotEmpty;
 
-  double get totalDistanceKm => todayRecord?.distanceKm ?? 0.0;
+  bool get hasAnyCheckIn => todayCheckIns.isNotEmpty;
+
+  List<DailyDistanceRecord> get historyRecords {
+    final now = DateTime.now();
+    final Map<String, List<DailyDistanceEntry>> checkInsByDate = {};
+    final Map<String, List<DailyDistanceEntry>> checkOutsByDate = {};
+
+    for (final record in allRecords) {
+      for (final entry in record.checkIns) {
+        final dt = entry.parsedDateTime;
+        if (dt == null) continue;
+        if (dt.year == now.year && dt.month == now.month && dt.day == now.day) continue;
+        final key = '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
+        checkInsByDate.putIfAbsent(key, () => []).add(entry);
+      }
+      for (final entry in record.checkOuts) {
+        final dt = entry.parsedDateTime;
+        if (dt == null) continue;
+        if (dt.year == now.year && dt.month == now.month && dt.day == now.day) continue;
+        final key = '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
+        checkOutsByDate.putIfAbsent(key, () => []).add(entry);
+      }
+    }
+
+    final allDates = {...checkInsByDate.keys, ...checkOutsByDate.keys};
+    final records = allDates
+        .map((key) => DailyDistanceRecord(
+              checkIns: checkInsByDate[key] ?? [],
+              checkOuts: checkOutsByDate[key] ?? [],
+            ))
+        .toList();
+
+    return records..sort((a, b) {
+      final da = a.date;
+      final db = b.date;
+      if (da == null && db == null) return 0;
+      if (da == null) return 1;
+      if (db == null) return -1;
+      return db.compareTo(da);
+    });
+  }
+
+  double get totalDistanceKm {
+    final cins = todayCheckIns;
+    final couts = todayCheckOuts;
+    final points = couts.isNotEmpty ? [...cins, ...couts] : [...cins];
+    return DailyDistanceRecord.calcDistance(points);
+  }
 
   Future<void> getTodayRecord() async {
     try {

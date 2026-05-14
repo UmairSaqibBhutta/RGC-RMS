@@ -5,8 +5,10 @@ import 'package:get/get.dart';
 import 'package:leadmanagementsystem/constants/constants.dart';
 import 'package:leadmanagementsystem/controllers/location_controller.dart';
 import 'package:leadmanagementsystem/controllers/visit_controller.dart';
+import 'package:leadmanagementsystem/main.dart';
 import 'package:leadmanagementsystem/models/visit_report_model.dart';
 import 'package:leadmanagementsystem/screens/add_visit_screen.dart';
+import 'package:leadmanagementsystem/services/visit_pdf_service.dart';
 import 'package:leadmanagementsystem/widgets/custom_widgets.dart';
 
 class VisitListScreen extends StatefulWidget {
@@ -19,6 +21,7 @@ class VisitListScreen extends StatefulWidget {
 class _VisitListScreenState extends State<VisitListScreen> {
   late VisitController controller;
   final locationController = Get.find<LocationController>();
+  bool _isExporting = false;
 
   @override
   void initState() {
@@ -27,6 +30,46 @@ class _VisitListScreenState extends State<VisitListScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       controller.getVisitReports();
     });
+  }
+
+  Future<void> _exportPdf() async {
+    final isCeo = loginStorage.getUserRole() == 'Group Director-CEO';
+    final visits = isCeo
+        ? controller.visitList
+        : controller.visitList
+            .where((v) => v.userId == loginStorage.getUserId())
+            .toList();
+
+    if (visits.isEmpty) {
+      Get.snackbar(
+        'No Data',
+        'No visit reports available to export.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange.shade100,
+        colorText: Colors.orange.shade900,
+      );
+      return;
+    }
+
+    setState(() => _isExporting = true);
+    try {
+      await VisitPdfService.generateAndOpen(
+        visits: visits,
+        reportTitle:
+            isCeo ? 'All Users — Visit Reports' : 'My Visit Reports',
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Export Failed',
+        'Unable to generate PDF. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade100,
+        colorText: Colors.red.shade900,
+        icon: const Icon(Icons.error_outline, color: Colors.red),
+      );
+    } finally {
+      setState(() => _isExporting = false);
+    }
   }
 
   CheckIn? _latestCheckIn(dynamic visit) {
@@ -297,7 +340,31 @@ class _VisitListScreenState extends State<VisitListScreen> {
         backgroundColor: appColor,
         child: const Icon(Icons.add),
       ),
-      appBar: mAppbar("Visit Reports"),
+      appBar: mAppbar(
+        "Visit Reports",
+        action: [
+          _isExporting
+              ? const Padding(
+                  padding: EdgeInsets.all(14),
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: appColor,
+                    ),
+                  ),
+                )
+              : IconButton(
+                  icon: const Icon(
+                    Icons.picture_as_pdf_outlined,
+                    color: appColor,
+                  ),
+                  tooltip: 'Export PDF Report',
+                  onPressed: _exportPdf,
+                ),
+        ],
+      ),
       backgroundColor: Colors.grey.shade100,
       body: GetBuilder<VisitController>(
         builder: (cont) {

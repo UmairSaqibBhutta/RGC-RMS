@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 
@@ -8,7 +7,6 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-// import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -24,88 +22,6 @@ import 'package:leadmanagementsystem/services/custom_post_request.dart';
 import 'package:leadmanagementsystem/constants/size_config.dart';
 import 'package:leadmanagementsystem/storage/login_storage.dart';
 import 'screens/splash_screen.dart';
-// umairbhutta161@gmail.com
-//123456
-
-//asmahsan@gmail.com
-//123456
-
-// @pragma('vm:entry-point')
-// onStart(ServiceInstance service) async {
-//   log("onStart is fired for background service ........");
-//   getRequest = CustomGetRequest();
-//   postRequest = CustomPostRequest();
-//   await Hive.initFlutter();
-//   await Hive.openBox('login_hive');
-//   loginStorage = LoginStorage();
-
-//   if (loginStorage.getUserId() == null) {
-//     return;
-//   }
-
-//   log("onStart fired ........");
-
-//   if (service is AndroidServiceInstance) {
-//     service.on('setAsForeground').listen((event) {
-//       service.setAsForegroundService();
-//     });
-
-//     service.on('setAsBackground').listen((event) {
-//       service.setAsBackgroundService();
-//     });
-//   }
-
-//   if (service is IOSServiceInstance) {}
-
-//   service.on('stopService').listen((event) {
-//     service.stopSelf();
-//   });
-
-//   // bring to foreground
-//   Timer.periodic(const Duration(minutes: 10), (timer) async {
-//     if (service is AndroidServiceInstance) {
-//       AndroidNotificationDetails androidPlatformChannelSpecifics =
-//           const AndroidNotificationDetails(notificationId, notificationDesc,
-//               importance: Importance.max,
-//               priority: Priority.high,
-//               showWhen: false,
-//               icon: '@mipmap/ic_launcher');
-//       if (await service.isForegroundService()) {
-//         await flutterLocalNotificationsPlugin.show(
-//           0,
-//           '$appName - Location Service',
-//           'Tracking your location to improve task updates and management.',
-//           NotificationDetails(android: androidPlatformChannelSpecifics),
-//         );
-//         if (!Get.isRegistered<LocationController>()) {
-//           locationController = Get.put(LocationController());
-//         }
-//         locationController.updateWorkerLocation();
-//       }
-//     }
-
-//     if (service is IOSServiceInstance) {
-//       DarwinNotificationDetails iosPlatformChannelSpecifics =
-//           const DarwinNotificationDetails(
-//         presentAlert: true,
-//         presentBadge: true,
-//         presentSound: true,
-//         badgeNumber: 1,
-//       );
-//       await flutterLocalNotificationsPlugin.show(
-//         0,
-//         '$appName - Location Service',
-//         'Tracking your location to improve task updates and management.',
-//         NotificationDetails(iOS: iosPlatformChannelSpecifics),
-//       );
-//       if (!Get.isRegistered<LocationController>()) {
-//         locationController = Get.put(LocationController());
-//       }
-//       locationController.updateWorkerLocation();
-//     }
-//   });
-// }
-
 late ProjectController projectsController;
 late LocationController locationController;
 
@@ -118,7 +34,6 @@ late LoginStorage loginStorage;
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
-// final bgService = FlutterBackgroundService();
 const String notificationId = 'your channel id';
 const String notificationDesc = 'Show notifications';
 const notiId = 393;

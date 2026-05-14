@@ -157,15 +157,15 @@ class _AddProjectPageState extends State<AddProjectPage> {
     "ELASTOGRIP RL-200",
     "ELASTOGRIP RL-300",
     "ELASTOGRIP RL-300",
-    "ELASTOGRIP RL-400"
-        "DPC Membrane 9 Inch"
-        "DPC Membrane 4.5 Inch"
-        "DPC Membrane 13 Inch"
-        "DPC Membrane 6 Inch"
-        "Thermaline XPS 1 inch"
-        "Thermaline XPS 1.5 inch"
-        "Thermaline XPS 2 inch"
-        "Thermaline XPS 3 inch"
+    "ELASTOGRIP RL-400",
+    "DPC Membrane 9 Inch",
+    "DPC Membrane 4.5 Inch",
+    "DPC Membrane 13 Inch",
+    "DPC Membrane 6 Inch",
+    "Thermaline XPS 1 inch",
+    "Thermaline XPS 1.5 inch",
+    "Thermaline XPS 2 inch",
+    "Thermaline XPS 3 inch",
   ];
 
   List<String> region = ['Centre', 'North', 'South'];
@@ -309,7 +309,6 @@ class _AddProjectPageState extends State<AddProjectPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
 
     mamzBool = List.generate(mamzProducts.length, (index) => false);

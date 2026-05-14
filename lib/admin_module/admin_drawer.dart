@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:leadmanagementsystem/admin_module/managers/managers_page.dart';
+import 'package:leadmanagementsystem/admin_module/view_users_screen.dart';
 import 'package:leadmanagementsystem/constants/user_roles.dart';
 import 'package:leadmanagementsystem/controllers/drawer_controller.dart';
 import 'package:leadmanagementsystem/main.dart';

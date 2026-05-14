@@ -21,6 +21,8 @@ class _ManagersPageState extends State<ManagersPage> {
   final _emailController = TextEditingController();
   final _phoneNumberController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
 
   final _formKey = GlobalKey<FormState>();
 
@@ -78,6 +80,12 @@ class _ManagersPageState extends State<ManagersPage> {
   }
 
   @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: mAppbar("Users"),
@@ -85,6 +93,42 @@ class _ManagersPageState extends State<ManagersPage> {
         padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12.0),
+              child: TextField(
+                controller: _searchController,
+                onChanged: (value) => setState(() => _searchQuery = value),
+                decoration: InputDecoration(
+                  hintText: 'Search by name or email...',
+                  prefixIcon: const Icon(Icons.search, color: appColor),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear, color: Colors.grey),
+                          onPressed: () => setState(() {
+                            _searchController.clear();
+                            _searchQuery = '';
+                          }),
+                        )
+                      : null,
+                  filled: true,
+                  fillColor: Colors.white,
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: appColor, width: 1.5),
+                  ),
+                ),
+              ),
+            ),
             GetBuilder<ManagerController>(
               init: managersCont,
               builder: (controller) {
@@ -94,16 +138,42 @@ class _ManagersPageState extends State<ManagersPage> {
                   return const Center(child: Text('No managers found'));
                 }
 
+                // Computed inside builder — always uses the latest controller
+                // data and the latest _searchQuery from the parent closure.
+                final query = _searchQuery.toLowerCase().trim();
+                final filteredIndices =
+                    List.generate(controller.managersData.length, (i) => i)
+                        .where((i) {
+                  final name =
+                      controller.managersData[i].name.toLowerCase();
+                  final email =
+                      controller.managersData[i].email.toLowerCase();
+                  return name.contains(query) || email.contains(query);
+                }).toList();
+
+                if (filteredIndices.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.only(top: 40.0),
+                    child: Center(
+                      child: Text(
+                        'No users found',
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ),
+                    ),
+                  );
+                }
+
                 return Expanded(
                   child: ListView.builder(
-                    itemCount: controller.managersData.length,
+                    itemCount: filteredIndices.length,
                     itemBuilder: (context, index) {
+                      final i = filteredIndices[index];
                       return ManagerCard(
-                        manager: controller.managersData[index],
+                        manager: controller.managersData[i],
                         onToggleStatus: () => _showConfirmationDialog(
                           context,
-                          controller.managersData[index],
-                          () => _toggleManagerStatus(index),
+                          controller.managersData[i],
+                          () => _toggleManagerStatus(i),
                         ),
                       );
                     },

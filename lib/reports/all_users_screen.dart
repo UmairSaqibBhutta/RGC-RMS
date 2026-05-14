@@ -18,6 +18,8 @@ class AllUsersScreen extends StatefulWidget {
 class _AllUsersScreenState extends State<AllUsersScreen> {
   ReportController reportController = Get.put(ReportController());
   List<bool> isExpand = [];
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   getFunctionality() async {
     await reportController.getAllUsersService();
@@ -33,6 +35,12 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
     super.initState();
     getFunctionality();
     reportController.getAllUsersService();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   List<ChartData> projectData = [];
@@ -60,6 +68,16 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
             ];
           }
 
+          // Computed inside builder — always uses the latest controller
+          // data and the latest _searchQuery from the parent closure.
+          final query = _searchQuery.toLowerCase().trim();
+          final filteredIndices =
+              List.generate(controller.usersData.length, (i) => i).where((i) {
+            final name = controller.usersData[i].name?.toLowerCase() ?? '';
+            final email = controller.usersData[i].email?.toLowerCase() ?? '';
+            return name.contains(query) || email.contains(query);
+          }).toList();
+
           return Scaffold(
               extendBodyBehindAppBar: true,
               appBar: AppBar(
@@ -83,9 +101,59 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              for (int i = 0;
-                                  i < controller.usersData.length;
-                                  i++) ...[
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 12.0),
+                                child: TextField(
+                                  controller: _searchController,
+                                  onChanged: (value) =>
+                                      setState(() => _searchQuery = value),
+                                  decoration: InputDecoration(
+                                    hintText: 'Search by name or email...',
+                                    prefixIcon: const Icon(Icons.search,
+                                        color: appColor),
+                                    suffixIcon: _searchQuery.isNotEmpty
+                                        ? IconButton(
+                                            icon: const Icon(Icons.clear,
+                                                color: Colors.grey),
+                                            onPressed: () => setState(() {
+                                              _searchController.clear();
+                                              _searchQuery = '';
+                                            }),
+                                          )
+                                        : null,
+                                    filled: true,
+                                    fillColor: Colors.white,
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: 0, horizontal: 16),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(
+                                          color: Colors.grey.shade300),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(
+                                          color: appColor, width: 1.5),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              if (filteredIndices.isEmpty)
+                                const Padding(
+                                  padding: EdgeInsets.only(top: 40.0),
+                                  child: Center(
+                                    child: Text(
+                                      'No users found',
+                                      style: TextStyle(
+                                          fontSize: 16, color: Colors.grey),
+                                    ),
+                                  ),
+                                ),
+                              for (int i in filteredIndices) ...[
                                 Padding(
                                   padding:
                                       const EdgeInsets.symmetric(vertical: 8.0),
