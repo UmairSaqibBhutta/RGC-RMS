@@ -46,7 +46,6 @@ class _CustomTextFieldState extends State<CustomTextField> {
   initState() {
     super.initState();
     widget.maxLines ?? 1;
-    // widget.isEnabled ?? true;
   }
 
   @override
@@ -55,61 +54,87 @@ class _CustomTextFieldState extends State<CustomTextField> {
       children: [
         Padding(
           padding: EdgeInsets.all(widget.allSidesPadding ?? 8),
-          child: Container(
-            decoration: BoxDecoration(
-                color: Colors.grey.shade100,
+          child: TextFormField(
+            autofillHints: widget.autofillHints,
+            enabled: widget.isEnabled,
+            keyboardType: widget.inputType,
+            maxLines: widget.maxLines ?? 1,
+            minLines: widget.maxLines ?? 1,
+            onChanged: widget.onChanged,
+            controller: widget.controller,
+            obscureText: widget.obscureText!,
+            validator: widget.onValidate,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Color(0xFF111827),
+              fontWeight: FontWeight.w400,
+            ),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: widget.isEnabled == false
+                  ? const Color(0xFFF3F4F6)
+                  : Colors.white,
+              suffixIconColor: widget.controller != null &&
+                      widget.controller!.text.isNotEmpty
+                  ? appColor
+                  : const Color(0xFF9CA3AF),
+              prefixIconColor: widget.controller != null &&
+                      widget.controller!.text.isNotEmpty
+                  ? appColor
+                  : const Color(0xFF9CA3AF),
+              suffixIcon: widget.suffix == null
+                  ? null
+                  : InkWell(
+                      onTap: widget.suffixOnTap,
+                      child: Icon(widget.suffix)),
+              enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.black12)),
-            child: TextFormField(
-              autofillHints: widget.autofillHints,
-              enabled: widget.isEnabled,
-              keyboardType: widget.inputType,
-              maxLines: widget.maxLines,
-              minLines: widget.maxLines,
-              onChanged: (widget.onChanged),
-              controller: widget.controller,
-              obscureText: widget.obscureText!,
-              validator: widget.onValidate,
-              decoration: InputDecoration(
-                  suffixIconColor: widget.controller!.text.isEmpty ||
-                          widget.controller == null
-                      ? blackColor
-                      : appColor,
-                  prefixIconColor:
-                      widget.controller!.text.isEmpty ? blackColor : appColor,
-                  suffixIcon: widget.suffix == null
-                      ? null
-                      : InkWell(
-                          onTap: (widget.suffixOnTap),
-                          child: Icon(widget.suffix)),
-                  focusedBorder: const OutlineInputBorder(
-                      borderSide: BorderSide(color: Color(0xff00bb6c))),
-                  contentPadding: EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical:
-                          widget.prefixIcon == null || widget.suffix == null
-                              ? 17
-                              : 17),
-                  prefixIcon: widget.prefixIcon == null
-                      ? null
-                      : Icon(
-                          widget.prefixIcon,
-                          color: widget.prefixColor,
-                        ),
-                  border: InputBorder.none,
-                  hintText: widget.hint,
-                  hintStyle: const TextStyle(fontWeight: FontWeight.w400)
-                  // contentPadding: const EdgeInsets.symmetric(horizontal: 10)
-                  ),
+                borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: appColor, width: 1.5),
+              ),
+              disabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: Colors.red),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: Colors.red, width: 1.5),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 14,
+              ),
+              prefixIcon: widget.prefixIcon == null
+                  ? null
+                  : Icon(
+                      widget.prefixIcon,
+                      size: 20,
+                      color: widget.prefixColor,
+                    ),
+              border: InputBorder.none,
+              hintText: widget.hint,
+              hintStyle: const TextStyle(
+                color: Color(0xFF9CA3AF),
+                fontWeight: FontWeight.w400,
+                fontSize: 14,
+              ),
             ),
           ),
         ),
         widget.isRequiredField == true
             ? const Positioned(
                 right: 0,
+                top: 0,
                 child: Text('*',
                     style: TextStyle(
-                        fontSize: 22,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.red)),
               )

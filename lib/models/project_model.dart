@@ -1,14 +1,49 @@
+class ProjectPagination {
+  final int myProjectsTotalPages;
+  final int assignProjectsTotalPages;
+  final int teamProjectsTotalPages;
+
+  ProjectPagination.fromJson(Map<String, dynamic> json)
+      : myProjectsTotalPages = json['myProjectsTotalPages'] ?? 1,
+        assignProjectsTotalPages = json['assignProjectsTotalPages'] ?? 0,
+        teamProjectsTotalPages = json['teamProjectsTotalPages'] ?? 1;
+}
+
+class ProjectCounts {
+  final int myProjectsCount;
+  final int assignProjectsCount;
+  final int teamProjectsCount;
+
+  ProjectCounts.fromJson(Map<String, dynamic> json)
+      : myProjectsCount = json['myProjectsCount'] ?? 0,
+        assignProjectsCount = json['assignProjectsCount'] ?? 0,
+        teamProjectsCount = json['teamProjectsCount'] ?? 0;
+}
+
 class ProjectModel {
   bool? status;
   List<ProjectData>? assignedProjects;
   List<ProjectData>? myProjects;
   List<ProjectData>? teamProjects;
+  ProjectPagination? pagination;
+  ProjectCounts? counts;
 
   ProjectModel(
-      {this.status, this.assignedProjects, this.myProjects, this.teamProjects});
+      {this.status,
+      this.assignedProjects,
+      this.myProjects,
+      this.teamProjects,
+      this.pagination,
+      this.counts});
 
   ProjectModel.fromJson(Map<String, dynamic> json) {
     status = json['status'];
+    pagination = json['pagination'] != null
+        ? ProjectPagination.fromJson(json['pagination'])
+        : null;
+    counts = json['counts'] != null
+        ? ProjectCounts.fromJson(json['counts'])
+        : null;
     if (json['assignProjects'] != null) {
       assignedProjects = <ProjectData>[];
       json['assignProjects'].forEach((v) {

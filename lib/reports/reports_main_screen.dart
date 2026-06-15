@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:leadmanagementsystem/reports/all_users_screen.dart';
 import 'package:leadmanagementsystem/widgets/custom_decoration_container.dart';
@@ -28,7 +27,7 @@ class _ReportsMainScreenState extends State<ReportsMainScreen> {
           child: SafeArea(
         child: Wrap(
           children: [
-            reportCard(FontAwesomeIcons.chartPie, () {
+            reportCard(Icons.pie_chart, () {
               Get.to(const AllUsersScreen());
             }, 'All Users Report'),
           ],

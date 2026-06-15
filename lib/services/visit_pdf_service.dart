@@ -14,8 +14,7 @@ class VisitPdfService {
   static const PdfColor _midGrey = PdfColor(0.5, 0.5, 0.5);
   static const PdfColor _lightGrey = PdfColor(0.95, 0.95, 0.95);
 
-  static String _safe(String? v) =>
-      (v != null && v.isNotEmpty) ? v : '-';
+  static String _safe(String? v) => (v != null && v.isNotEmpty) ? v : '-';
 
   static String _formatDate(String? dateStr) {
     if (dateStr == null || dateStr.isEmpty) return '-';
@@ -75,8 +74,7 @@ class VisitPdfService {
     required String reportTitle,
   }) async {
     final pdf = pw.Document();
-    final generated =
-        DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
+    final generated = DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.now());
 
     pdf.addPage(
       pw.MultiPage(
@@ -102,8 +100,7 @@ class VisitPdfService {
   // Page header / footer
   // ─────────────────────────────────────────────
 
-  static pw.Widget _pageHeader(
-      String title, String generated, int count) {
+  static pw.Widget _pageHeader(String title, String generated, int count) {
     return pw.Container(
       padding: const pw.EdgeInsets.only(bottom: 10),
       decoration: const pw.BoxDecoration(
@@ -126,7 +123,7 @@ class VisitPdfService {
               ),
               pw.Text(
                 title,
-                style: pw.TextStyle(fontSize: 11, color: _darkGrey),
+                style: const pw.TextStyle(fontSize: 11, color: _darkGrey),
               ),
             ],
           ),
@@ -135,11 +132,11 @@ class VisitPdfService {
             children: [
               pw.Text(
                 'Generated: $generated',
-                style: pw.TextStyle(fontSize: 8, color: _midGrey),
+                style: const pw.TextStyle(fontSize: 8, color: _midGrey),
               ),
               pw.Text(
                 'Total Records: $count',
-                style: pw.TextStyle(fontSize: 8, color: _midGrey),
+                style: const pw.TextStyle(fontSize: 8, color: _midGrey),
               ),
             ],
           ),
@@ -159,11 +156,11 @@ class VisitPdfService {
         children: [
           pw.Text(
             'Confidential — RGC RMS Visit Reports',
-            style: pw.TextStyle(fontSize: 7, color: _midGrey),
+            style: const pw.TextStyle(fontSize: 7, color: _midGrey),
           ),
           pw.Text(
             'Page ${ctx.pageNumber} of ${ctx.pagesCount}',
-            style: pw.TextStyle(fontSize: 7, color: _midGrey),
+            style: const pw.TextStyle(fontSize: 7, color: _midGrey),
           ),
         ],
       ),
@@ -190,37 +187,31 @@ class VisitPdfService {
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
           _cardHeader(index, isClosed, visit.createdAt),
-
           if (visit.userDetail != null) ...[
             _sectionLabel('USER INFORMATION'),
             _userSection(visit.userDetail!),
           ],
-
           _sectionLabel('VISIT DETAILS'),
           _visitSection(visit),
-
           if (checkIns.isNotEmpty) ...[
             _sectionLabel(
                 'CHECK-IN HISTORY  (${checkIns.length} record${checkIns.length > 1 ? "s" : ""})'),
             _checkInSection(checkIns),
           ],
-
           _sectionLabel('CHECK-OUT'),
           _checkOutSection(visit.checkOut, isClosed),
-
           _summaryBar(dist, isClosed),
         ],
       ),
     );
   }
 
-  static pw.Widget _cardHeader(
-      int index, bool isClosed, String? createdAt) {
+  static pw.Widget _cardHeader(int index, bool isClosed, String? createdAt) {
     return pw.Container(
       padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-      decoration: pw.BoxDecoration(
+      decoration: const pw.BoxDecoration(
         color: _primary,
-        borderRadius: const pw.BorderRadius.only(
+        borderRadius: pw.BorderRadius.only(
           topLeft: pw.Radius.circular(6),
           topRight: pw.Radius.circular(6),
         ),
@@ -239,11 +230,10 @@ class VisitPdfService {
           pw.Row(
             children: [
               pw.Container(
-                padding: const pw.EdgeInsets.symmetric(
-                    horizontal: 8, vertical: 3),
+                padding:
+                    const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: pw.BoxDecoration(
-                  color:
-                      isClosed ? PdfColors.red400 : PdfColors.green400,
+                  color: isClosed ? PdfColors.red400 : PdfColors.green400,
                   borderRadius: pw.BorderRadius.circular(3),
                 ),
                 child: pw.Text(
@@ -258,7 +248,7 @@ class VisitPdfService {
               pw.SizedBox(width: 10),
               pw.Text(
                 'Created: ${_formatDate(createdAt)}',
-                style: pw.TextStyle(fontSize: 8, color: PdfColors.white),
+                style: const pw.TextStyle(fontSize: 8, color: PdfColors.white),
               ),
             ],
           ),
@@ -270,8 +260,7 @@ class VisitPdfService {
   static pw.Widget _sectionLabel(String text) {
     return pw.Container(
       width: double.infinity,
-      padding:
-          const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 5),
       color: _lightGreen,
       child: pw.Text(
         text,
@@ -296,8 +285,7 @@ class VisitPdfService {
         children: [
           _fieldRow('Name', _safe(u.name), 'Role', _safe(u.role)),
           _fieldRow('Email', _safe(u.email), 'Status', _safe(u.status)),
-          _fieldRow(
-              'Company', _safe(u.company), 'Region', _safe(u.region)),
+          _fieldRow('Company', _safe(u.company), 'Region', _safe(u.region)),
           _fieldRow('Area', _safe(u.area), '', ''),
         ],
       ),
@@ -310,11 +298,10 @@ class VisitPdfService {
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          _fieldRow('Site', _safe(v.site), 'Town / Phase',
-              _safe(v.townPahse)),
+          _fieldRow('Site', _safe(v.site), 'Town / Phase', _safe(v.townPahse)),
           _fieldRow('Block', _safe(v.block), 'GCO', _safe(v.gco)),
-          _fieldRow('Key Person Name', _safe(v.keyPN),
-              'Key Person Contact', _safe(v.keyPC)),
+          _fieldRow('Key Person Name', _safe(v.keyPN), 'Key Person Contact',
+              _safe(v.keyPC)),
           _fieldRow('Architect', _safe(v.architect), 'Call Result',
               _safe(v.callResult)),
           _fieldRow('Created At', _formatDate(v.createdAt), 'Last Updated',
@@ -362,13 +349,13 @@ class VisitPdfService {
                       pw.Text(
                         _safe(ci.time),
                         style:
-                            pw.TextStyle(fontSize: 10, color: _darkGrey),
+                            const pw.TextStyle(fontSize: 10, color: _darkGrey),
                       ),
                       if (ci.lat != null && ci.long != null)
                         pw.Text(
                           'Lat: ${ci.lat}   Long: ${ci.long}',
-                          style: pw.TextStyle(
-                              fontSize: 8, color: _midGrey),
+                          style:
+                              const pw.TextStyle(fontSize: 8, color: _midGrey),
                         ),
                     ],
                   ),
@@ -390,12 +377,12 @@ class VisitPdfService {
               children: [
                 pw.Text(
                   _safe(co.time),
-                  style: pw.TextStyle(fontSize: 10, color: _darkGrey),
+                  style: const pw.TextStyle(fontSize: 10, color: _darkGrey),
                 ),
                 if (co.lat != null && co.long != null)
                   pw.Text(
                     'Lat: ${co.lat}   Long: ${co.long}',
-                    style: pw.TextStyle(fontSize: 8, color: _midGrey),
+                    style: const pw.TextStyle(fontSize: 8, color: _midGrey),
                   ),
               ],
             )
@@ -412,11 +399,10 @@ class VisitPdfService {
 
   static pw.Widget _summaryBar(double dist, bool isClosed) {
     return pw.Container(
-      padding:
-          const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: pw.BoxDecoration(
+      padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: const pw.BoxDecoration(
         color: _lightGrey,
-        borderRadius: const pw.BorderRadius.only(
+        borderRadius: pw.BorderRadius.only(
           bottomLeft: pw.Radius.circular(6),
           bottomRight: pw.Radius.circular(6),
         ),
@@ -449,8 +435,7 @@ class VisitPdfService {
   // Shared layout helper
   // ─────────────────────────────────────────────
 
-  static pw.Widget _fieldRow(
-      String l1, String v1, String l2, String v2) {
+  static pw.Widget _fieldRow(String l1, String v1, String l2, String v2) {
     return pw.Padding(
       padding: const pw.EdgeInsets.only(bottom: 5),
       child: pw.Row(
@@ -469,7 +454,7 @@ class VisitPdfService {
                 ),
                 pw.TextSpan(
                   text: v1,
-                  style: pw.TextStyle(fontSize: 9, color: _darkGrey),
+                  style: const pw.TextStyle(fontSize: 9, color: _darkGrey),
                 ),
               ]),
             ),
@@ -489,7 +474,7 @@ class VisitPdfService {
                   ),
                   pw.TextSpan(
                     text: v2,
-                    style: pw.TextStyle(fontSize: 9, color: _darkGrey),
+                    style: const pw.TextStyle(fontSize: 9, color: _darkGrey),
                   ),
                 ]),
               ),

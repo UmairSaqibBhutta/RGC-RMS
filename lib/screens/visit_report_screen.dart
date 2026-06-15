@@ -22,14 +22,30 @@ class _VisitListScreenState extends State<VisitListScreen> {
   late VisitController controller;
   final locationController = Get.find<LocationController>();
   bool _isExporting = false;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     controller = Get.put(VisitController());
+    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       controller.getVisitReports();
     });
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200 &&
+        !controller.isLoadingMoreVisits) {
+      controller.loadMoreVisits();
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _exportPdf() async {
@@ -377,9 +393,19 @@ class _VisitListScreenState extends State<VisitListScreen> {
           return RefreshIndicator(
             onRefresh: () => cont.getVisitReports(),
             child: ListView.builder(
+              controller: _scrollController,
               padding: const EdgeInsets.all(12),
-              itemCount: cont.visitList.length,
+              itemCount: cont.visitList.length + 1,
               itemBuilder: (context, index) {
+                if (index == cont.visitList.length) {
+                  return cont.isLoadingMoreVisits
+                      ? const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      : const SizedBox.shrink();
+                }
+
                 final visit = cont.visitList[index];
 
                 final CheckIn? latestCheckIn = _latestCheckIn(visit);

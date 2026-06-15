@@ -407,15 +407,28 @@ class PieChart2State extends State<PieChartSample2> {
                         child: Container(
                           height: 180,
                           width: 180,
-                          decoration: const BoxDecoration(
-                              color: Colors.red, shape: BoxShape.circle),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: const Color(0xFFF3F4F6),
+                            border: Border.all(
+                                color: const Color(0xFFE5E7EB), width: 2),
+                          ),
                           child: const Center(
-                            child: Text(
-                              '0',
-                              style: TextStyle(
-                                  fontSize: 120,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.bar_chart_rounded,
+                                    size: 40, color: Color(0xFF9CA3AF)),
+                                SizedBox(height: 4),
+                                Text(
+                                  'No data',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Color(0xFF9CA3AF),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -589,42 +602,39 @@ class CustomStatusButton extends StatefulWidget {
 class _CustomStatusButtonState extends State<CustomStatusButton> {
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: (widget.onTap),
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 6.0),
+      child: InkWell(
+        onTap: widget.onTap,
+        borderRadius: BorderRadius.circular(20),
         child: Container(
-            decoration: BoxDecoration(
-                color: widget.color!.withOpacity(.6),
-                borderRadius: BorderRadius.circular(15),
-                border: Border.all(color: Colors.black12)),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (widget.image != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 5.0),
-                      child: Image.asset(
-                        'images/${widget.image!}',
-                        height: 27,
-                        width: 27,
-                      ),
-                    )
-                  else
-                    const SizedBox(
-                      height: 27,
-                    ),
-                  const SizedBox(width: 15),
-                  Text(
-                    widget.title!,
-                    style: const TextStyle(fontWeight: FontWeight.w500),
-                  ),
-                  const SizedBox(width: 15),
-                ],
+          decoration: BoxDecoration(
+            color: widget.color!.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: widget.color!.withValues(alpha: 0.35)),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 7),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (widget.image != null)
+                Image.asset(
+                  'images/${widget.image!}',
+                  height: 18,
+                  width: 18,
+                ),
+              if (widget.image != null) const SizedBox(width: 6),
+              Text(
+                widget.title!,
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 13,
+                  color: widget.color!.withValues(alpha: 0.85),
+                ),
               ),
-            )),
+            ],
+          ),
+        ),
       ),
     );
   }

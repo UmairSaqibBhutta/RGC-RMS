@@ -45,11 +45,23 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
         body: screens[currentIndex],
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         floatingActionButton: showFloating(),
-        bottomNavigationBar: SizedBox(
+        bottomNavigationBar: Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            border: Border(top: BorderSide(color: Color(0xFFE9EAEC))),
+            boxShadow: [
+              BoxShadow(
+                color: Color(0x14000000),
+                blurRadius: 12,
+                offset: Offset(0, -2),
+              ),
+            ],
+          ),
+          child: SizedBox(
           height: 100,
           child: BottomAppBar(
-            color: Colors.blueAccent.withOpacity(.2),
-            elevation: 1,
+            color: Colors.transparent,
+            elevation: 0,
             notchMargin: 7,
             shape: const CircularNotchedRectangle(),
             child: Row(
@@ -114,7 +126,8 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 
   Widget? showFloating() {
@@ -183,8 +196,14 @@ class _BottomAppBarWidgetState extends State<BottomAppBarWidget> {
             Text(
               widget.title!,
               style: TextStyle(
-                  color: widget.changeIndex ? Colors.white : Colors.black26,
-                  fontSize: 12),
+                color: widget.changeIndex
+                    ? const Color(0xFF00a569)
+                    : const Color(0xFF9CA3AF),
+                fontSize: 11,
+                fontWeight: widget.changeIndex
+                    ? FontWeight.w600
+                    : FontWeight.w400,
+              ),
             )
           ],
         ),

@@ -34,6 +34,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   LoginController loginController = Get.put(LoginController());
 
   final chatCont = Get.put(MyChatController());
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -41,6 +42,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     loginController.getNotifications();
     projectController.getProjects(context);
+
+    _scrollController.addListener(_onScroll);
 
     controller = AnimationController(
       vsync: this,
@@ -54,6 +57,24 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       ),
     );
     controller!.forward().then((_) => controller!.reverse());
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 300) {
+      final type = currentIndex == 0
+          ? 'my'
+          : currentIndex == 1
+              ? 'assigned'
+              : 'team';
+      projectController.loadMoreProjects(type);
+    }
   }
 
   Future<bool> closeFunction() async {
@@ -98,8 +119,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: closeFunction,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) closeFunction();
+      },
       child: GetBuilder(
           init: loginController,
           builder: (cont) {
@@ -116,12 +140,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           Get.to(const NotificationScreen());
                         },
                         child: Padding(
-                          padding: const EdgeInsets.all(15.0),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12.0, vertical: 16),
                           child: Badge.count(
                             count: cont.notificationCount ?? 0,
                             child: const Icon(
-                              Icons.notifications,
-                              size: 27,
+                              Icons.notifications_outlined,
+                              size: 24,
+                              color: Color(0xFF111827),
                             ),
                           ),
                         ),
@@ -132,31 +158,33 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           Get.to(const ChatPage());
                         },
                         child: Padding(
-                            padding: const EdgeInsets.all(15.0),
-                            child: Image.asset("images/chat.png")),
-                      )
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12.0, vertical: 16),
+                          child: Image.asset("images/chat.png", height: 24),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
                     ],
                     elevation: 0,
                     centerTitle: true,
-                    backgroundColor: Colors.transparent,
+                    backgroundColor: Colors.white,
                     title: const Text(
                       'Dashboard',
-                      style: TextStyle(color: Colors.black),
+                      style: TextStyle(
+                        color: Color(0xFF111827),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 17,
+                      ),
+                    ),
+                    bottom: const PreferredSize(
+                      preferredSize: Size.fromHeight(1),
+                      child: Divider(height: 1, color: Color(0xFFE9EAEC)),
                     ),
                   ),
                   drawer: const AdminDrawer(),
-                  body: Container(
-                      height: Get.height,
-                      width: Get.width,
-                      decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                              begin: Alignment.topRight,
-                              colors: [
-                            Colors.brown.withOpacity(.2),
-                            Colors.blue.withOpacity(.1)
-                          ])),
-                      child: SafeArea(
+                  body: SafeArea(
                         child: SingleChildScrollView(
+                          controller: _scrollController,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -553,60 +581,31 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                   ),
                                   Obx(() {
                                     return Positioned(
-                                      right: 30,
-                                      child: Container(
-                                        decoration: const BoxDecoration(
-                                            color: Colors.blueAccent,
-                                            shape: BoxShape.circle),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Text(
-                                            projectController
-                                                .teamProjects.length
-                                                .toString(),
-                                            style: const TextStyle(
-                                                color: Colors.white),
-                                          ),
-                                        ),
+                                      right: 24,
+                                      top: 4,
+                                      child: _countBadge(
+                                        projectController.teamProjectsCount.value,
+                                        const Color(0xFF6366F1),
                                       ),
                                     );
                                   }),
                                   Obx(() {
                                     return Positioned(
-                                      left: Get.width * .45,
-                                      child: Container(
-                                        decoration: const BoxDecoration(
-                                            color: Colors.amber,
-                                            shape: BoxShape.circle),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Text(
-                                            projectController
-                                                .assignedProjects.length
-                                                .toString(),
-                                            style: const TextStyle(
-                                                color: Colors.white),
-                                          ),
-                                        ),
+                                      left: Get.width * .44,
+                                      top: 4,
+                                      child: _countBadge(
+                                        projectController.assignedProjectsCount.value,
+                                        const Color(0xFFF59E0B),
                                       ),
                                     );
                                   }),
                                   Obx(() {
                                     return Positioned(
-                                      left: 30,
-                                      child: Container(
-                                        decoration: const BoxDecoration(
-                                            color: appColor,
-                                            shape: BoxShape.circle),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Text(
-                                            projectController.myProjects.length
-                                                .toString(),
-                                            style: const TextStyle(
-                                                color: Colors.white),
-                                          ),
-                                        ),
+                                      left: 24,
+                                      top: 4,
+                                      child: _countBadge(
+                                        projectController.myProjectsCount.value,
+                                        appColor,
                                       ),
                                     );
                                   })
@@ -723,6 +722,25 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                       )
                                   ]);
                                 }),
+                              Obx(() {
+                                final isLoading = currentIndex == 0
+                                    ? projectController
+                                        .isLoadingMoreMyProjects.value
+                                    : currentIndex == 1
+                                        ? projectController
+                                            .isLoadingMoreAssigned.value
+                                        : projectController
+                                            .isLoadingMoreTeam.value;
+                                return isLoading
+                                    ? const Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            vertical: 16),
+                                        child: Center(
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                      )
+                                    : const SizedBox.shrink();
+                              }),
                             ],
                           ),
                         ),
@@ -730,9 +748,27 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           .animate()
                           .fadeIn(duration: 600.ms)
                           .then(delay: 200.ms) // baseline=800ms
-                          .slideY()),
+                          .slideY(),
                 ));
           }),
+    );
+  }
+
+  Widget _countBadge(int count, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        count.toString(),
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
   }
 

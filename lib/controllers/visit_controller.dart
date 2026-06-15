@@ -25,6 +25,12 @@ class VisitController extends GetxController {
 
   bool isReportLoading = false;
 
+  /// Pagination
+  int _visitPage = 1;
+  int _visitTotalPages = 1;
+  bool isLoadingMoreVisits = false;
+  static const int _limit = 10;
+
   /// ✅ Validation
   String? validate() {
     if (townPhaseCont.text.trim().isEmpty) {
@@ -218,11 +224,13 @@ class VisitController extends GetxController {
 
   Future<void> getVisitReports() async {
     try {
+      _visitPage = 1;
       isReportLoading = true;
       update();
 
       final response = await getRequest.customGetRequest(
-        apiPath: ApiUrls.getNewVisitReport,
+        apiPath:
+            "${ApiUrls.getNewVisitReport}/${loginStorage.getUserId()!}?page=$_visitPage&limit=$_limit",
       );
 
       log("📥 Visit Reports Raw: $response");
@@ -234,13 +242,13 @@ class VisitController extends GetxController {
 
       /// ✅ Parse Model
       visitReportModel = VisitReportModel.fromJson(response);
+      _visitTotalPages = visitReportModel?.pagination?.totalPages ?? 1;
 
       /// ✅ Extract list safely
       visitList = visitReportModel?.data ?? [];
 
-      log("✅ Parsed Visits Count: ${visitList.length}");
+      log("✅ Parsed Visits Count: ${visitList.length}, Total Pages: $_visitTotalPages");
 
-      /// Optional: Debug first item
       if (visitList.isNotEmpty) {
         log("📌 First Visit Site: ${visitList.first.site}");
         log("⏱ CheckOut: ${visitList.first.checkOut?.time}");
@@ -250,6 +258,33 @@ class VisitController extends GetxController {
       customSnackBar("Error", "Failed to fetch visits");
     } finally {
       isReportLoading = false;
+      update();
+    }
+  }
+
+  Future<void> loadMoreVisits() async {
+    if (_visitPage >= _visitTotalPages || isLoadingMoreVisits) return;
+
+    _visitPage++;
+    isLoadingMoreVisits = true;
+    update();
+
+    try {
+      final response = await getRequest.customGetRequest(
+        apiPath:
+            "${ApiUrls.getNewVisitReport}/${loginStorage.getUserId()!}?page=$_visitPage&limit=$_limit",
+      );
+
+      if (response != null) {
+        final moreModel = VisitReportModel.fromJson(response);
+        final moreList = moreModel.data ?? [];
+        visitList = [...visitList, ...moreList];
+        log("✅ Loaded More Visits: ${moreList.length}, Page: $_visitPage");
+      }
+    } catch (e) {
+      log("❌ loadMoreVisits Exception: $e");
+    } finally {
+      isLoadingMoreVisits = false;
       update();
     }
   }

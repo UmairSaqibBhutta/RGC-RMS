@@ -6,13 +6,21 @@ AppBar mAppbar(String text, {List<Widget>? action, Color? backgroundColor}) {
   return AppBar(
     title: Text(
       text,
-      style: const TextStyle(color: blackColor),
+      style: const TextStyle(
+        color: Color(0xFF111827),
+        fontWeight: FontWeight.w600,
+        fontSize: 17,
+      ),
     ),
     centerTitle: true,
     elevation: 0,
-    backgroundColor: backgroundColor ?? Colors.transparent,
-    iconTheme: const IconThemeData(color: Colors.black),
+    backgroundColor: backgroundColor ?? Colors.white,
+    iconTheme: const IconThemeData(color: Color(0xFF111827)),
     actions: action,
+    bottom: const PreferredSize(
+      preferredSize: Size.fromHeight(1),
+      child: Divider(height: 1, color: Color(0xFFE9EAEC)),
+    ),
   );
 }
 
@@ -22,7 +30,10 @@ Text titleText(String text,
     text,
     softWrap: true,
     style: TextStyle(
-        fontSize: fontSize ?? 18, fontWeight: fontWeight ?? FontWeight.bold),
+      fontSize: fontSize ?? 16,
+      fontWeight: fontWeight ?? FontWeight.w600,
+      color: color ?? const Color(0xFF111827),
+    ),
   );
 }
 
@@ -50,7 +61,6 @@ class LoadingDialog extends StatelessWidget {
   }
 }
 
-
 Future<DateTime?> pickDate({
   required BuildContext context,
   DateTime? initialDate,
@@ -71,7 +81,7 @@ Future<DateTime?> pickDate({
             onPrimary: Colors.white,
             onSurface: Colors.black,
           ),
-          dialogBackgroundColor: Colors.white,
+          dialogTheme: DialogThemeData(backgroundColor: Colors.white),
         ),
         child: child!,
       );

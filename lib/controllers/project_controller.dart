@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
-import 'package:file_picker/file_picker.dart';
+// import 'package:file_picker/file_picker.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
@@ -49,6 +49,24 @@ class ProjectController extends GetxController {
   var assignedProjects = <ProjectData>[].obs;
   var teamProjects = <ProjectData>[].obs;
   var allProjects = <ProjectData>[];
+
+  // Genuine counts from API (not affected by pagination)
+  var myProjectsCount = 0.obs;
+  var assignedProjectsCount = 0.obs;
+  var teamProjectsCount = 0.obs;
+
+  // Pagination tracking per tab
+  int _myProjectsPage = 1;
+  int _assignedProjectsPage = 1;
+  int _teamProjectsPage = 1;
+
+  int _myProjectsTotalPages = 1;
+  int _assignedProjectsTotalPages = 0;
+  int _teamProjectsTotalPages = 1;
+
+  var isLoadingMoreMyProjects = false.obs;
+  var isLoadingMoreAssigned = false.obs;
+  var isLoadingMoreTeam = false.obs;
 
   var lead = <ProjectData>[].obs;
   var contacted = <ProjectData>[].obs;
@@ -108,15 +126,15 @@ class ProjectController extends GetxController {
   var fileName = ''.obs;
 
   Future<void> addFileFunction() async {
-    final filePick = await FilePicker.platform.pickFiles(allowMultiple: false);
+    // final filePick = await FilePicker.platform.pickFiles(allowMultiple: false);
 
-    if (filePick != null && filePick.files.isNotEmpty) {
-      final pickedFile = filePick.files.first;
-      filePath.value = pickedFile.path ?? '';
-      fileName.value = pickedFile.name;
+    // if (filePick != null && filePick.files.isNotEmpty) {
+    //   final pickedFile = filePick.files.first;
+    //   filePath.value = pickedFile.path ?? '';
+    //   fileName.value = pickedFile.name;
 
-      log(" filePath.value = = ${filePath.value}");
-    }
+    //   log(" filePath.value = = ${filePath.value}");
+    // }
   }
 
   addWorkScope(WorkScopeModel workScopeModel) {
@@ -128,25 +146,40 @@ class ProjectController extends GetxController {
       alertDialogueWithLoader(context);
     });
 
-    String url = '';
+    // Reset pagination to page 1
+    _myProjectsPage = 1;
+    _assignedProjectsPage = 1;
+    _teamProjectsPage = 1;
 
-    // try {
-    url =
-        'getProject?role=${loginStorage.getUserRole()}&company=${loginStorage.getUserCompany()}&userId=${loginStorage.getUserId()}';
-
-    print('url--->$url');
+    final url =
+        'getProject?role=${loginStorage.getUserRole()}&company=${loginStorage.getUserCompany()}&userId=${loginStorage.getUserId()}&page=1&limit=10';
 
     final res = await getRequest.customGetRequest(apiPath: url);
     Navigator.pop(context!);
     isProjectLoadingClosed = true;
 
     if (res != null && res['status'] != false) {
-      ProjectModel projectModel = ProjectModel.fromJson(res);
-      // projectData.clear();
+      final projectModel = ProjectModel.fromJson(res);
 
-      var mProjects = projectModel.myProjects ?? [];
-      var aProjects = projectModel.assignedProjects ?? [];
-      var tProjects = projectModel.teamProjects ?? [];
+      // Store pagination totals
+      if (projectModel.pagination != null) {
+        _myProjectsTotalPages = projectModel.pagination!.myProjectsTotalPages;
+        _assignedProjectsTotalPages =
+            projectModel.pagination!.assignProjectsTotalPages;
+        _teamProjectsTotalPages =
+            projectModel.pagination!.teamProjectsTotalPages;
+      }
+
+      // Store genuine counts from API
+      if (projectModel.counts != null) {
+        myProjectsCount.value = projectModel.counts!.myProjectsCount;
+        assignedProjectsCount.value = projectModel.counts!.assignProjectsCount;
+        teamProjectsCount.value = projectModel.counts!.teamProjectsCount;
+      }
+
+      final mProjects = projectModel.myProjects ?? [];
+      final aProjects = projectModel.assignedProjects ?? [];
+      final tProjects = projectModel.teamProjects ?? [];
 
       allProjects = [...mProjects, ...aProjects, ...tProjects];
 
@@ -154,9 +187,9 @@ class ProjectController extends GetxController {
       assignedProjects.value = sortProjectsByStatus(aProjects);
       teamProjects.value = sortProjectsByStatus(tProjects);
 
-      log("myProjects length = ${myProjects.length}");
-      log("assignedProjects length = ${assignedProjects.length}");
-      log("teamProjects length = ${teamProjects.length}");
+      log("myProjects length = ${myProjects.length}, total = ${myProjectsCount.value}");
+      log("assignedProjects length = ${assignedProjects.length}, total = ${assignedProjectsCount.value}");
+      log("teamProjects length = ${teamProjects.length}, total = ${teamProjectsCount.value}");
 
       _categorizeProjects(myProjects);
 
@@ -165,10 +198,77 @@ class ProjectController extends GetxController {
       Get.snackbar('Error', 'Failed to fetch projects');
       return false;
     }
-    // } catch (e) {
-    //   // Get.snackbar('Error', 'Something went wrong. Please try again later.');
-    //   return false;
-    // }
+  }
+
+  Future<void> loadMoreProjects(String type) async {
+    int page;
+
+    if (type == 'my') {
+      if (_myProjectsPage >= _myProjectsTotalPages ||
+          isLoadingMoreMyProjects.value) {
+        return;
+      }
+      _myProjectsPage++;
+      isLoadingMoreMyProjects.value = true;
+      page = _myProjectsPage;
+    } else if (type == 'assigned') {
+      if (_assignedProjectsPage >= _assignedProjectsTotalPages ||
+          isLoadingMoreAssigned.value) {
+        return;
+      }
+      _assignedProjectsPage++;
+      isLoadingMoreAssigned.value = true;
+      page = _assignedProjectsPage;
+    } else {
+      if (_teamProjectsPage >= _teamProjectsTotalPages ||
+          isLoadingMoreTeam.value) {
+        return;
+      }
+      _teamProjectsPage++;
+      isLoadingMoreTeam.value = true;
+      page = _teamProjectsPage;
+    }
+
+    final url =
+        'getProject?role=${loginStorage.getUserRole()}&company=${loginStorage.getUserCompany()}&userId=${loginStorage.getUserId()}&page=$page&limit=10';
+
+    final res = await getRequest.customGetRequest(apiPath: url);
+
+    if (res != null && res['status'] != false) {
+      final projectModel = ProjectModel.fromJson(res);
+
+      if (type == 'my') {
+        final mProjects = projectModel.myProjects ?? [];
+        final sorted = sortProjectsByStatus(mProjects);
+        myProjects.addAll(sorted);
+        allProjects = [...allProjects, ...mProjects];
+        isLoadingMoreMyProjects.value = false;
+      } else if (type == 'assigned') {
+        final aProjects = projectModel.assignedProjects ?? [];
+        final sorted = sortProjectsByStatus(aProjects);
+        assignedProjects.addAll(sorted);
+        allProjects = [...allProjects, ...aProjects];
+        isLoadingMoreAssigned.value = false;
+      } else {
+        final tProjects = projectModel.teamProjects ?? [];
+        final sorted = sortProjectsByStatus(tProjects);
+        teamProjects.addAll(sorted);
+        allProjects = [...allProjects, ...tProjects];
+        isLoadingMoreTeam.value = false;
+      }
+    } else {
+      // Revert page on failure
+      if (type == 'my') {
+        _myProjectsPage--;
+        isLoadingMoreMyProjects.value = false;
+      } else if (type == 'assigned') {
+        _assignedProjectsPage--;
+        isLoadingMoreAssigned.value = false;
+      } else {
+        _teamProjectsPage--;
+        isLoadingMoreTeam.value = false;
+      }
+    }
   }
 
   List<ProjectData> sortProjectsByStatus(List<ProjectData> projects) {

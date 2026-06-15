@@ -142,129 +142,125 @@ class _CustomDialogState extends State<CustomDialog> {
                     padding: const EdgeInsets.all(8.0),
                     child: Container(
                       decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                              end: Alignment.topLeft,
-                              begin: Alignment.topRight,
-                              colors: [
-                                Colors.blue.shade50,
-                                Colors.blue.shade50
-                              ]),
-                          border: Border.all(color: Colors.black26),
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(20)),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFE9EAEC)),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x1A000000),
+                              blurRadius: 24,
+                              offset: Offset(0, 8),
+                            )
+                          ]),
                       child: Padding(
-                        padding: const EdgeInsets.all(8.0),
+                        padding: const EdgeInsets.all(20.0),
                         child: SingleChildScrollView(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Padding(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 12.0, vertical: 10),
-                                child: Text('Update Account',
-                                    style: TextStyle(
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.w500)),
+                              const Text('Update Account',
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF111827))),
+                              const SizedBox(height: 16),
+                              CustomTextField(controller: name, hint: 'Name'),
+                              CustomTextField(controller: email, hint: 'Email'),
+                              CustomTextField(controller: phone, hint: 'Phone'),
+                              const SizedBox(height: 12),
+                              Container(
+                                decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                        color: const Color(0xFFE5E7EB))),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12.0),
+                                child: DropdownButton(
+                                    underline: const SizedBox.shrink(),
+                                    isExpanded: true,
+                                    hint: Text(status ?? ''),
+                                    items: statusList.map((e) {
+                                      return DropdownMenuItem(
+                                          onTap: () {
+                                            status = e;
+                                            setState(() {});
+                                          },
+                                          value: e,
+                                          child: Text(e));
+                                    }).toList(),
+                                    onChanged: (_) {}),
                               ),
-                              CustomTextField(controller: name),
-                              CustomTextField(controller: email),
-                              CustomTextField(controller: phone),
-                              const SizedBox(height: 5),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8.0),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(10)),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0),
-                                    child: DropdownButton(
-                                        underline: const SizedBox.shrink(),
-                                        isExpanded: true,
-                                        hint: Text(status ?? ''),
-                                        items: statusList.map((e) {
-                                          return DropdownMenuItem(
-                                              onTap: () {
-                                                status = e;
-                                                setState(() {});
-                                              },
-                                              value: e,
-                                              child: Text(e));
-                                        }).toList(),
-                                        onChanged: (_) {}),
-                                  ),
-                                ),
+                              const SizedBox(height: 12),
+                              Container(
+                                decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                        color: const Color(0xFFE5E7EB))),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12.0),
+                                child: DropdownButton(
+                                    underline: const SizedBox.shrink(),
+                                    isExpanded: true,
+                                    hint: Text(role ?? ''),
+                                    items: roleList.map((e) {
+                                      return DropdownMenuItem(
+                                          onTap: () {
+                                            role = e;
+                                            setState(() {});
+                                          },
+                                          value: e,
+                                          child: Text(e));
+                                    }).toList(),
+                                    onChanged: (_) {}),
                               ),
                               const SizedBox(height: 16),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8.0),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(10)),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0),
-                                    child: DropdownButton(
-                                        underline: const SizedBox.shrink(),
-                                        isExpanded: true,
-                                        hint: Text(role ?? ''),
-                                        items: roleList.map((e) {
-                                          return DropdownMenuItem(
-                                              onTap: () {
-                                                role = e;
-                                                setState(() {});
-                                              },
-                                              value: e,
-                                              child: Text(e));
-                                        }).toList(),
-                                        onChanged: (_) {}),
-                                  ),
-                                ),
-                              ),
                               Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
-                                  const Spacer(),
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: ElevatedButton(
-                                        onPressed: () {
-                                          Get.back();
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.red),
-                                        child: const Text('Cancel')),
+                                  TextButton(
+                                    onPressed: () {
+                                      Get.back();
+                                    },
+                                    child: const Text('Cancel',
+                                        style: TextStyle(
+                                            color: Color(0xFF6B7280))),
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child:
-                                        controller.editManagersLoading == true
-                                            ? const CircularProgressIndicator()
-                                            : ElevatedButton(
-                                                onPressed: () {
-                                                  Map<String, dynamic> body = {
-                                                    'userId': widget.manager.id,
-                                                    'email': email.text.trim(),
-                                                    'name': name.text.trim(),
-                                                    'role': role,
-                                                    'status': status,
-                                                    'phone': phone.text.trim(),
-                                                  };
+                                  const SizedBox(width: 8),
+                                  controller.editManagersLoading == true
+                                      ? const SizedBox(
+                                          height: 20,
+                                          width: 20,
+                                          child: CircularProgressIndicator(
+                                              strokeWidth: 2, color: appColor))
+                                      : ElevatedButton(
+                                          onPressed: () {
+                                            Map<String, dynamic> body = {
+                                              'userId': widget.manager.id,
+                                              'email': email.text.trim(),
+                                              'name': name.text.trim(),
+                                              'role': role,
+                                              'status': status,
+                                              'phone': phone.text.trim(),
+                                            };
 
-                                                  print('body-->$body');
+                                            print('body-->$body');
 
-                                                  controller
-                                                      .editProjectManager(body);
-                                                },
-                                                style: ElevatedButton.styleFrom(
-                                                    backgroundColor: appColor),
-                                                child: const Text('Update')),
-                                  ),
+                                            controller
+                                                .editProjectManager(body);
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: appColor,
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(8)),
+                                          ),
+                                          child: const Text('Update',
+                                              style: TextStyle(
+                                                  color: Colors.white))),
                                 ],
                               )
                             ],

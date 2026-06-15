@@ -1,7 +1,7 @@
 import 'dart:developer';
 
 import 'package:date_time_picker/date_time_picker.dart';
-import 'package:file_picker/file_picker.dart';
+// import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -41,16 +41,16 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   String? filePath;
 
   uploadDocument() async {
-    final filePicker =
-        await FilePicker.platform.pickFiles(allowMultiple: false);
+    // final filePicker =
+    //     await FilePicker.platform.pickFiles(allowMultiple: false);
 
-    if (filePicker != null) {
-      for (var element in filePicker.files) {
-        taskCont.filePath.value = element.path.toString();
-        taskCont.fileName.value = element.name.toString();
-        setState(() {});
-      }
-    }
+    // if (filePicker != null) {
+    //   for (var element in filePicker.files) {
+    //     taskCont.filePath.value = element.path.toString();
+    //     taskCont.fileName.value = element.name.toString();
+    //     setState(() {});
+    //   }
+    // }
   }
 
   final taskCont = Get.put(TaskController());
@@ -170,11 +170,11 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   child: Container(
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10),
-                        color: Colors.grey.withOpacity(.2),
-                        border: Border.all(color: Colors.black38)),
+                        color: Colors.white,
+                        border: Border.all(color: const Color(0xFFE5E7EB))),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8.0, vertical: 5),
+                          horizontal: 12.0, vertical: 4),
                       child: DropdownButton(
                         underline: const SizedBox.shrink(),
                         isExpanded: true,
@@ -182,11 +182,11 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                             ? "Select Project *"
                             : taskCont.project.value),
                         items: [
-                          ...projCont.myProjects.value.map((e) {
+                          ...projCont.myProjects.map((e) {
                             return DropdownMenuItem(
                                 value: e.name, child: Text(e.name.toString()));
                           }).toList(),
-                          ...projCont.assignedProjects.value.map((e) {
+                          ...projCont.assignedProjects.map((e) {
                             return DropdownMenuItem(
                                 value: e.name,
                                 child: Column(
@@ -210,9 +210,19 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide:
+                            const BorderSide(color: appColor, width: 1.5),
                       ),
                       filled: true,
-                      fillColor: Colors.grey.shade200,
+                      fillColor: Colors.white,
                       hintText: 'Select Priority *',
                     ),
                     items: priorityList.map((String priority) {
@@ -252,34 +262,47 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   prefixIcon: CupertinoIcons.building_2_fill,
                   prefixColor: Theme.of(context).primaryColor,
                 ),
-                GestureDetector(
-                  onTap: uploadDocument,
-                  child: Container(
-                    height: 100,
-                    width: Get.width,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const Icon(CupertinoIcons.cloud_upload_fill,
-                            color:
-                                Colors.blue), // Same color as in TaskDetailPage
-                        const SizedBox(height: 5),
-                        Text(
-                          taskCont.fileName.value == ''
-                              ? 'Upload Document'
-                              : taskCont.fileName.value,
-                          style: TextStyle(
-                            color: taskCont.filePath.value == ''
-                                ? Colors.black
-                                : appColor, // Use the app's primary color
-                          ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: GestureDetector(
+                    onTap: uploadDocument,
+                    child: Container(
+                      height: 88,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: taskCont.filePath.value.isNotEmpty
+                              ? appColor
+                              : const Color(0xFFE5E7EB),
                         ),
-                      ],
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            CupertinoIcons.cloud_upload,
+                            color: taskCont.filePath.value.isNotEmpty
+                                ? appColor
+                                : const Color(0xFF9CA3AF),
+                            size: 26,
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            taskCont.fileName.value.isEmpty
+                                ? 'Tap to upload document'
+                                : taskCont.fileName.value,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: taskCont.filePath.value.isNotEmpty
+                                  ? appColor
+                                  : const Color(0xFF6B7280),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -415,22 +438,27 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   ],
                 ),
               ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  setState(() {});
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurpleAccent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    setState(() {});
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: appColor,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
-                ),
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                  child: Text(
+                  child: const Text(
                     "Confirm",
-                    style: TextStyle(fontSize: 16, color: Colors.white),
+                    style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600),
                   ),
                 ),
               ),

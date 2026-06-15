@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/bhutta/AppData/Local/Temp/**)",
+      "Bash(flutter analyze *)",
+      "Bash(findstr -A 3 \"file_picker\")",
+      "Bash(flutter clean *)",
+      "Bash(flutter --version)",
+      "Bash(flutter build *)",
+      "PowerShell(cd \"c:\\\\RGC-RMS\"; $result = flutter analyze --no-pub 2>&1; $result | Where-Object { $_ -match \"error -\" } | Where-Object { $_ -notmatch \"widget_test\" } | Select-Object -First 30)",
+      "Bash(grep -v \"^$\\\\|Downloading\\\\|Running\\\\|Note:\")",
+      "Bash(git checkout *)"
+    ]
+  }
+}

@@ -1,11 +1,28 @@
+class VisitPagination {
+  final int page;
+  final int limit;
+  final int totalCount;
+  final int totalPages;
+
+  VisitPagination.fromJson(Map<String, dynamic> json)
+      : page = json['page'] ?? 1,
+        limit = json['limit'] ?? 10,
+        totalCount = json['totalCount'] ?? 0,
+        totalPages = json['totalPages'] ?? 1;
+}
+
 class VisitReportModel {
   bool? status;
+  VisitPagination? pagination;
   List<VisitData>? data;
 
-  VisitReportModel({this.status, this.data});
+  VisitReportModel({this.status, this.pagination, this.data});
 
   VisitReportModel.fromJson(Map<String, dynamic> json) {
     status = json['status'];
+    pagination = json['pagination'] != null
+        ? VisitPagination.fromJson(json['pagination'])
+        : null;
     if (json['data'] != null) {
       data = <VisitData>[];
       json['data'].forEach((v) {

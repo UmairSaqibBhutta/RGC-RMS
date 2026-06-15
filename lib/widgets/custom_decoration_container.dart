@@ -20,14 +20,18 @@ class _CustomDecorationContainerState extends State<CustomDecorationContainer> {
       height: Get.height,
       width: widget.isDrawer == true ? Get.width * .65 : Get.width,
       decoration: BoxDecoration(
-          gradient: LinearGradient(begin: Alignment.topRight, colors: [
-        widget.isDrawer == true
-            ? Colors.brown.withOpacity(1)
-            : Colors.brown.withOpacity(.2),
-        widget.isDrawer == true
-            ? Colors.blue.withOpacity(.5)
-            : Colors.blue.withOpacity(.1)
-      ])),
+        gradient: LinearGradient(
+          begin: Alignment.topRight,
+          colors: [
+            widget.isDrawer == true
+                ? Colors.brown.withValues(alpha: 1)
+                : Colors.brown.withValues(alpha: .2),
+            widget.isDrawer == true
+                ? Colors.blue.withValues(alpha: .5)
+                : Colors.blue.withValues(alpha: .1),
+          ],
+        ),
+      ),
       child: widget.child,
     );
   }

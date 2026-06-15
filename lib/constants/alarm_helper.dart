@@ -18,10 +18,9 @@ class AlarmHelper {
       assetAudioPath: 'assets/audio/alarm.mp3',
       loopAudio: true,
       vibrate: true,
-      volumeEnforced: true,
+      volumeSettings: VolumeSettings.fixed(volume: 1.0, volumeEnforced: true),
       warningNotificationOnKill: Platform.isIOS,
       androidFullScreenIntent: true,
-      volume: 1,
       notificationSettings: NotificationSettings(
         title: title,
         body: desc,

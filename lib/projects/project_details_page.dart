@@ -4,7 +4,6 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:leadmanagementsystem/admin_module/add_project_page.dart';
 import 'package:leadmanagementsystem/constants/constants.dart';
@@ -745,7 +744,7 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
               context,
               "Budget",
               formatAmount(double.parse(widget.project.budget!)),
-              FontAwesomeIcons.rupeeSign,
+              Icons.currency_rupee,
               Colors.green,
             ),
           if (widget.project.tentativeCost.isNotNullOrEmpty)
@@ -753,7 +752,7 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
               context,
               "Tentative Cost",
               formatAmount(double.parse(widget.project.tentativeCost!)),
-              FontAwesomeIcons.rupeeSign,
+              Icons.currency_rupee,
               Colors.red,
             ),
           if (widget.project.workForce.isNotNullOrEmpty)
@@ -866,7 +865,7 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
               context,
               "Products Price",
               formatAmount(double.parse(widget.project.priceValue!)),
-              FontAwesomeIcons.rupeeSign,
+              Icons.currency_rupee,
               Colors.teal,
             ),
         ],

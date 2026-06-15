@@ -43,114 +43,132 @@ class _LoginScreenState extends State<LoginScreen> {
     return Obx(() {
       return Scaffold(
         backgroundColor: Colors.white,
-        body: SingleChildScrollView(
-            child: Container(
-          width: Get.width,
-          height: Get.height,
-          decoration: BoxDecoration(
-              gradient: LinearGradient(begin: Alignment.topRight, colors: [
-            Colors.brown.withOpacity(.2),
-            Colors.blue.withOpacity(.1)
-          ])),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: AutofillGroup(
-                child: Column(
-                  children: [
-                    SizedBox(
-                      height: getProportionateScreenHeight(45),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: AutofillGroup(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: getProportionateScreenHeight(40)),
+                  Center(
+                    child: Image.asset(
+                      'images/main-logo.png',
+                      height: 120,
+                      fit: BoxFit.contain,
                     ),
+                  ),
+                  SizedBox(height: getProportionateScreenHeight(48)),
+                  const Text(
+                    'Welcome back',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Sign in to your account',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  CustomTextField(
+                    autofillHints: const [AutofillHints.email],
+                    inputType: TextInputType.emailAddress,
+                    prefixIcon: CupertinoIcons.person_alt_circle,
+                    hint: 'Email address',
+                    suffix: loginController.emailCont.text.isNotEmpty
+                        ? CupertinoIcons.clear_circled_solid
+                        : null,
+                    controller: loginController.emailCont,
+                    allSidesPadding: 0,
+                    suffixOnTap: () {
+                      loginController.emailCont.clear();
+                    },
+                  ),
+                  if (isEmailError)
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: Container(
-                          height: 200,
-                          width: Get.width,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            color: Colors.white,
-                            image: const DecorationImage(
-                                image: AssetImage(
-                                  'images/main-logo.png',
-                                ),
-                                fit: BoxFit.contain),
-                          ),
+                      padding: const EdgeInsets.only(top: 4),
+                      child: formErrorText(error: emailErrorString),
+                    ),
+                  const SizedBox(height: 12),
+                  CustomTextField(
+                    controller: loginController.passCont,
+                    prefixIcon: CupertinoIcons.padlock,
+                    inputType: TextInputType.visiblePassword,
+                    autofillHints: const [AutofillHints.password],
+                    maxLines: 1,
+                    hint: 'Password',
+                    obscureText: isVisible,
+                    allSidesPadding: 0,
+                    suffix: isVisible ? Icons.visibility : Icons.visibility_off,
+                    suffixOnTap: () {
+                      isVisible = !isVisible;
+                      setState(() {});
+                    },
+                  ),
+                  if (isPasswordError)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: formErrorText(error: passwordErrorString),
+                    ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () {
+                        Get.to(const ForgetPassword());
+                      },
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                      ),
+                      child: const Text(
+                        'Forgot password?',
+                        style: TextStyle(
+                          color: appColor,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 13,
                         ),
                       ),
                     ),
-                    SizedBox(
-                      height: getProportionateScreenHeight(80),
-                    ),
-                    CustomTextField(
-                      autofillHints: const [AutofillHints.email],
-                      inputType: TextInputType.emailAddress,
-                      prefixIcon: CupertinoIcons.person_alt_circle,
-                      hint: 'Email',
-                      suffix: loginController.emailCont.text.isNotEmpty
-                          ? CupertinoIcons.clear_circled_solid
-                          : null,
-                      controller: loginController.emailCont,
-                      suffixOnTap: () {
-                        loginController.emailCont.clear();
-                      },
-                    ),
-                    if (isEmailError) formErrorText(error: emailErrorString),
-                    CustomTextField(
-                      controller: loginController.passCont,
-                      prefixIcon: CupertinoIcons.padlock,
-                      inputType: TextInputType.visiblePassword,
-
-                      autofillHints: const [AutofillHints.password],
-                      maxLines: 1,
-                      hint: 'Password',
-                      // onChanged: (val) {
-                      //   loginController.passCont.text = val;
-                      // },
-                      obscureText: isVisible,
-                      suffix:
-                          isVisible ? Icons.visibility : Icons.visibility_off,
-                      suffixOnTap: () {
-                        isVisible = !isVisible;
-                        setState(() {});
-                      },
-                    ),
-                    if (isPasswordError)
-                      formErrorText(error: passwordErrorString),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                            onPressed: () {
-                              Get.to(const ForgetPassword());
-                            },
-                            child: const Text(
-                              'Forget Password',
-                              style: TextStyle(color: appColor),
-                            )),
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    CustomButton(
-                      onTap: () {
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 50,
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
                         if (isFormValid()) {
                           loginController.loginFunction(context);
                         }
                       },
-                      title: 'Login',
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: appColor,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
                       child: loginController.loading.value
                           ? customCircleLoader()
-                          : null,
+                          : const Text(
+                              'Sign In',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                     ),
-                    const SizedBox(height: 15),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
               ),
             ),
           ),
-        )),
+        ),
       );
     });
   }

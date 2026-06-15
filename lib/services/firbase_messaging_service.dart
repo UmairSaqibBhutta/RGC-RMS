@@ -36,10 +36,8 @@ class FirebaseMessagingService {
       iOS: iosInitilizeSettings,
     );
 
-    flutterLocalNotificationsPlugin.initialize(initializationSettings);
-    //
     flutterLocalNotificationsPlugin.initialize(
-      initializationSettings,
+      settings: initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
         if (response.payload != null && loginStorage.getUserId() != null) {
           // Navigate to NotificationScreen when notification is tapped
@@ -83,11 +81,10 @@ class FirebaseMessagingService {
     NotificationDetails platformChannelSpecifics = NotificationDetails(
         android: androidPlatformChannelSpecifics, iOS: iosNotiDetails);
     await flutterLocalNotificationsPlugin.show(
-      0,
-      message.notification?.title,
-      message.notification?.body,
-      platformChannelSpecifics,
-      // payload: 'item x',
+      id: 0,
+      title: message.notification?.title,
+      body: message.notification?.body,
+      notificationDetails: platformChannelSpecifics,
     );
   }
 }

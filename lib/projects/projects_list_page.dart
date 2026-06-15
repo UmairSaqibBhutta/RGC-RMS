@@ -47,11 +47,37 @@ class ProjectListPage extends StatefulWidget {
 
 class _ProjectListPageState extends State<ProjectListPage> {
   ReportController reportController = Get.put(ReportController());
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     projectsController.getProjects(context);
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 300) {
+      // Only paginate when not in search or filter mode
+      if (searchedProjects.isEmpty &&
+          searchCont.text.isEmpty &&
+          gvCompanies == null &&
+          gvStatues == null) {
+        final type = currentIndex == 0
+            ? 'my'
+            : currentIndex == 1
+                ? 'assigned'
+                : 'team';
+        projectsController.loadMoreProjects(type);
+      }
+    }
   }
 
   Map<int, Widget> dataWidget = {
@@ -262,6 +288,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
                   : Padding(
                       padding: const EdgeInsets.all(12.0),
                       child: SingleChildScrollView(
+                        controller: _scrollController,
                         child: Column(
                           children: [
                             // const FilterUI(),
@@ -568,6 +595,25 @@ class _ProjectListPageState extends State<ProjectListPage> {
                                     );
                                   }
                                 }),
+                            Obx(() {
+                              final isLoading = currentIndex == 0
+                                  ? projectsController
+                                      .isLoadingMoreMyProjects.value
+                                  : currentIndex == 1
+                                      ? projectsController
+                                          .isLoadingMoreAssigned.value
+                                      : projectsController
+                                          .isLoadingMoreTeam.value;
+                              return isLoading
+                                  ? const Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: 16),
+                                      child: Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    )
+                                  : const SizedBox.shrink();
+                            }),
                           ],
                         ),
                       ),

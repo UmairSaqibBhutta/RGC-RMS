@@ -118,28 +118,26 @@ class _MarkAttendanceScreenState extends State<MarkAttendanceScreen> {
     VoidCallback? onTap,
     bool isDisabled = false,
   }) {
+    final effectiveColor = isDisabled ? const Color(0xFF9CA3AF) : color;
     return GestureDetector(
       onTap: isButton && !isDisabled ? onTap : null,
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
         child: Container(
-          width: Get.width * .9,
-          height: 170,
+          width: Get.width * .45,
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: isDisabled
-                  ? [Colors.grey, Colors.grey.shade400]
-                  : [color, color.withOpacity(0.7)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isDisabled
+                  ? const Color(0xFFE5E7EB)
+                  : effectiveColor.withValues(alpha: 0.3),
+            ),
             boxShadow: const [
               BoxShadow(
-                color: Colors.black12,
-                blurRadius: 6,
-                spreadRadius: 2,
-                offset: Offset(2, 4),
+                color: Color(0x08000000),
+                blurRadius: 8,
+                offset: Offset(0, 2),
               ),
             ],
           ),
@@ -147,27 +145,42 @@ class _MarkAttendanceScreenState extends State<MarkAttendanceScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, color: Colors.white, size: 24),
-              const SizedBox(height: 8),
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: effectiveColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, color: effectiveColor, size: 18),
+              ),
+              const SizedBox(height: 12),
               Text(
                 title,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: isDisabled
+                      ? const Color(0xFF9CA3AF)
+                      : const Color(0xFF374151),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               Text(
                 time,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: effectiveColor,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 4),
               Text(
                 subtitle,
-                style: const TextStyle(color: Colors.white70, fontSize: 12),
+                style: const TextStyle(
+                  color: Color(0xFF9CA3AF),
+                  fontSize: 11,
+                ),
               ),
             ],
           ),
@@ -226,44 +239,88 @@ class _MarkAttendanceScreenState extends State<MarkAttendanceScreen> {
                 ),
                 const SizedBox(height: 20),
                 const Text(
-                  "Today's Check-In / Out Records",
+                  "Today's Records",
                   style: TextStyle(
-                    color: appColor,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF111827),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 10),
                 Expanded(
                   child: attendanceCont.todayAttendance.isEmpty
                       ? const Center(
-                          child: Text(
-                            "No check-in / out yet",
-                            style: TextStyle(fontSize: 16),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(CupertinoIcons.clock,
+                                  size: 40, color: Color(0xFFD1D5DB)),
+                              SizedBox(height: 8),
+                              Text(
+                                "No records yet",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Color(0xFF9CA3AF),
+                                ),
+                              ),
+                            ],
                           ),
                         )
-                      : ListView.builder(
+                      : ListView.separated(
                           itemCount: attendanceCont.todayAttendance.length,
+                          separatorBuilder: (_, __) => const Divider(
+                              height: 1, color: Color(0xFFF3F4F6)),
                           itemBuilder: (context, index) {
                             final attendance =
                                 attendanceCont.todayAttendance[index];
                             final time = DateTime.parse(attendance.dateTime!);
-                            DateTime t = time.toLocal();
+                            final t = time.toLocal();
                             final paktime = DateFormat('hh:mm a').format(t);
+                            final isCheckIn =
+                                attendance.attendanceType == checkInString;
                             return ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 4, vertical: 2),
+                              leading: Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: isCheckIn
+                                      ? appColor.withValues(alpha: 0.1)
+                                      : const Color(0xFFEF4444)
+                                          .withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  isCheckIn
+                                      ? CupertinoIcons.arrow_down_circle
+                                      : CupertinoIcons.arrow_up_circle,
+                                  color: isCheckIn
+                                      ? appColor
+                                      : const Color(0xFFEF4444),
+                                  size: 18,
+                                ),
+                              ),
                               title: Text(
                                 paktime,
                                 style: const TextStyle(
-                                    fontWeight: FontWeight.bold),
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                  color: Color(0xFF111827),
+                                ),
                               ),
-                              subtitle: Text(attendance.location ?? ""),
+                              subtitle: Text(
+                                attendance.location ?? "",
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFF6B7280),
+                                ),
+                              ),
                               trailing: IconButton(
-                                icon: Icon(
-                                  CupertinoIcons.location_solid,
-                                  color:
-                                      attendance.attendanceType == checkInString
-                                          ? appColor
-                                          : Colors.redAccent,
+                                icon: const Icon(
+                                  CupertinoIcons.map_pin,
+                                  color: Color(0xFF9CA3AF),
+                                  size: 18,
                                 ),
                                 onPressed: () {
                                   if (attendance.lat!.isNotNullOrEmpty &&
