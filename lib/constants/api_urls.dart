@@ -59,4 +59,10 @@ class ApiUrls {
   static const String dailyDistanceCheckIn = 'checkInNew';
   static const String dailyDistanceCheckOut = 'checkOutNew';
   static const String getDailyDistance = 'getCheckNew';
+
+  // post work stages
+  static const String addMainStage = 'addMainStage';
+  static const String getMainStage = 'getMainStage';
+  static const String addSubStage = 'addSubStage';
+  static const String getSubStage = 'getSubStage';
 }
