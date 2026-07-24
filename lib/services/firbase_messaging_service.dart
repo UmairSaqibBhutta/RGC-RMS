@@ -14,9 +14,9 @@ class FirebaseMessagingService {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
   Future<void> initialize() async {
-    // loginController.getNotifications();
-    _firebaseMessaging.requestPermission();
-    _firebaseMessaging.getAPNSToken().then((String? token) {
+    await _firebaseMessaging.requestPermission();
+
+    _firebaseMessaging.getToken().then((String? token) {
       fcmToken = token;
       print("Firebase Messaging Token: $token");
     });
@@ -36,34 +36,36 @@ class FirebaseMessagingService {
       iOS: iosInitilizeSettings,
     );
 
-    flutterLocalNotificationsPlugin.initialize(
-      settings: initializationSettings,
+    await flutterLocalNotificationsPlugin.initialize(
+      initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
         if (response.payload != null && loginStorage.getUserId() != null) {
-          // Navigate to NotificationScreen when notification is tapped
           Get.to(() => const NotificationScreen());
         }
       },
     );
 
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      _showNotification(message);
-    });
-
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('Message clicked!');
-    });
     await flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(const AndroidNotificationChannel(
             notificationId, notificationDesc,
             importance: Importance.max, showBadge: true));
+
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      _showNotification(message);
+    });
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      if (loginStorage.getUserId() != null) {
+        Get.to(() => const NotificationScreen());
+      }
+    });
   }
 
   Future<void> _showNotification(RemoteMessage message) async {
-    AndroidNotificationDetails androidPlatformChannelSpecifics =
-        const AndroidNotificationDetails(
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
       notificationId,
       notificationDesc,
       importance: Importance.max,
@@ -71,20 +73,22 @@ class FirebaseMessagingService {
       showWhen: false,
     );
 
-    DarwinNotificationDetails iosNotiDetails = const DarwinNotificationDetails(
+    const DarwinNotificationDetails iosNotiDetails = DarwinNotificationDetails(
       presentAlert: true,
       presentBadge: true,
       presentSound: true,
       badgeNumber: 1,
     );
 
-    NotificationDetails platformChannelSpecifics = NotificationDetails(
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(
         android: androidPlatformChannelSpecifics, iOS: iosNotiDetails);
+
     await flutterLocalNotificationsPlugin.show(
-      id: 0,
-      title: message.notification?.title,
-      body: message.notification?.body,
-      notificationDetails: platformChannelSpecifics,
+      message.hashCode,
+      message.notification?.title,
+      message.notification?.body,
+      platformChannelSpecifics,
+      payload: 'notification',
     );
   }
 }
