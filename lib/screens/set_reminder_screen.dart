@@ -124,7 +124,7 @@ class _SetReminderScreenState extends State<SetReminderScreen> {
             const SizedBox(height: 30),
             CustomButton(
               title: "Set Reminder",
-              onTap: () {
+              onTap: () async {
                 String title = titleCont.text.trim();
                 String desc = descCont.text.trim();
                 if (title.isEmpty || desc.isEmpty || selectedDateTime == null) {
@@ -132,8 +132,12 @@ class _SetReminderScreenState extends State<SetReminderScreen> {
                       "Reminder title, purpose and datetime all are required");
                   return;
                 } else {
-                  AlarmHelper.setReminder(
+                  final success = await AlarmHelper.setReminder(
                       title: title, desc: desc, dateTime: selectedDateTime!);
+                  if (!mounted) return;
+                  if (success) {
+                    Navigator.of(context).pop();
+                  }
                 }
               },
             ),

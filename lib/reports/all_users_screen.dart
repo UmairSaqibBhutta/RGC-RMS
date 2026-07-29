@@ -378,28 +378,7 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
                                                 ),
                                               ],
                                             ),
-                                            // rowProjectsAndTask(
-                                            //     'Projects',
-                                            //     controller
-                                            //         .tasksNumberData!.projectsNumber
-                                            //         .toString(), () {
-                                            //   controller.getProjectData(
-                                            //       context,
-                                            //       controller.usersData[i].sId
-                                            //           .toString());
-                                            // }),
-                                            // const Divider(),
-                                            // rowProjectsAndTask(
-                                            //     'Tasks',
-                                            //     controller
-                                            //         .tasksNumberData!.taskNumber
-                                            //         .toString(), () {
-                                            //   Get.to(TaskListPage(
-                                            //       getTasksNyIndividualUsers: true,
-                                            //       userId: controller
-                                            //           .usersData[i].sId
-                                            //           .toString()));
-                                            // }),
+                              
                                           ],
                                         ),
                                       ),

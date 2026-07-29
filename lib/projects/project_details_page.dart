@@ -4,7 +4,9 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:gal/gal.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import 'package:leadmanagementsystem/admin_module/add_project_page.dart';
 import 'package:leadmanagementsystem/constants/constants.dart';
 import 'package:leadmanagementsystem/constants/launchers_helper.dart';
@@ -368,7 +370,9 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
                 if (widget.project.filePath.isNotNullOrEmpty)
                   const SizedBox(height: 10),
                 if (widget.project.filePath.isNotNullOrEmpty)
-                  _buildFileDownloadButton(),
+                  _isImageFile(widget.project.filePath!)
+                      ? _buildUploadedImage(widget.project.filePath!)
+                      : _buildFileDownloadButton(),
                 const SizedBox(height: 20),
               ],
             ),
@@ -1107,6 +1111,104 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
     }
 
     // Optionally use a state management solution to update UI
+  }
+
+  bool _isImageFile(String path) {
+    final cleanPath = Uri.tryParse(path)?.path ?? path;
+    final lower = cleanPath.toLowerCase();
+    return ['.jpg', '.jpeg', '.png', '.heic', '.webp', '.gif']
+        .any((ext) => lower.endsWith(ext));
+  }
+
+  Widget _buildUploadedImage(String url) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Uploaded Image',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 10),
+          GestureDetector(
+            onTap: () => _viewImageFullScreen(url),
+            onLongPress: () => _saveImageToGallery(url),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(15),
+              child: Image.network(
+                url,
+                width: double.infinity,
+                height: 220,
+                fit: BoxFit.cover,
+                loadingBuilder: (context, child, progress) {
+                  if (progress == null) return child;
+                  return Container(
+                    height: 220,
+                    alignment: Alignment.center,
+                    color: Colors.grey[200],
+                    child: const CircularProgressIndicator(),
+                  );
+                },
+                errorBuilder: (context, error, stackTrace) =>
+                    _buildFileDownloadButton(),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _viewImageFullScreen(String url) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => Scaffold(
+          backgroundColor: Colors.black,
+          appBar: AppBar(
+            backgroundColor: Colors.black,
+            iconTheme: const IconThemeData(color: Colors.white),
+          ),
+          body: Center(
+            child: InteractiveViewer(
+              child: Image.network(url),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  bool _isSavingImage = false;
+
+  Future<void> _saveImageToGallery(String url) async {
+    if (_isSavingImage) return;
+    _isSavingImage = true;
+
+    try {
+      final hasAccess = await Gal.requestAccess();
+      if (!hasAccess) {
+        customSnackBar('Error', 'Gallery permission denied');
+        return;
+      }
+
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode != 200) {
+        customSnackBar('Error', 'Failed to download image');
+        return;
+      }
+
+      await Gal.putImageBytes(
+        response.bodyBytes,
+        name: 'project_${widget.project.sId ?? DateTime.now().millisecondsSinceEpoch}',
+      );
+
+      customSnackBar('Success', 'Image saved to gallery');
+    } catch (e) {
+      customSnackBar('Error', 'Could not save image: $e');
+    } finally {
+      _isSavingImage = false;
+    }
   }
 
   _buildFileDownloadButton() {

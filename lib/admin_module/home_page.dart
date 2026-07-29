@@ -144,6 +144,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               horizontal: 12.0, vertical: 16),
                           child: Badge.count(
                             count: cont.notificationCount ?? 0,
+                            isLabelVisible: (cont.notificationCount ?? 0) > 0,
                             child: const Icon(
                               Icons.notifications_outlined,
                               size: 24,

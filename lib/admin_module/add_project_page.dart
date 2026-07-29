@@ -838,24 +838,24 @@ class _AddProjectPageState extends State<AddProjectPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const Icon(CupertinoIcons.cloud_upload_fill),
-                      if (widget.projectData != null &&
+                      const Icon(CupertinoIcons.camera_fill),
+                      if (projectController.fileName.value.isNotEmpty)
+                        Align(
+                            alignment: Alignment.center,
+                            child: Text(
+                              projectController.fileName.value,
+                              textAlign: TextAlign.center,
+                            ))
+                      else if (widget.projectData != null &&
                           widget.projectData!.filePath != null)
                         Align(
                             alignment: Alignment.center,
                             child: Text(
-                              widget.projectData!.filePath != null
-                                  ? widget.projectData!.filePath!
-                                      .split('-')
-                                      .last
-                                  : 'No file path available',
-                              // Fallback text in case filePath is null
+                              widget.projectData!.filePath!.split('-').last,
                               textAlign: TextAlign.center,
                             ))
                       else
-                        Text(projectController.fileName.value.isEmpty
-                            ? 'Add File'
-                            : projectController.fileName.toString()),
+                        const Text('Take Photo'),
                     ],
                   ),
                 ),

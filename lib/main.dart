@@ -110,6 +110,7 @@ class _MyAppState extends State<MyApp> {
           textTheme: GoogleFonts.mulishTextTheme(),
           floatingActionButtonTheme: const FloatingActionButtonThemeData(
             backgroundColor: appColor,
+            foregroundColor: Colors.white,
             elevation: 2,
           ),
           useMaterial3: false,

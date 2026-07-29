@@ -406,7 +406,7 @@ class _LeavesPageState extends State<LeavesPage> {
                   ),
                   const SizedBox(height: 10),
                   DropdownButtonFormField<String>(
-                    initialValue: selectedLeaveType,
+                    value: selectedLeaveType,
                     decoration: InputDecoration(
                       labelText: 'Leave Type',
                       prefixIcon: const Icon(CupertinoIcons.list_bullet),

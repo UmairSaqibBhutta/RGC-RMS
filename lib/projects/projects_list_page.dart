@@ -2,7 +2,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:docx_template/docx_template.dart';
-import 'package:excel/excel.dart';
+import 'package:excel/excel.dart' hide Border;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -21,11 +21,99 @@ import 'package:leadmanagementsystem/projects/projects_widget.dart';
 import 'package:leadmanagementsystem/constants/constants.dart';
 import 'package:leadmanagementsystem/widgets/custom_text_field.dart';
 import 'package:leadmanagementsystem/widgets/custom_widgets.dart';
+import 'package:leadmanagementsystem/widgets/data_formatter.dart';
 import 'package:leadmanagementsystem/widgets/random_widget.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+
+/// A single reportable column: a label plus a getter that pulls the
+/// matching value out of a [ProjectData]. Used to build report tables,
+/// PDF and Excel exports so all three always show the exact same set of
+/// fields.
+class _ProjectColumn {
+  final String label;
+  final String? Function(ProjectData) getValue;
+
+  const _ProjectColumn(this.label, this.getValue);
+}
+
+/// Formats a raw (usually ISO-8601) date string using the app's shared
+/// [DateFormatter], falling back to the raw value if it can't be parsed.
+String? _formatReportDate(String? rawDate) {
+  if (rawDate == null || rawDate.trim().isEmpty) return null;
+  try {
+    return DateFormatter.formatDate(rawDate);
+  } catch (_) {
+    return rawDate;
+  }
+}
+
+/// Every field on [ProjectData] that is meaningful to show in a report,
+/// in display order. Internal identifiers (sId, userId) and the local
+/// attachment path are intentionally excluded.
+final List<_ProjectColumn> _allProjectColumns = [
+  _ProjectColumn('Project Name', (p) => p.title),
+  _ProjectColumn('Name', (p) => p.name),
+  _ProjectColumn('Description', (p) => p.description),
+  _ProjectColumn('Status', (p) => p.status),
+  _ProjectColumn('Company', (p) => p.company),
+  _ProjectColumn('Location', (p) => p.location),
+  _ProjectColumn('Region', (p) => p.region),
+  _ProjectColumn('Project Estimate', (p) => p.tentativeCost),
+  _ProjectColumn('Budget', (p) => p.budget),
+  _ProjectColumn('Price Value', (p) => p.priceValue),
+  _ProjectColumn('Project Priority', (p) => p.projectPriority),
+  _ProjectColumn('Duration', (p) => p.duration),
+  _ProjectColumn('Work Force', (p) => p.workForce),
+  _ProjectColumn(
+      'Created Date', (p) => _formatReportDate(p.projectCreatedDate)),
+  _ProjectColumn('Client Name', (p) => p.clientName),
+  _ProjectColumn('Project Manager', (p) => p.projectManager),
+  _ProjectColumn('Contractor', (p) => p.contractorName),
+  _ProjectColumn('Contractor PM Name', (p) => p.contractorPMName),
+  _ProjectColumn('Contractor PM Phone', (p) => p.contractorPMPhone),
+  _ProjectColumn('Contractor ME Name', (p) => p.contractorMEName),
+  _ProjectColumn('Contractor ME Phone', (p) => p.contractorMEPhone),
+  _ProjectColumn('Consultant', (p) => p.consultantName),
+  _ProjectColumn('Consultant RE Name', (p) => p.consultantREName),
+  _ProjectColumn('Consultant RE Phone', (p) => p.consultantREPhone),
+  _ProjectColumn('Consultant ME Name', (p) => p.consultantMEName),
+  _ProjectColumn('Consultant ME Phone', (p) => p.consultantMEPhone),
+  _ProjectColumn('Consult Name', (p) => p.consultName),
+  _ProjectColumn('Consult Phone', (p) => p.consultPhone),
+  _ProjectColumn('Owner Name', (p) => p.ownerName),
+  _ProjectColumn('Owner Contact', (p) => p.ownerContact),
+  _ProjectColumn('Owner ME', (p) => p.ownerMe),
+  _ProjectColumn('Person Name', (p) => p.personName),
+  _ProjectColumn('Person Contacts', (p) => p.personContacts),
+  _ProjectColumn('Procurement Name', (p) => p.precourmentName),
+  _ProjectColumn('Procurement Phone', (p) => p.precourmentPhone),
+  _ProjectColumn('Account Officer Name', (p) => p.accountOfficerName),
+  _ProjectColumn('Account Officer Phone', (p) => p.accountOfficerPhone),
+  _ProjectColumn('Role', (p) => p.role),
+  _ProjectColumn('Creator Name', (p) => p.creatorName),
+  _ProjectColumn('Creator Role', (p) => p.creatorRole),
+  _ProjectColumn(
+      'Work Scope',
+      (p) => (p.workScope == null || p.workScope!.isEmpty)
+          ? null
+          : p.workScope!
+              .map((w) => w.name ?? '')
+              .where((n) => n.trim().isNotEmpty)
+              .join(', ')),
+  _ProjectColumn('Notes', (p) => p.notes),
+];
+
+/// Keeps only the columns that have a non-empty value in at least one
+/// of the given projects, so an all-empty field (e.g. missing PM name)
+/// never gets its own column.
+List<_ProjectColumn> _visibleProjectColumns(List<ProjectData> projects) {
+  return _allProjectColumns.where((column) {
+    return projects.any((p) => (column.getValue(p) ?? '').trim().isNotEmpty);
+  }).toList();
+}
 
 class ProjectListPage extends StatefulWidget {
   String? projectId;
@@ -59,6 +147,8 @@ class _ProjectListPageState extends State<ProjectListPage> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _reportSearchCont.dispose();
+    _reportZoomController.dispose();
     super.dispose();
   }
 
@@ -94,6 +184,43 @@ class _ProjectListPageState extends State<ProjectListPage> {
   String? gvCompanies;
   String? gvStatues;
 
+  // Search box shown on the "projects of a user" report screen.
+  final TextEditingController _reportSearchCont = TextEditingController();
+  String _reportSearchQuery = '';
+
+  /// Projects for the report screen after applying [_reportSearchQuery],
+  /// matched against every reportable field on the project.
+  List<ProjectData> get _reportDisplayedProjects {
+    final all = reportController.projectsData;
+    final query = _reportSearchQuery.trim().toLowerCase();
+    if (query.isEmpty) return all;
+    return all.where((project) {
+      return _allProjectColumns.any(
+          (column) => (column.getValue(project) ?? '').toLowerCase().contains(query));
+    }).toList();
+  }
+
+  // Zoom controls for the report table (pinch-to-zoom + explicit buttons).
+  static const double _minReportZoom = 0.5;
+  static const double _maxReportZoom = 2.5;
+  final TransformationController _reportZoomController =
+      TransformationController();
+  double _reportZoom = 1.0;
+
+  void _setReportZoom(double zoom) {
+    final clamped = zoom.clamp(_minReportZoom, _maxReportZoom);
+    setState(() {
+      _reportZoom = clamped;
+      _reportZoomController.value = Matrix4.identity()..scale(clamped);
+    });
+  }
+
+  void _zoomReportIn() => _setReportZoom(_reportZoom + 0.25);
+
+  void _zoomReportOut() => _setReportZoom(_reportZoom - 0.25);
+
+  void _resetReportZoom() => _setReportZoom(1.0);
+
   List<String> statuses = [
     'Lead',
     'Contracted',
@@ -111,118 +238,146 @@ class _ProjectListPageState extends State<ProjectListPage> {
         ? GetBuilder(
             init: reportController,
             builder: (controller) {
+              final displayedProjects = _reportDisplayedProjects;
+              final columns = _visibleProjectColumns(displayedProjects);
+              final sortedProjects =
+                  projectsController.sortProjectsByStatus(displayedProjects);
+              final hasSearch = _reportSearchQuery.trim().isNotEmpty;
+
               return Scaffold(
                 appBar: mAppbar("Projects", action: [
                   InkWell(
-                    onTap: () {
-                      generateProjectPdf(reportController.projectsData);
-                    },
+                    onTap: displayedProjects.isEmpty
+                        ? null
+                        : () => generateProjectPdf(displayedProjects),
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: SizedBox(
-                        height: 30,
-                        width: 40,
-                        child: Image.asset(
-                          "images/pdf.png",
-                          fit: BoxFit.contain,
+                      child: Opacity(
+                        opacity: displayedProjects.isEmpty ? 0.4 : 1,
+                        child: SizedBox(
+                          height: 30,
+                          width: 40,
+                          child: Image.asset(
+                            "images/pdf.png",
+                            fit: BoxFit.contain,
+                          ),
                         ),
                       ),
                     ),
                   ),
                   InkWell(
-                    onTap: () {
-                      generateProjectExcel(reportController.projectsData);
-                    },
+                    onTap: displayedProjects.isEmpty
+                        ? null
+                        : () => generateProjectExcel(displayedProjects),
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: SizedBox(
-                        height: 30,
-                        width: 40,
-                        child: Image.asset(
-                          "images/excel.png",
-                          fit: BoxFit.contain,
+                      child: Opacity(
+                        opacity: displayedProjects.isEmpty ? 0.4 : 1,
+                        child: SizedBox(
+                          height: 30,
+                          width: 40,
+                          child: Image.asset(
+                            "images/excel.png",
+                            fit: BoxFit.contain,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                  // InkWell(
-                  //   onTap: () {
-                  //     generateProjectDocx();
-                  //   },
-                  //   child: Padding(
-                  //     padding: const EdgeInsets.all(8.0),
-                  //     child: SizedBox(
-                  //       height: 30,
-                  //       width: 40,
-                  //       child: Image.asset(
-                  //         "images/word.png",
-                  //         fit: BoxFit.contain,
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
+                  const SizedBox(width: 8),
                 ]),
-                backgroundColor: Colors.white,
+                backgroundColor: Colors.grey[100],
                 body: SafeArea(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Column(
-                        children: [
-                          if (widget.userName.isNotNullOrEmpty)
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                children: [
-                                  Text(
-                                    "Projects of ${widget.userName}",
-                                    style: const TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.userName.isNotNullOrEmpty
+                                  ? "Projects of ${widget.userName}"
+                                  : "Projects",
+                              style: const TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                                "Date: ${DateTime.now().toString().split(" ")[0]}",
+                                style: TextStyle(
+                                    fontSize: 13, color: Colors.grey[600])),
+                            const SizedBox(height: 12),
+                            CustomTextField(
+                              controller: _reportSearchCont,
+                              hint: "Search projects",
+                              suffix: _reportSearchCont.text.isNotEmpty
+                                  ? Icons.clear
+                                  : null,
+                              suffixOnTap: () {
+                                _reportSearchCont.clear();
+                                setState(() => _reportSearchQuery = '');
+                              },
+                              onChanged: (value) {
+                                setState(() => _reportSearchQuery = value);
+                              },
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    hasSearch
+                                        ? "${displayedProjects.length} of ${reportController.projectsData.length} projects match \"${_reportSearchQuery.trim()}\""
+                                        : "${displayedProjects.length} project${displayedProjects.length == 1 ? '' : 's'}",
+                                    style: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.grey[600],
+                                        fontStyle: FontStyle.italic),
                                   ),
-                                  const SizedBox(height: 10),
-                                  Text(
-                                      "Date: ${DateTime.now().toString().split(" ")[0]}",
-                                      style: const TextStyle(fontSize: 16)),
-                                ],
-                              ),
+                                ),
+                                if (displayedProjects.isNotEmpty)
+                                  _buildReportZoomControls(),
+                              ],
                             ),
-                          if (reportController.projectsData.isEmpty)
-                            const Center(child: Text("No Projects found"))
-                          else
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Table(
-                                columnWidths: const {
-                                  0: FixedColumnWidth(60), // Sr. No
-                                  1: FixedColumnWidth(150), // Project Name
-                                  2: FixedColumnWidth(120), // Contractor
-                                  3: FixedColumnWidth(120), // Consultant
-                                  4: FixedColumnWidth(160), // Project Manager
-                                  5: FixedColumnWidth(160), // Material Engr
-                                  6: FixedColumnWidth(160), // Resident Engr
-                                  7: FixedColumnWidth(
-                                      160), // Consultant Material Engr
-                                  8: FixedColumnWidth(100), // Status
-                                  9: FixedColumnWidth(100), // Status
-                                  10: FixedColumnWidth(150), // Notes
-                                  11: FixedColumnWidth(200), // Description
-                                },
-                                children: [
-                                  buildProjectTableHeader(),
-                                  ...buildProjectRows(
-                                      reportController.projectsData),
-                                ],
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: displayedProjects.isEmpty
+                            ? Center(
+                                child: Text(
+                                  reportController.projectsData.isEmpty
+                                      ? "No Projects found"
+                                      : "No projects match your search",
+                                ),
+                              )
+                            : Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: InteractiveViewer(
+                                  transformationController:
+                                      _reportZoomController,
+                                  constrained: false,
+                                  minScale: _minReportZoom,
+                                  maxScale: _maxReportZoom,
+                                  boundaryMargin: const EdgeInsets.all(200),
+                                  onInteractionEnd: (details) {
+                                    setState(() {
+                                      _reportZoom = _reportZoomController.value
+                                          .getMaxScaleOnAxis();
+                                    });
+                                  },
+                                  child: _buildReportTable(
+                                          sortedProjects, columns)
+                                      .animate()
+                                      .fadeIn(duration: 300.ms)
+                                      .move(
+                                          begin: const Offset(0, 12),
+                                          duration: 300.ms),
+                                ),
                               ),
-                            ),
-                        ],
-                      )
-                          .animate()
-                          .untint()
-                          .scale()
-                          .move(delay: 100.ms, duration: 1600.ms),
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               );
@@ -320,7 +475,9 @@ class _ProjectListPageState extends State<ProjectListPage> {
                                                   setState(() {});
                                                 }
                                               },
-                                              suffix: Icons.clear,
+                                              suffix: searchCont.text.isNotEmpty
+                                                  ? Icons.clear
+                                                  : null,
                                               suffixOnTap: () {
                                                 searchCont.clear();
                                                 searchedProjects.clear();
@@ -706,110 +863,141 @@ class _ProjectListPageState extends State<ProjectListPage> {
     });
   }
 
-  TableRow buildProjectTableHeader() {
-    return const TableRow(
-      decoration: BoxDecoration(
-        color: Color(0xFFE0E0E0),
-      ),
+  /// Zoom out / percentage / zoom in / reset controls for the report
+  /// table. Kept in sync with pinch-to-zoom via [_reportZoomController].
+  Widget _buildReportZoomControls() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        TableHeaderCell('Sr. No'),
-        TableHeaderCell('Project Name'),
-        TableHeaderCell('Contractor'),
-        TableHeaderCell('Consultant'),
-        TableHeaderCell('Project Manager'), //\n(Name Number Email)
-        TableHeaderCell('Material Engr\n(Name Number Email)'),
-        TableHeaderCell('Resident Engr\n(Name Number Email)'),
-        TableHeaderCell('Consultant Material Engr\n(Name Number Email)'),
-        TableHeaderCell('Project Status'),
-        TableHeaderCell('Project Estimate'),
-        TableHeaderCell('Notes'),
-        TableHeaderCell('Description'),
+        IconButton(
+          tooltip: 'Zoom out',
+          visualDensity: VisualDensity.compact,
+          onPressed: _reportZoom <= _minReportZoom ? null : _zoomReportOut,
+          icon: const Icon(Icons.zoom_out),
+        ),
+        SizedBox(
+          width: 46,
+          child: Text(
+            '${(_reportZoom * 100).round()}%',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+          ),
+        ),
+        IconButton(
+          tooltip: 'Zoom in',
+          visualDensity: VisualDensity.compact,
+          onPressed: _reportZoom >= _maxReportZoom ? null : _zoomReportIn,
+          icon: const Icon(Icons.zoom_in),
+        ),
+        IconButton(
+          tooltip: 'Reset zoom',
+          visualDensity: VisualDensity.compact,
+          onPressed: _reportZoom == 1.0 ? null : _resetReportZoom,
+          icon: const Icon(Icons.restart_alt),
+        ),
       ],
     );
   }
 
-  List<TableRow> buildProjectRows(List<ProjectData> projects) {
-    projects = projectsController.sortProjectsByStatus(projects);
-    return projects.asMap().entries.map((entry) {
-      final index = entry.key + 1; // Sr. No starts from 1
-      final l = entry.value;
-
-      return TableRow(
+  /// Builds the report table showing only [columns] that actually have
+  /// data across [projects], so a field left blank on every project
+  /// (e.g. no Project Manager set anywhere) never gets its own column.
+  Widget _buildReportTable(
+      List<ProjectData> projects, List<_ProjectColumn> columns) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Table(
+        border: TableBorder(
+          horizontalInside: BorderSide(color: Colors.grey.shade200),
+          verticalInside: BorderSide(color: Colors.grey.shade200),
+        ),
+        columnWidths: {
+          0: const FixedColumnWidth(56),
+          for (int i = 0; i < columns.length; i++)
+            i + 1: const FixedColumnWidth(180),
+        },
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(index.toString()), // Sr. No
-          ),
-          InkWell(
-            onTap: () {
-              Get.to(() => ProjectDetailsPage(
-                    project: l,
-                    updateProject: false,
-                    receverId: '',
-                    token: '',
-                    senderName: '',
-                  ));
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(l.title ?? ''),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(l.contractorName ?? ''),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(l.consultantName ?? ''),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text('${l.projectManager}'),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-                '${l.contractorMEName ?? ''}\n${l.contractorMEPhone ?? ''}'),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-                '${l.consultantREName ?? ''}\n${l.consultantREPhone ?? ''}'),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-                '${l.consultantMEName ?? ''}\n${l.consultantMEPhone ?? ''}'),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(l.status ?? ''),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(l.tentativeCost ?? ''),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(l.notes ?? ''),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(l.description ?? ''),
-          ),
+          _buildReportHeaderRow(columns),
+          ...projects.asMap().entries.map((entry) =>
+              _buildReportDataRow(entry.key + 1, entry.value, columns)),
         ],
-      );
-    }).toList();
+      ),
+    );
   }
+
+  TableRow _buildReportHeaderRow(List<_ProjectColumn> columns) {
+    return TableRow(
+      decoration: const BoxDecoration(color: appColor),
+      children: [
+        _reportHeaderCell('#'),
+        for (final column in columns) _reportHeaderCell(column.label),
+      ],
+    );
+  }
+
+  Widget _reportHeaderCell(String text) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+        child: Text(
+          text,
+          style: const TextStyle(
+              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+        ),
+      );
+
+  TableRow _buildReportDataRow(
+      int index, ProjectData project, List<_ProjectColumn> columns) {
+    return TableRow(
+      decoration: BoxDecoration(
+        color: index.isEven ? Colors.grey.shade50 : Colors.white,
+      ),
+      children: [
+        _reportDataCell(index.toString()),
+        for (final column in columns)
+          column.label == 'Project Name'
+              ? InkWell(
+                  onTap: () {
+                    Get.to(() => ProjectDetailsPage(
+                          project: project,
+                          updateProject: false,
+                          receverId: '',
+                          token: '',
+                          senderName: '',
+                        ));
+                  },
+                  child: _reportDataCell(column.getValue(project) ?? '',
+                      isLink: true),
+                )
+              : _reportDataCell(column.getValue(project) ?? ''),
+      ],
+    );
+  }
+
+  Widget _reportDataCell(String text, {bool isLink = false}) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        child: Text(
+          text,
+          style: TextStyle(
+            fontSize: 12,
+            color: isLink ? appColor : Colors.black87,
+            fontWeight: isLink ? FontWeight.w600 : FontWeight.normal,
+            decoration: isLink ? TextDecoration.underline : null,
+          ),
+        ),
+      );
 
   void generateProjectPdf(List<ProjectData> projectsData) async {
     final pdf = pw.Document();
     final projects = projectsController.sortProjectsByStatus(projectsData);
+    final columns = _visibleProjectColumns(projectsData);
 
     pdf.addPage(
       pw.MultiPage(
-        pageFormat: PdfPageFormat.a3,
+        pageFormat: PdfPageFormat.a3.landscape,
         build: (context) => [
           pw.Center(
             child: pw.Text('Project Report',
@@ -830,22 +1018,13 @@ class _ProjectListPageState extends State<ProjectListPage> {
             ),
           ),
 
-          // Custom Table with Serial Number
+          // Table with Serial Number + only the columns that have data.
           pw.Table(
             border: pw.TableBorder.all(),
             columnWidths: {
-              0: const pw.FixedColumnWidth(40), // Serial No.
-              1: const pw.FixedColumnWidth(150),
-              2: const pw.FixedColumnWidth(120),
-              3: const pw.FixedColumnWidth(120),
-              4: const pw.FixedColumnWidth(160),
-              5: const pw.FixedColumnWidth(160),
-              6: const pw.FixedColumnWidth(160),
-              7: const pw.FixedColumnWidth(160),
-              8: const pw.FixedColumnWidth(100),
-              9: const pw.FixedColumnWidth(150),
-              10: const pw.FixedColumnWidth(150),
-              11: const pw.FixedColumnWidth(200),
+              0: const pw.FixedColumnWidth(30), // Serial No.
+              for (int i = 0; i < columns.length; i++)
+                i + 1: const pw.FlexColumnWidth(1),
             },
             children: [
               // Header Row
@@ -858,28 +1037,16 @@ class _ProjectListPageState extends State<ProjectListPage> {
                         style: pw.TextStyle(
                             fontWeight: pw.FontWeight.bold,
                             color: PdfColors.white,
-                            fontSize: 10)),
+                            fontSize: 8)),
                   ),
-                  for (final title in [
-                    'Project Name',
-                    'Contractor',
-                    'Consultant',
-                    'Project Manager',
-                    'Material Engr',
-                    'Resident Engr',
-                    'Consultant Material Engr',
-                    'Status',
-                    'Project Estimate',
-                    'Notes',
-                    'Description'
-                  ])
+                  for (final column in columns)
                     pw.Padding(
                       padding: const pw.EdgeInsets.all(4),
-                      child: pw.Text(title,
+                      child: pw.Text(column.label,
                           style: pw.TextStyle(
                               fontWeight: pw.FontWeight.bold,
                               color: PdfColors.white,
-                              fontSize: 10)),
+                              fontSize: 8)),
                     ),
                 ],
               ),
@@ -893,55 +1060,12 @@ class _ProjectListPageState extends State<ProjectListPage> {
                     pw.Padding(
                         padding: const pw.EdgeInsets.all(4),
                         child: pw.Text(index.toString(),
-                            style: const pw.TextStyle(fontSize: 9))),
-                    pw.Padding(
-                        padding: const pw.EdgeInsets.all(4),
-                        child: pw.Text(project.title ?? '',
-                            style: const pw.TextStyle(fontSize: 9))),
-                    pw.Padding(
-                        padding: const pw.EdgeInsets.all(4),
-                        child: pw.Text(project.contractorName ?? '',
-                            style: const pw.TextStyle(fontSize: 9))),
-                    pw.Padding(
-                        padding: const pw.EdgeInsets.all(4),
-                        child: pw.Text(project.consultantName ?? '',
-                            style: const pw.TextStyle(fontSize: 9))),
-                    pw.Padding(
-                        padding: const pw.EdgeInsets.all(4),
-                        child: pw.Text(
-                            '${project.projectManager ?? ''}\n${project.projectManager ?? ''}',
-                            style: const pw.TextStyle(fontSize: 9))),
-                    pw.Padding(
-                        padding: const pw.EdgeInsets.all(4),
-                        child: pw.Text(
-                            '${project.contractorMEName ?? ''}\n${project.contractorMEPhone ?? ''}',
-                            style: const pw.TextStyle(fontSize: 9))),
-                    pw.Padding(
-                        padding: const pw.EdgeInsets.all(4),
-                        child: pw.Text(
-                            '${project.consultantREName ?? ''}\n${project.consultantREPhone ?? ''}',
-                            style: const pw.TextStyle(fontSize: 9))),
-                    pw.Padding(
-                        padding: const pw.EdgeInsets.all(4),
-                        child: pw.Text(
-                            '${project.consultantMEName ?? ''}\n${project.consultantMEPhone ?? ''}',
-                            style: const pw.TextStyle(fontSize: 9))),
-                    pw.Padding(
-                        padding: const pw.EdgeInsets.all(4),
-                        child: pw.Text(project.status ?? '',
-                            style: const pw.TextStyle(fontSize: 9))),
-                    pw.Padding(
-                        padding: const pw.EdgeInsets.all(4),
-                        child: pw.Text(project.tentativeCost ?? '',
-                            style: const pw.TextStyle(fontSize: 9))),
-                    pw.Padding(
-                        padding: const pw.EdgeInsets.all(4),
-                        child: pw.Text(project.notes ?? '',
-                            style: const pw.TextStyle(fontSize: 9))),
-                    pw.Padding(
-                        padding: const pw.EdgeInsets.all(4),
-                        child: pw.Text(project.description ?? '',
-                            style: const pw.TextStyle(fontSize: 9))),
+                            style: const pw.TextStyle(fontSize: 8))),
+                    for (final column in columns)
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(4),
+                          child: pw.Text(column.getValue(project) ?? '',
+                              style: const pw.TextStyle(fontSize: 8))),
                   ],
                 );
               }).toList(),
@@ -966,14 +1090,19 @@ class _ProjectListPageState extends State<ProjectListPage> {
 
   void generateProjectExcel(List<ProjectData> projectsData) async {
     final projects = projectsController.sortProjectsByStatus(projectsData);
+    final columns = _visibleProjectColumns(projectsData);
+    final lastColIndex = columns.isEmpty ? 0 : columns.length - 1;
 
     final excel = Excel.createExcel();
     final Sheet sheet = excel['Project Report'];
 
     // Title
-    sheet.merge(CellIndex.indexByString("A1"), CellIndex.indexByString("J1"));
+    sheet.merge(
+      CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0),
+      CellIndex.indexByColumnRow(columnIndex: lastColIndex, rowIndex: 0),
+    );
     sheet.updateCell(
-      CellIndex.indexByString("A1"),
+      CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0),
       TextCellValue('Project Report'),
       cellStyle: CellStyle(
         bold: true,
@@ -983,37 +1112,26 @@ class _ProjectListPageState extends State<ProjectListPage> {
     );
 
     // User Name
-    sheet.merge(CellIndex.indexByString("A2"), CellIndex.indexByString("J2"));
+    sheet.merge(
+      CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 1),
+      CellIndex.indexByColumnRow(columnIndex: lastColIndex, rowIndex: 1),
+    );
     sheet.updateCell(
-      CellIndex.indexByString("A2"),
+      CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 1),
       widget.userName.isNotNullOrEmpty
-          ? TextCellValue('Projects')
-          : TextCellValue('Projects of ${widget.userName}'),
+          ? TextCellValue('Projects of ${widget.userName}')
+          : TextCellValue('Projects'),
       cellStyle: CellStyle(
         bold: true,
         fontSize: 14,
       ),
     );
 
-    // Header Row
-    const headers = [
-      'Project Name',
-      'Contractor',
-      'Consultant',
-      'Project Manager',
-      'Material Engr',
-      'Resident Engr',
-      'Consultant Material Engr',
-      'Status',
-      'Project Estimate',
-      'Notes',
-      'Description',
-    ];
-
-    for (int i = 0; i < headers.length; i++) {
+    // Header Row — only the columns that actually have data.
+    for (int i = 0; i < columns.length; i++) {
       sheet.updateCell(
         CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 3),
-        TextCellValue(headers[i]),
+        TextCellValue(columns[i].label),
         cellStyle: CellStyle(
           backgroundColorHex: ExcelColor.fromHexString('#CCCCCC'),
           bold: true,
@@ -1027,24 +1145,10 @@ class _ProjectListPageState extends State<ProjectListPage> {
       final project = projects[rowIndex];
       final row = rowIndex + 4;
 
-      final data = [
-        project.title ?? '',
-        project.contractorName ?? '',
-        project.consultantName ?? '',
-        '${project.projectManager ?? ''}\n${project.projectManager ?? ''}',
-        '${project.contractorMEName ?? ''}\n${project.contractorMEPhone ?? ''}',
-        '${project.consultantREName ?? ''}\n${project.consultantREPhone ?? ''}',
-        '${project.consultantMEName ?? ''}\n${project.consultantMEPhone ?? ''}',
-        project.status ?? '',
-        project.tentativeCost ?? '',
-        project.notes ?? '',
-        project.description ?? '',
-      ];
-
-      for (int col = 0; col < data.length; col++) {
+      for (int col = 0; col < columns.length; col++) {
         sheet.updateCell(
           CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row),
-          TextCellValue(data[col]),
+          TextCellValue(columns[col].getValue(project) ?? ''),
         );
       }
     }
@@ -1053,7 +1157,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
     final lastRow = projects.length + 5;
     sheet.merge(
       CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: lastRow),
-      CellIndex.indexByColumnRow(columnIndex: 9, rowIndex: lastRow),
+      CellIndex.indexByColumnRow(columnIndex: lastColIndex, rowIndex: lastRow),
     );
     sheet.updateCell(
       CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: lastRow),
