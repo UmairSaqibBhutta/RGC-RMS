@@ -2,7 +2,7 @@ name: leadmanagementsystem
 description: Roofline-CRM.
 publish_to: 'none'
 
-version: 1.0.22+22
+version: 1.0.23+23
 
 environment:
   sdk: '>=3.0.3 <4.0.0'
