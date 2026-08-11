@@ -42,7 +42,10 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
         return false;
       },
       child: Scaffold(
-        body: screens[currentIndex],
+        body: IndexedStack(
+          index: currentIndex,
+          children: screens,
+        ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         floatingActionButton: showFloating(),
         bottomNavigationBar: Container(
@@ -71,8 +74,8 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
                 ),
                 BottomAppBarWidget(
                   changeIndex: currentIndex == 0 ? true : false,
-                  checkImg: 'home',
-                  unCheckImg: 'unHome',
+                  icon: Icons.home_outlined,
+                  activeIcon: Icons.home,
                   onTap: () {
                     currentIndex = 0;
                     setState(() {});
@@ -82,8 +85,8 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
                 const Spacer(),
                 BottomAppBarWidget(
                   changeIndex: currentIndex == 1 ? true : false,
-                  checkImg: 'task',
-                  unCheckImg: 'newTask',
+                  icon: Icons.checklist_outlined,
+                  activeIcon: Icons.checklist,
                   onTap: () {
                     currentIndex = 1;
                     setState(() {});
@@ -99,8 +102,8 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
                 ),
                 BottomAppBarWidget(
                   changeIndex: currentIndex == 2 ? true : false,
-                  checkImg: 'unReports',
-                  unCheckImg: 'reports',
+                  icon: Icons.bar_chart_outlined,
+                  activeIcon: Icons.bar_chart,
                   onTap: () {
                     currentIndex = 2;
                     setState(() {});
@@ -110,8 +113,8 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
                 const Spacer(),
                 BottomAppBarWidget(
                   changeIndex: currentIndex == 3 ? true : false,
-                  checkImg: 'profile',
-                  unCheckImg: 'unProfile',
+                  icon: Icons.person_outline,
+                  activeIcon: Icons.person,
                   onTap: () {
                     currentIndex = 3;
                     setState(() {});
@@ -155,8 +158,8 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
 }
 
 class BottomAppBarWidget extends StatefulWidget {
-  String? checkImg;
-  String? unCheckImg;
+  IconData? icon;
+  IconData? activeIcon;
 
   bool changeIndex;
   String? title;
@@ -166,8 +169,8 @@ class BottomAppBarWidget extends StatefulWidget {
   BottomAppBarWidget(
       {super.key,
       this.title,
-      this.checkImg,
-      this.unCheckImg,
+      this.icon,
+      this.activeIcon,
       this.onTap,
       required this.changeIndex});
 
@@ -178,27 +181,24 @@ class BottomAppBarWidget extends StatefulWidget {
 class _BottomAppBarWidgetState extends State<BottomAppBarWidget> {
   @override
   Widget build(BuildContext context) {
+    final Color color =
+        widget.changeIndex ? appColor : const Color(0xFF9CA3AF);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: InkWell(
         onTap: (widget.onTap),
         child: Column(
           children: [
-            Image.asset(
-              widget.changeIndex == true
-                  ? 'images/${widget.checkImg!}.png'
-                  : 'images/${widget.unCheckImg!}.png',
-              height: 28,
-              width: 28,
-              fit: BoxFit.cover,
+            Icon(
+              widget.changeIndex == true ? widget.activeIcon : widget.icon,
+              size: 26,
+              color: color,
             ),
             const SizedBox(height: 4),
             Text(
               widget.title!,
               style: TextStyle(
-                color: widget.changeIndex
-                    ? const Color(0xFF00a569)
-                    : const Color(0xFF9CA3AF),
+                color: color,
                 fontSize: 11,
                 fontWeight: widget.changeIndex
                     ? FontWeight.w600

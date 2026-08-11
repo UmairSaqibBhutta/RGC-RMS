@@ -13,6 +13,7 @@ import 'package:leadmanagementsystem/extensions/string_extensions.dart';
 import 'package:leadmanagementsystem/main.dart';
 import 'package:leadmanagementsystem/models/tasks_model.dart';
 import 'package:leadmanagementsystem/widgets/custom_button.dart';
+import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 import 'package:leadmanagementsystem/widgets/custom_widgets.dart';
 import 'package:leadmanagementsystem/widgets/data_formatter.dart';
 import 'package:location/location.dart' as loc;
@@ -385,7 +386,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
 
   Future<void> checkIn() async {
     if (location == null) {
-      Get.snackbar("Error", "Location service is not initialized.");
+      CustomSnackbar.error("Location service is not initialized.");
       return;
     }
 
@@ -408,8 +409,8 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
     _locationData = await location!.getLocation();
 
     if (_locationData == null) {
-      Get.snackbar(
-          "Error", "You need to allow location permission to check in.");
+      CustomSnackbar.error(
+          "You need to allow location permission to check in.");
       return;
     }
 
@@ -434,7 +435,7 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
 
   Future<void> checkOut() async {
     if (location == null) {
-      Get.snackbar("Error", "Location service is not initialized.");
+      CustomSnackbar.error("Location service is not initialized.");
       return;
     }
 
@@ -457,8 +458,8 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
     _locationData = await location!.getLocation();
 
     if (_locationData == null) {
-      Get.snackbar(
-          "Error", "You need to allow location permission to check out.");
+      CustomSnackbar.error(
+          "You need to allow location permission to check out.");
       return;
     }
 

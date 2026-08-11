@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:leadmanagementsystem/constants/alarm_helper.dart';
 import 'package:leadmanagementsystem/constants/constants.dart';
-import 'package:leadmanagementsystem/controllers/project_controller.dart';
 import 'package:leadmanagementsystem/widgets/custom_button.dart';
+import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 import 'package:leadmanagementsystem/widgets/custom_text_field.dart';
 import 'package:leadmanagementsystem/widgets/custom_widgets.dart';
 
@@ -128,7 +128,7 @@ class _SetReminderScreenState extends State<SetReminderScreen> {
                 String title = titleCont.text.trim();
                 String desc = descCont.text.trim();
                 if (title.isEmpty || desc.isEmpty || selectedDateTime == null) {
-                  customSnackBar("Error",
+                  CustomSnackbar.error(
                       "Reminder title, purpose and datetime all are required");
                   return;
                 } else {

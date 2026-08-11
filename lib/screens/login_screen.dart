@@ -59,21 +59,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   SizedBox(height: getProportionateScreenHeight(48)),
-                  const Text(
+                  Text(
                     'Welcome back',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF111827),
-                    ),
+                    style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   const SizedBox(height: 4),
-                  const Text(
+                  Text(
                     'Sign in to your account',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF6B7280),
-                    ),
+                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 28),
                   CustomTextField(
@@ -136,32 +129,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  SizedBox(
-                    height: 50,
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if (isFormValid()) {
-                          loginController.loginFunction(context);
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: appColor,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                      ),
-                      child: loginController.loading.value
-                          ? customCircleLoader()
-                          : const Text(
-                              'Sign In',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                    ),
+                  CustomButton(
+                    title: 'Sign In',
+                    onTap: () {
+                      if (isFormValid()) {
+                        loginController.loginFunction(context);
+                      }
+                    },
+                    child: loginController.loading.value
+                        ? customCircleLoader()
+                        : null,
                   ),
                   const SizedBox(height: 24),
                 ],
@@ -219,78 +196,11 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-class CustomButton1 extends StatefulWidget {
-  final String text;
-  final VoidCallback onPressed;
-  final Color? gradient1;
-  final Color? gradient2;
-  final Color? borderColor;
-  final Color? txtColor;
-
-  const CustomButton1({
-    super.key,
-    required this.text,
-    required this.onPressed,
-    this.gradient1 = appColor,
-    this.gradient2 = const Color(0xFFB9F6CA),
-    this.borderColor = Colors.transparent,
-    this.txtColor = Colors.white,
-  });
-
-  @override
-  State<CustomButton1> createState() => _CustomButton1State();
-}
-
-class _CustomButton1State extends State<CustomButton1> {
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: widget.onPressed,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10),
-        child: Container(
-          height: 40,
-          decoration: BoxDecoration(
-            border: Border.all(color: widget.borderColor!),
-            borderRadius: BorderRadius.circular(10.0),
-            gradient: LinearGradient(
-              colors: [
-                widget.gradient1!,
-                widget.gradient2!,
-              ],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                spreadRadius: .3,
-                blurRadius: 3,
-                offset: const Offset(0, 3), // changes position of shadow
-              ),
-            ],
-          ),
-          child: Center(
-            child: Text(
-              widget.text,
-              style: TextStyle(
-                color: widget.txtColor,
-                fontWeight: FontWeight.bold,
-                fontSize: 16.0,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 Widget customCircleLoader() {
-  return const SizedBox(
-    height: 24,
-    width: 24,
-    child: CircularProgressIndicator(
-        strokeAlign: .1, strokeWidth: 2.2, color: Colors.white),
+  return const AppLoader(
+    size: 24,
+    strokeWidth: 2.2,
+    color: Colors.white,
+    trackColor: Colors.white24,
   );
 }

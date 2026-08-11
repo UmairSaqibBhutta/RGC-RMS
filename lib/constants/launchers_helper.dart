@@ -1,4 +1,4 @@
-import 'package:leadmanagementsystem/controllers/project_controller.dart';
+import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class UrlLauncherHelper {
@@ -9,7 +9,7 @@ class UrlLauncherHelper {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      customSnackBar("Error", "Unable to open the URL: $url");
+      CustomSnackbar.error("Unable to open the URL: $url");
     }
   }
 
@@ -20,7 +20,7 @@ class UrlLauncherHelper {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
-      customSnackBar("Error", "Unable to make a call to: $phoneNumber");
+      CustomSnackbar.error("Unable to make a call to: $phoneNumber");
     }
   }
 

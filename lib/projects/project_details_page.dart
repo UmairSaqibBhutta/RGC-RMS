@@ -1,30 +1,34 @@
 import 'dart:developer';
 
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 import 'package:leadmanagementsystem/admin_module/add_project_page.dart';
+import 'package:leadmanagementsystem/bottom_nav_screen.dart';
 import 'package:leadmanagementsystem/constants/constants.dart';
 import 'package:leadmanagementsystem/constants/launchers_helper.dart';
 import 'package:leadmanagementsystem/constants/user_roles.dart';
 import 'package:leadmanagementsystem/controllers/project_controller.dart';
 import 'package:leadmanagementsystem/controllers/login_controller.dart';
+import 'package:leadmanagementsystem/controllers/update_project_controller.dart';
 import 'package:leadmanagementsystem/extensions/string_extensions.dart';
 import 'package:leadmanagementsystem/main.dart';
 import 'package:leadmanagementsystem/models/project_model.dart';
 import 'package:leadmanagementsystem/screens/login_screen.dart';
+import 'package:leadmanagementsystem/widgets/custom_button.dart';
 import 'package:leadmanagementsystem/widgets/custom_decoration_container.dart';
 import 'package:leadmanagementsystem/widgets/custom_text_field.dart';
 import 'package:leadmanagementsystem/widgets/custom_widgets.dart';
+import 'package:leadmanagementsystem/widgets/follow_up_form.dart';
+import 'package:intl/intl.dart';
 import 'package:multi_select_flutter/dialog/multi_select_dialog_field.dart';
 import 'package:multi_select_flutter/util/multi_select_item.dart';
 
 import '../constants/companies_strings.dart';
 
 class ProjectDetailsPage extends StatefulWidget {
-  final ProjectData project;
+  final String projectId;
 
   String receverId;
   String senderName;
@@ -34,7 +38,7 @@ class ProjectDetailsPage extends StatefulWidget {
 
   ProjectDetailsPage(
       {super.key,
-      required this.project,
+      required this.projectId,
       required this.updateProject,
       required this.receverId,
       required this.senderName,
@@ -54,9 +58,20 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
 
   LoginController loginController = Get.find();
 
+  late final UpdateProjectController updateProjectCont;
+
+  /// Snapshot of the currently loaded project, set once per build after the
+  /// `project-detail/:id` fetch resolves. See build()'s loading/error gating.
+  late ProjectData _project;
+
   @override
   void initState() {
     super.initState();
+    updateProjectCont = Get.isRegistered<UpdateProjectController>()
+        ? Get.find()
+        : Get.put(UpdateProjectController());
+    updateProjectCont.getProjectById(widget.projectId);
+
     if (loginStorage.getUserRole() != UserRole.NEW_RECRUITS) {
       loginController.getMyAssignableUsers();
     }
@@ -65,7 +80,7 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
       loginController.getHigherRoleUsers();
     }
 
-    projectCont.getAssignedProjectUserList(widget.project.sId!, context);
+    projectCont.getAssignedProjectUserList(widget.projectId, context);
   }
 
   String? name;
@@ -83,31 +98,85 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
+    return GetBuilder<UpdateProjectController>(
+      init: updateProjectCont,
+      builder: (cont) {
+        final fetchedProject = cont.projectUpdateModel?.updateProjectData;
+
+        if (fetchedProject == null) {
+          if (cont.isProjectDetailLoading) {
+            return Scaffold(
+              appBar: mAppbar('Project Details', leading: _backButton(context)),
+              body: const Center(child: AppLoader()),
+            );
+          }
+          return Scaffold(
+            appBar: mAppbar('Project Details', leading: _backButton(context)),
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.error_outline,
+                        size: 48, color: Colors.grey),
+                    const SizedBox(height: 12),
+                    const Text(
+                      "Project not found",
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () =>
+                          updateProjectCont.getProjectById(widget.projectId),
+                      style:
+                          ElevatedButton.styleFrom(backgroundColor: appColor),
+                      child: const Text('Retry',
+                          style: TextStyle(color: whiteColor)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+
+        _project = fetchedProject;
+
+        return _buildLoadedScaffold(context);
+      },
+    );
+  }
+
+  Widget _buildLoadedScaffold(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: mAppbar("${widget.project.title} details", action: [
-        widget.updateProject == true ||
-                loginStorage.getUserId() == widget.project.userId
-            ? Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: ElevatedButton(
-                    onPressed: () {
-                      Get.to(AddProjectPage(
-                        projectData: widget.project,
-                        reciverId: widget.receverId,
-                        token: widget.token,
-                        senderName: widget.senderName,
-                      ));
-                    },
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: appColor,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                        elevation: 0),
-                    child: const Text('Update Project')),
-              )
-            : const SizedBox.shrink()
-      ]),
+      appBar: mAppbar("${_project.title} details",
+          leading: _backButton(context),
+          action: [
+            widget.updateProject == true ||
+                    loginStorage.getUserId() == _project.userId
+                ? Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(
+                        onPressed: () {
+                          Get.to(AddProjectPage(
+                            projectData: _project,
+                            reciverId: widget.receverId,
+                            token: widget.token,
+                            senderName: widget.senderName,
+                          ));
+                        },
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: appColor,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                            elevation: 0),
+                        child: const Text('Update Project')),
+                  )
+                : const SizedBox.shrink()
+          ]),
       body: CustomDecorationContainer(
           child: SafeArea(
         child: SingleChildScrollView(
@@ -194,7 +263,7 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
                                   'senderName': loginStorage.getUserName(),
                                   'receiverUserIds':
                                       projectCont.projectselectedUsers,
-                                  'projectId': widget.project.sId,
+                                  'projectId': _project.sId,
                                   'assignStatus': true,
                                 };
 
@@ -202,7 +271,7 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
                                 await projectCont.assignProject(context, body);
 
                                 await projectCont.getAssignedProjectUserList(
-                                    widget.project.sId!, context);
+                                    _project.sId!, context);
                               },
                             ),
                           );
@@ -344,31 +413,54 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
                 //         loginStorage.getUserRole() == UserRole.CEO
                 //     ? const SizedBox.shrink()
                 //     : requestForUpdateProject(),
-                // if (widget.project.company.isNotNullOrEmpty)
+                // if (_project.company.isNotNullOrEmpty)
                 _buildProjectInfo(context),
                 _buildAdditionalInfo(context),
-                if (widget.project.description.isNotNullOrEmpty)
+                if (_project.description.isNotNullOrEmpty)
                   _buildExpandableSection(
                       context,
                       "Description",
-                      widget.project.description!,
+                      _project.description!,
                       _isDescriptionExpanded, (expanded) {
                     setState(() {
                       _isDescriptionExpanded = expanded;
                     });
                   }),
-                if (widget.project.notes.isNotNullOrEmpty)
+                if (_project.notes.isNotNullOrEmpty)
                   _buildExpandableSection(
-                      context, "Notes", widget.project.notes!, _isNotesExpanded,
+                      context, "Notes", _project.notes!, _isNotesExpanded,
                       (expanded) {
                     setState(() {
                       _isNotesExpanded = expanded;
                     });
                   }),
-                if (widget.project.filePath.isNotNullOrEmpty)
+                if (_project.filePath.isNotNullOrEmpty)
                   const SizedBox(height: 10),
-                if (widget.project.filePath.isNotNullOrEmpty)
+                if (_project.filePath.isNotNullOrEmpty)
                   _buildFileDownloadButton(),
+                const SizedBox(height: 12),
+                _buildFollowUpsSection(context),
+                const SizedBox(height: 12),
+                GetBuilder<ProjectController>(
+                  init: projectCont,
+                  builder: (controller) {
+                    return FollowUpForm(
+                      isLoading: controller.followUpLoader,
+                      onSubmit: (text, image) async {
+                        final success = await controller.addProjectFollowUp(
+                          projectId: _project.sId!,
+                          text: text,
+                          image: image,
+                        );
+                        if (success) {
+                          await updateProjectCont
+                              .getProjectById(widget.projectId);
+                        }
+                        return success;
+                      },
+                    );
+                  },
+                ),
                 const SizedBox(height: 20),
               ],
             ),
@@ -385,7 +477,7 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            widget.project.title!,
+            _project.title!,
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -393,12 +485,163 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
           ),
           const SizedBox(height: 10),
           Text(
-            'Client Name: ${widget.project.clientName}',
+            'Client Name: ${_project.clientName}',
             style: const TextStyle(
               fontSize: 16,
               color: Colors.black54,
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _backButton(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.arrow_back),
+      onPressed: () {
+        if (Navigator.canPop(context)) {
+          Get.back();
+        } else {
+          Get.offAll(() => const BottomNavScreen());
+        }
+      },
+    );
+  }
+
+  Widget _buildFollowUpsSection(BuildContext context) {
+    final followUps = _project.followUp ?? [];
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text(
+                'Follow Ups',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                decoration: BoxDecoration(
+                  color: appColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '${followUps.length}',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: appColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          if (followUps.isEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFE9EAEC)),
+              ),
+              child: const Text(
+                'No follow ups yet.',
+                style: TextStyle(fontSize: 14, color: Colors.black54),
+              ),
+            )
+          else
+            for (final followUp in followUps.reversed)
+              _buildFollowUpTile(followUp),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFollowUpTile(FollowUp followUp) {
+    final name = followUp.user?.name;
+    final hasName = name.isNotNullOrEmpty;
+    final initial = hasName ? name!.substring(0, 1).toUpperCase() : '?';
+    final createdAt = followUp.createdAt;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 10,
+            spreadRadius: 2,
+            offset: Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 14,
+                backgroundColor: appColor.withValues(alpha: 0.15),
+                child: Text(
+                  initial,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: appColor,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  hasName ? name! : 'Unknown',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (createdAt != null)
+                Text(
+                  DateFormat('MMM d, h:mm a').format(createdAt),
+                  style: const TextStyle(fontSize: 11, color: Colors.black45),
+                ),
+            ],
+          ),
+          if (followUp.text.isNotNullOrEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              followUp.text!,
+              style: const TextStyle(fontSize: 15, height: 1.4),
+            ),
+          ],
+          if (followUp.image.isNotNullOrEmpty) ...[
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              // Same `baseUrl + <path>` convention used for chat images
+              // (see chat_page.dart) — the API returns a bare filename here.
+              child: Image.network(
+                baseUrl + followUp.image!,
+                height: 150,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -461,7 +704,7 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
                                   ? const Center(
                                       child: Padding(
                                       padding: EdgeInsets.all(8.0),
-                                      child: CircularProgressIndicator(),
+                                      child: AppLoader(size: 32),
                                     ))
                                   : Column(
                                       children: [
@@ -520,19 +763,26 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
                                                 prefixIcon: Icons.text_fields,
                                               ),
                                         controller.loaderData == true
-                                            ? const CircularProgressIndicator()
-                                            : CustomButton1(
-                                                text: 'Send Request',
-                                                onPressed: () {
-                                                  controller
-                                                      .sendProjectUpdateNotification(
-                                                          recieverIdProject,
-                                                          widget.project.sId,
-                                                          commentController.text
-                                                              .trim(),
-                                                          fcmToken!,
-                                                          selectName);
-                                                })
+                                            ? const AppLoader(size: 32)
+                                            : SizedBox(
+                                                width: 160,
+                                                child: CustomButton(
+                                                  title: 'Send Request',
+                                                  fullWidth: false,
+                                                  height: 40,
+                                                  onTap: () {
+                                                    controller
+                                                        .sendProjectUpdateNotification(
+                                                            recieverIdProject,
+                                                            _project.sId,
+                                                            commentController
+                                                                .text
+                                                                .trim(),
+                                                            fcmToken!,
+                                                            selectName);
+                                                  },
+                                                ),
+                                              )
                                       ],
                                     );
                             }),
@@ -584,7 +834,7 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
                 ),
                 const SizedBox(width: 10),
                 Text(
-                  widget.project.status!,
+                  _project.status!,
                   style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -613,14 +863,14 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
       padding: const EdgeInsets.only(top: 10),
       child: Column(
         children: [
-          // if (widget.project.personName != null)
-          if (widget.project.company.isNotNullOrEmpty)
+          // if (_project.personName != null)
+          if (_project.company.isNotNullOrEmpty)
             Stack(
               children: [
                 _buildInfoCard(
                   context,
                   "Company",
-                  widget.project.company!,
+                  _project.company!,
                   CupertinoIcons.building_2_fill, // Keep as is or change
                   Colors.purple,
                 ),
@@ -628,199 +878,199 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
                     top: 30,
                     right: 40,
                     child: Image.asset(
-                      Company.getCompanyLogo(widget.project.company!),
+                      Company.getCompanyLogo(_project.company!),
                       height: 40,
                       width: 40,
                     )),
               ],
             ),
-          if (widget.project.creatorName.isNotNullOrEmpty &&
-              widget.project.creatorRole.isNotNullOrEmpty)
+          if (_project.creatorName.isNotNullOrEmpty &&
+              _project.creatorRole.isNotNullOrEmpty)
             _buildInfoCard(
               context,
               "Project Created By",
-              "${widget.project.creatorName} - ${widget.project.creatorRole}",
+              "${_project.creatorName} - ${_project.creatorRole}",
               Icons.account_circle, // Updated icon for person name
               Colors.teal,
             ),
-          if (widget.project.consultantName.isNotNullOrEmpty)
+          if (_project.consultantName.isNotNullOrEmpty)
             _buildInfoCard(
               context,
               "Consultant Name",
-              "${widget.project.consultantName} ",
+              "${_project.consultantName} ",
               Icons.account_circle, // Updated icon for person name
               Colors.teal,
             ),
-          if (widget.project.consultantREName.isNotNullOrEmpty)
+          if (_project.consultantREName.isNotNullOrEmpty)
             _buildInfoCard(
               context,
               "Consultant RE (Resident Engineer)",
-              "${widget.project.consultantREName} ",
+              "${_project.consultantREName} ",
               Icons.engineering, // Changed to match engineering role
               Colors.teal,
             ),
-          if (widget.project.consultantREPhone.isNotNullOrEmpty)
+          if (_project.consultantREPhone.isNotNullOrEmpty)
             InkWell(
-              onTap: () => UrlLauncherHelper.makePhoneCall(
-                  widget.project.consultantREPhone!),
+              onTap: () =>
+                  UrlLauncherHelper.makePhoneCall(_project.consultantREPhone!),
               child: _buildInfoCard(
                 context,
                 "Consultant RE Phone",
-                "${widget.project.consultantREPhone} ",
+                "${_project.consultantREPhone} ",
                 Icons.phone,
                 Colors.teal,
               ),
             ),
-          if (widget.project.consultantMEName.isNotNullOrEmpty)
+          if (_project.consultantMEName.isNotNullOrEmpty)
             _buildInfoCard(
               context,
               "Consultant ME (Material Engineer)",
-              "${widget.project.consultantMEName} ",
+              "${_project.consultantMEName} ",
               Icons.engineering, // Changed to match engineering role
               Colors.teal,
             ),
-          if (widget.project.consultantMEPhone.isNotNullOrEmpty)
+          if (_project.consultantMEPhone.isNotNullOrEmpty)
             InkWell(
-              onTap: () => UrlLauncherHelper.makePhoneCall(
-                  widget.project.consultantMEPhone!),
+              onTap: () =>
+                  UrlLauncherHelper.makePhoneCall(_project.consultantMEPhone!),
               child: _buildInfoCard(
                 context,
                 "Consultant ME Phone",
-                "${widget.project.consultantMEPhone}",
+                "${_project.consultantMEPhone}",
                 Icons.phone, // Changed to phone icon
                 Colors.teal,
               ),
             ),
-          if (widget.project.contractorName.isNotNullOrEmpty)
+          if (_project.contractorName.isNotNullOrEmpty)
             _buildInfoCard(
               context,
               "Contractor Name",
-              "${widget.project.contractorName} ",
+              "${_project.contractorName} ",
               Icons.business, // Changed to business icon
               Colors.teal,
             ),
-          if (widget.project.contractorMEName.isNotNullOrEmpty)
+          if (_project.contractorMEName.isNotNullOrEmpty)
             _buildInfoCard(
               context,
               "Contractor ME (Material Engineer) ",
-              "${widget.project.contractorMEName} ",
+              "${_project.contractorMEName} ",
               Icons.precision_manufacturing,
               Colors.teal,
             ),
-          if (widget.project.contractorMEPhone.isNotNullOrEmpty)
+          if (_project.contractorMEPhone.isNotNullOrEmpty)
             InkWell(
-              onTap: () => UrlLauncherHelper.makePhoneCall(
-                  widget.project.contractorMEPhone!),
+              onTap: () =>
+                  UrlLauncherHelper.makePhoneCall(_project.contractorMEPhone!),
               child: _buildInfoCard(
                 context,
                 "Contractor ME Phone",
-                "${widget.project.contractorMEPhone} ",
+                "${_project.contractorMEPhone} ",
                 Icons.phone,
                 Colors.teal,
               ),
             ),
-          if (widget.project.contractorPMName.isNotNullOrEmpty)
+          if (_project.contractorPMName.isNotNullOrEmpty)
             _buildInfoCard(
               context,
               "Contractor PM (Project Manager)",
-              "${widget.project.contractorPMName} ",
+              "${_project.contractorPMName} ",
               Icons.engineering,
               Colors.teal,
             ),
-          if (widget.project.contractorPMPhone.isNotNullOrEmpty)
+          if (_project.contractorPMPhone.isNotNullOrEmpty)
             InkWell(
-              onTap: () => UrlLauncherHelper.makePhoneCall(
-                  widget.project.contractorPMPhone!),
+              onTap: () =>
+                  UrlLauncherHelper.makePhoneCall(_project.contractorPMPhone!),
               child: _buildInfoCard(
                 context,
                 "Contractor PM Phone",
-                "${widget.project.contractorPMPhone} ",
+                "${_project.contractorPMPhone} ",
                 Icons.phone,
                 Colors.teal,
               ),
             ),
-          if (widget.project.budget.isNotNullOrEmpty)
+          if (_project.budget.isNotNullOrEmpty)
             _buildInfoCard(
               context,
               "Budget",
-              formatAmount(double.parse(widget.project.budget!)),
+              formatAmount(double.parse(_project.budget!)),
               Icons.currency_rupee,
               Colors.green,
             ),
-          if (widget.project.tentativeCost.isNotNullOrEmpty)
+          if (_project.tentativeCost.isNotNullOrEmpty)
             _buildInfoCard(
               context,
               "Tentative Cost",
-              formatAmount(double.parse(widget.project.tentativeCost!)),
+              formatAmount(double.parse(_project.tentativeCost!)),
               Icons.currency_rupee,
               Colors.red,
             ),
-          if (widget.project.workForce.isNotNullOrEmpty)
+          if (_project.workForce.isNotNullOrEmpty)
             _buildInfoCard(
               context,
               "Workforce",
-              "${widget.project.workForce} ",
+              "${_project.workForce} ",
               Icons.group, // Changed to group icon
               Colors.teal,
             ),
-          if (widget.project.precourmentName.isNotNullOrEmpty)
+          if (_project.precourmentName.isNotNullOrEmpty)
             _buildInfoCard(
               context,
               "Procurement Officer Name",
-              "${widget.project.precourmentName} ",
+              "${_project.precourmentName} ",
               Icons.person, // Changed to person icon
               Colors.teal,
             ),
-          if (widget.project.precourmentPhone.isNotNullOrEmpty)
+          if (_project.precourmentPhone.isNotNullOrEmpty)
             InkWell(
-              onTap: () => UrlLauncherHelper.makePhoneCall(
-                  widget.project.precourmentPhone!),
+              onTap: () =>
+                  UrlLauncherHelper.makePhoneCall(_project.precourmentPhone!),
               child: _buildInfoCard(
                 context,
                 "Procurement Officer Phone",
-                "${widget.project.precourmentPhone} ",
+                "${_project.precourmentPhone} ",
                 Icons.phone, // Changed to phone icon
                 Colors.teal,
               ),
             ),
-          if (widget.project.accountOfficerName.isNotNullOrEmpty)
+          if (_project.accountOfficerName.isNotNullOrEmpty)
             _buildInfoCard(
               context,
               "Account Officer Name",
-              "${widget.project.accountOfficerName} ",
+              "${_project.accountOfficerName} ",
               Icons.person, // Changed to person icon
               Colors.teal,
             ),
-          if (widget.project.accountOfficerPhone.isNotNullOrEmpty)
+          if (_project.accountOfficerPhone.isNotNullOrEmpty)
             InkWell(
               onTap: () => UrlLauncherHelper.makePhoneCall(
-                  widget.project.accountOfficerPhone!),
+                  _project.accountOfficerPhone!),
               child: _buildInfoCard(
                 context,
                 "Account Officer Phone",
-                "${widget.project.accountOfficerPhone} ",
+                "${_project.accountOfficerPhone} ",
                 Icons.phone, // Changed to phone icon
                 Colors.teal,
               ),
             ),
-          if (widget.project.duration.isNotNullOrEmpty)
-            if (widget.project.duration != null)
+          if (_project.duration.isNotNullOrEmpty)
+            if (_project.duration != null)
               _buildInfoCard(
                 context,
                 "Duration",
-                widget.project.duration!,
+                _project.duration!,
                 Icons.timer, // Changed to timer icon
                 Colors.blue,
               ),
-          if (widget.project.location.isNotNullOrEmpty)
+          if (_project.location.isNotNullOrEmpty)
             _buildInfoCard(
               context,
               "Location",
-              widget.project.location!,
+              _project.location!,
               Icons.location_on, // Changed to location icon
               Colors.orange,
             ),
-          if (widget.project.workScope!.isNotEmpty)
+          if (_project.workScope!.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 10.0),
               child: Card(
@@ -840,7 +1090,7 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
                             fontSize: 19, fontWeight: FontWeight.w500),
                       ),
                     ),
-                    for (var l in widget.project.workScope!) ...[
+                    for (var l in _project.workScope!) ...[
                       Padding(
                         padding: const EdgeInsets.all(12.0),
                         child: Row(
@@ -860,11 +1110,11 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
                 ),
               ),
             ),
-          if (widget.project.priceValue.isNotNullOrEmpty)
+          if (_project.priceValue.isNotNullOrEmpty)
             _buildInfoCard(
               context,
               "Products Price",
-              formatAmount(double.parse(widget.project.priceValue!)),
+              formatAmount(double.parse(_project.priceValue!)),
               Icons.currency_rupee,
               Colors.teal,
             ),
@@ -879,23 +1129,23 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (widget.project.personName.isNotNullOrEmpty)
+          if (_project.personName.isNotNullOrEmpty)
             _buildInfoCard(
               context,
               "Contact Person",
-              widget.project.personName!,
+              _project.personName!,
               CupertinoIcons.person_solid,
               Colors.blueAccent,
             ),
-          if (widget.project.personContacts.isNotNullOrEmpty)
+          if (_project.personContacts.isNotNullOrEmpty)
             GestureDetector(
               onTap: () {
-                UrlLauncherHelper.makePhoneCall(widget.project.personContacts!);
+                UrlLauncherHelper.makePhoneCall(_project.personContacts!);
               },
               child: _buildInfoCard(
                 context,
                 "Contact Phone",
-                widget.project.personContacts!,
+                _project.personContacts!,
                 CupertinoIcons.phone_fill,
                 Colors.green,
               ),
@@ -1086,27 +1336,14 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
   }
 
   Future<void> _setProjectStatus(BuildContext context, String status) async {
-    // Navigator.pop(context);
     alertDialogueWithLoader(context);
     bool isUpdated = await projectCont
-        .updateProjectStatus({'status': status, "_id": widget.project.sId});
-    Navigator.of(context).pop();
-    if (mounted && isUpdated) {
+        .updateProjectStatus({'status': status, "_id": _project.sId});
+    if (mounted) Navigator.of(context).pop(); // dismiss loader
+    if (isUpdated) {
       await projectCont.getProjects(context);
-      try {
-        Navigator.of(context).pop();
-      } catch (e, stack) {
-        FirebaseCrashlytics.instance.recordError(e, stack,
-            reason:
-                'Failed to pop Navigator in project details page _setProjectStatus ');
-      }
-
-      setState(() {
-        widget.project.status = status;
-      });
+      await updateProjectCont.getProjectById(widget.projectId);
     }
-
-    // Optionally use a state management solution to update UI
   }
 
   _buildFileDownloadButton() {
@@ -1115,7 +1352,7 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         color: Theme.of(context).primaryColor,
         onPressed: () {
-          _downloadFile(widget.project.filePath!);
+          _downloadFile(_project.filePath!);
         },
         borderRadius: BorderRadius.circular(20),
         child: const Row(

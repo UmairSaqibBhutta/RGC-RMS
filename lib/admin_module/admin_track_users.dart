@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:leadmanagementsystem/constants/constants.dart';
 import 'package:leadmanagementsystem/extensions/string_extensions.dart';
 import 'package:leadmanagementsystem/main.dart';
+import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 import 'package:leadmanagementsystem/widgets/custom_widgets.dart';
 import 'package:leadmanagementsystem/widgets/data_formatter.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -164,8 +165,8 @@ class _AdminTrackUsersState extends State<AdminTrackUsers> {
                                     _openMap(double.parse(data.lat!),
                                         double.parse(data.long!));
                                   } else {
-                                    Get.snackbar(
-                                        "Error", "Location not available");
+                                    CustomSnackbar.error(
+                                        "Location not available");
                                   }
                                 },
                                 child: const Icon(Icons.location_on,

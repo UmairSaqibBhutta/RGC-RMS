@@ -2,27 +2,31 @@ import 'dart:developer';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:leadmanagementsystem/controllers/manager_controller.dart';
 import 'package:leadmanagementsystem/constants/size_config.dart';
 
 import '../models/users_list_model.dart';
+import '../widgets/custom_button.dart';
+import '../widgets/custom_dropdown_field.dart';
 import '../widgets/custom_text_field.dart';
+import '../widgets/custom_widgets.dart';
 
 const appColor = Color(0xFF00a569);
 const whiteColor = Colors.white;
 const blackColor = Colors.black;
 const greyColor = Colors.grey;
 
-const leadColor = Colors.amber;
-const contactedColor = Colors.indigo;
-const pitchedColor = Colors.purple;
-const sentSampleColor = Colors.purpleAccent;
-const negotiatingColor = Colors.blueGrey;
-const wonColor = Colors.green;
-const lostColor = Colors.red;
+// Pipeline status colors, ordered to read as progress toward the brand green.
+const leadColor = Color(0xFF64748B); // slate
+const contactedColor = Color(0xFF3B82F6); // blue
+const pitchedColor = Color(0xFF8B5CF6); // violet
+const sentSampleColor = Color(0xFFF59E0B); // amber
+const negotiatingColor = Color(0xFF0D9488); // teal
+const wonColor = appColor;
+const lostColor = Color(0xFFDC2626); // red
 
 const String appName = "RGC RMS";
 
@@ -36,17 +40,7 @@ alertDialogueWithLoader(context) {
   showDialog(
     barrierDismissible: true,
     context: context,
-    builder: (BuildContext context) {
-      return Container(
-        // height: 300,
-        color: Colors.transparent,
-        child: Center(
-            child: SizedBox(
-                // height: 60,
-                // width: 60,
-                child: showSpinkit())),
-      );
-    },
+    builder: (BuildContext context) => const LoadingDialog(),
   );
 }
 
@@ -67,12 +61,44 @@ Row formErrorText({required String error}) {
 }
 
 Widget showSpinkit() {
-  return const Center(
-    child: SpinKitWaveSpinner(
-      color: appColor,
-      size: 50.0,
-    ),
+  return Center(
+    child: const AppLoader()
+        .animate()
+        .fadeIn(duration: 200.ms)
+        .scale(begin: const Offset(.8, .8)),
   );
+}
+
+/// Branded circular loader used everywhere in place of a bare
+/// [CircularProgressIndicator], so every loading state in the app —
+/// full-page, in-dialog, or inline in a button — looks like one
+/// consistent design instead of Material's generic default spinner.
+class AppLoader extends StatelessWidget {
+  final double size;
+  final Color color;
+  final Color? trackColor;
+  final double strokeWidth;
+
+  const AppLoader({
+    super.key,
+    this.size = 44,
+    this.color = appColor,
+    this.trackColor,
+    this.strokeWidth = 3.5,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: size,
+      width: size,
+      child: CircularProgressIndicator(
+        strokeWidth: strokeWidth,
+        color: color,
+        backgroundColor: trackColor ?? color.withValues(alpha: 0.15),
+      ),
+    );
+  }
 }
 
 customRoutes(BuildContext context, Widget child) {
@@ -160,64 +186,32 @@ class _CustomDialogState extends State<CustomDialog> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Text('Update Account',
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF111827))),
+                              Text('Update Account',
+                                  style:
+                                      Theme.of(context).textTheme.titleMedium),
                               const SizedBox(height: 16),
                               CustomTextField(controller: name, hint: 'Name'),
                               CustomTextField(controller: email, hint: 'Email'),
                               CustomTextField(controller: phone, hint: 'Phone'),
-                              const SizedBox(height: 12),
-                              Container(
-                                decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(
-                                        color: const Color(0xFFE5E7EB))),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12.0),
-                                child: DropdownButton(
-                                    underline: const SizedBox.shrink(),
-                                    isExpanded: true,
-                                    hint: Text(status ?? ''),
-                                    items: statusList.map((e) {
-                                      return DropdownMenuItem(
-                                          onTap: () {
-                                            status = e;
-                                            setState(() {});
-                                          },
-                                          value: e,
-                                          child: Text(e));
-                                    }).toList(),
-                                    onChanged: (_) {}),
+                              CustomDropdownField<String>(
+                                hint: 'Status',
+                                value: status,
+                                items: statusList,
+                                itemLabel: (e) => e,
+                                onChanged: (value) {
+                                  setState(() => status = value);
+                                },
                               ),
-                              const SizedBox(height: 12),
-                              Container(
-                                decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(
-                                        color: const Color(0xFFE5E7EB))),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12.0),
-                                child: DropdownButton(
-                                    underline: const SizedBox.shrink(),
-                                    isExpanded: true,
-                                    hint: Text(role ?? ''),
-                                    items: roleList.map((e) {
-                                      return DropdownMenuItem(
-                                          onTap: () {
-                                            role = e;
-                                            setState(() {});
-                                          },
-                                          value: e,
-                                          child: Text(e));
-                                    }).toList(),
-                                    onChanged: (_) {}),
+                              CustomDropdownField<String>(
+                                hint: 'Role',
+                                value: role,
+                                items: roleList,
+                                itemLabel: (e) => e,
+                                onChanged: (value) {
+                                  setState(() => role = value);
+                                },
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 8),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
@@ -225,42 +219,33 @@ class _CustomDialogState extends State<CustomDialog> {
                                     onPressed: () {
                                       Get.back();
                                     },
-                                    child: const Text('Cancel',
-                                        style: TextStyle(
-                                            color: Color(0xFF6B7280))),
+                                    child: const Text('Cancel'),
                                   ),
                                   const SizedBox(width: 8),
                                   controller.editManagersLoading == true
-                                      ? const SizedBox(
-                                          height: 20,
-                                          width: 20,
-                                          child: CircularProgressIndicator(
-                                              strokeWidth: 2, color: appColor))
-                                      : ElevatedButton(
-                                          onPressed: () {
-                                            Map<String, dynamic> body = {
-                                              'userId': widget.manager.id,
-                                              'email': email.text.trim(),
-                                              'name': name.text.trim(),
-                                              'role': role,
-                                              'status': status,
-                                              'phone': phone.text.trim(),
-                                            };
+                                      ? const AppLoader(size: 20, strokeWidth: 2)
+                                      : SizedBox(
+                                          width: 140,
+                                          child: CustomButton(
+                                            title: 'Update',
+                                            fullWidth: false,
+                                            onTap: () {
+                                              Map<String, dynamic> body = {
+                                                'userId': widget.manager.id,
+                                                'email': email.text.trim(),
+                                                'name': name.text.trim(),
+                                                'role': role,
+                                                'status': status,
+                                                'phone': phone.text.trim(),
+                                              };
 
-                                            print('body-->$body');
+                                              print('body-->$body');
 
-                                            controller
-                                                .editProjectManager(body);
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: appColor,
-                                            shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(8)),
+                                              controller
+                                                  .editProjectManager(body);
+                                            },
                                           ),
-                                          child: const Text('Update',
-                                              style: TextStyle(
-                                                  color: Colors.white))),
+                                        ),
                                 ],
                               )
                             ],
@@ -275,25 +260,4 @@ class _CustomDialogState extends State<CustomDialog> {
       ),
     );
   }
-}
-
-// Custom dropdown decoration
-InputDecoration dropdownDecoration(String label) {
-  return InputDecoration(
-    labelText: label,
-    labelStyle: const TextStyle(color: appColor),
-    contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
-      borderSide: BorderSide(color: Colors.grey.shade400),
-    ),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
-      borderSide: BorderSide(color: Colors.grey.shade400),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
-      borderSide: const BorderSide(color: appColor, width: 2),
-    ),
-  );
 }

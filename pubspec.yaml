@@ -48,6 +48,8 @@ dependencies:
   cloud_firestore: any
   chatview: ^2.5.0
   flutter_launcher_icons: any
+  animated_snack_bar: ^0.4.0
+  image_picker: ^1.2.2
 dependency_overrides:
   intl: ^0.20.0
 

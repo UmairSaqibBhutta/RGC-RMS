@@ -5,10 +5,10 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:leadmanagementsystem/constants/api_urls.dart';
 import 'package:leadmanagementsystem/constants/constants.dart';
-import 'package:leadmanagementsystem/controllers/project_controller.dart';
 import 'package:leadmanagementsystem/main.dart';
 import 'package:leadmanagementsystem/models/task_assigned_users_model.dart';
 import 'package:leadmanagementsystem/models/tasks_model.dart';
+import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 
 class TaskController extends GetxController {
   RxBool loading = false.obs;
@@ -73,7 +73,7 @@ class TaskController extends GetxController {
       assignedTasksList.clear();
 
       loading.value = false;
-      Get.snackbar("Error", e.toString());
+      CustomSnackbar.error(e.toString());
       update();
     }
   }
@@ -96,27 +96,27 @@ class TaskController extends GetxController {
   Future<void> addTask() async {
     // Check for required field validations
     if (taskNameCont.text.trim().isEmpty) {
-      Get.snackbar('Error', 'Task title is required');
+      CustomSnackbar.error('Task title is required');
       return;
     }
 
     if (taskDescCont.text.trim().isEmpty) {
-      Get.snackbar('Error', 'Task description is required');
+      CustomSnackbar.error('Task description is required');
       return;
     }
 
     if (project.value.isEmpty) {
-      Get.snackbar('Error', 'Project selection is required');
+      CustomSnackbar.error('Project selection is required');
       return;
     }
 
     if (priority.value.isEmpty) {
-      Get.snackbar('Error', 'Priority selection is required');
+      CustomSnackbar.error('Priority selection is required');
       return;
     }
 
     if (estimatedTime.value.isEmpty) {
-      Get.snackbar('Error', 'Estimated time is required');
+      CustomSnackbar.error('Estimated time is required');
       return;
     }
 
@@ -171,7 +171,7 @@ class TaskController extends GetxController {
       log('Response Code: ${response.statusCode}');
       log('Response Data: $responseData');
 
-      Get.snackbar('Success', 'Task added successfully');
+      CustomSnackbar.success('Task added successfully');
       clearAllFields();
       getTasks(null);
       Navigator.of(Get.context!).pop();
@@ -179,7 +179,7 @@ class TaskController extends GetxController {
       log('Response Code: ${response.statusCode}');
       log('Error: ${response.reasonPhrase}');
 
-      Get.snackbar("Error ", "Please try again");
+      CustomSnackbar.error("Please try again");
     }
   }
 
@@ -193,16 +193,16 @@ class TaskController extends GetxController {
       loading.value = false;
 
       if (response != null && response["status"] == true) {
-        Get.snackbar('Success', 'Task checked in successfully');
+        CustomSnackbar.success('Task checked in successfully');
         getTasks(null);
         Navigator.of(Get.context!).pop();
       } else {
         loading.value = false;
-        Get.snackbar('Error', 'Please try again');
+        CustomSnackbar.error('Please try again');
       }
     } catch (e) {
       loading.value = false;
-      Get.snackbar("Error", e.toString());
+      CustomSnackbar.error(e.toString());
     }
   }
 
@@ -216,16 +216,16 @@ class TaskController extends GetxController {
       loading.value = false;
 
       if (response != null && response["status"] == true) {
-        Get.snackbar('Success', 'Task checked out successfully');
+        CustomSnackbar.success('Task checked out successfully');
         getTasks(null);
         Navigator.of(Get.context!).pop();
       } else {
         loading.value = false;
-        Get.snackbar('Error', 'Please try again');
+        CustomSnackbar.error('Please try again');
       }
     } catch (e) {
       loading.value = false;
-      Get.snackbar("Error", e.toString());
+      CustomSnackbar.error(e.toString());
     }
   }
 
@@ -239,7 +239,7 @@ class TaskController extends GetxController {
     assignmentLoader = false;
     update();
     if (res['status'] == true) {
-      customSnackBar('Success', res["message"]);
+      CustomSnackbar.success(res["message"]);
       return true;
     } else {
       return false;

@@ -8,17 +8,15 @@ class ProjectUpdateModel {
 
   ProjectUpdateModel.fromJson(Map<String, dynamic> json) {
     status = json['status'];
-    updateProjectData = json['projectData'] != null
-        ? ProjectData.fromJson(json[
-            'projectData']) // Fixed: changed `projectData.fromJson` to `ProjectData.fromJson`
-        : null;
+    updateProjectData =
+        json['data'] != null ? ProjectData.fromJson(json['data']) : null;
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['status'] = status;
     if (updateProjectData != null) {
-      data['projectData'] = updateProjectData!.toJson();
+      data['data'] = updateProjectData!.toJson();
     }
     return data;
   }

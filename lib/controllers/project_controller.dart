@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
 // import 'package:file_picker/file_picker.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -16,6 +17,7 @@ import 'package:leadmanagementsystem/models/project_model.dart';
 import 'package:leadmanagementsystem/models/task_assigned_users_model.dart';
 
 import 'package:leadmanagementsystem/models/workscope_model.dart';
+import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 
 class ProjectController extends GetxController {
   RxBool leadB = false.obs;
@@ -45,9 +47,9 @@ class ProjectController extends GetxController {
 
   var workScope = <WorkScopeModel>[].obs;
 
-  var myProjects = <ProjectData>[].obs;
-  var assignedProjects = <ProjectData>[].obs;
-  var teamProjects = <ProjectData>[].obs;
+  var myProjects = <ProjectCardModel>[].obs;
+  var assignedProjects = <ProjectCardModel>[].obs;
+  var teamProjects = <ProjectCardModel>[].obs;
   var allProjects = <ProjectData>[];
 
   // Genuine counts from API (not affected by pagination)
@@ -183,19 +185,26 @@ class ProjectController extends GetxController {
 
       allProjects = [...mProjects, ...aProjects, ...tProjects];
 
-      myProjects.value = sortProjectsByStatus(mProjects);
-      assignedProjects.value = sortProjectsByStatus(aProjects);
-      teamProjects.value = sortProjectsByStatus(tProjects);
+      final sortedMyProjects = sortProjectsByStatus(mProjects);
+      myProjects.value = sortedMyProjects
+          .map((e) => ProjectCardModel.fromProjectData(e))
+          .toList();
+      assignedProjects.value = sortProjectsByStatus(aProjects)
+          .map((e) => ProjectCardModel.fromProjectData(e))
+          .toList();
+      teamProjects.value = sortProjectsByStatus(tProjects)
+          .map((e) => ProjectCardModel.fromProjectData(e))
+          .toList();
 
       log("myProjects length = ${myProjects.length}, total = ${myProjectsCount.value}");
       log("assignedProjects length = ${assignedProjects.length}, total = ${assignedProjectsCount.value}");
       log("teamProjects length = ${teamProjects.length}, total = ${teamProjectsCount.value}");
 
-      _categorizeProjects(myProjects);
+      _categorizeProjects(sortedMyProjects);
 
       return true;
     } else {
-      Get.snackbar('Error', 'Failed to fetch projects');
+      CustomSnackbar.error('Failed to fetch projects');
       return false;
     }
   }
@@ -240,19 +249,22 @@ class ProjectController extends GetxController {
       if (type == 'my') {
         final mProjects = projectModel.myProjects ?? [];
         final sorted = sortProjectsByStatus(mProjects);
-        myProjects.addAll(sorted);
+        myProjects
+            .addAll(sorted.map((e) => ProjectCardModel.fromProjectData(e)));
         allProjects = [...allProjects, ...mProjects];
         isLoadingMoreMyProjects.value = false;
       } else if (type == 'assigned') {
         final aProjects = projectModel.assignedProjects ?? [];
         final sorted = sortProjectsByStatus(aProjects);
-        assignedProjects.addAll(sorted);
+        assignedProjects
+            .addAll(sorted.map((e) => ProjectCardModel.fromProjectData(e)));
         allProjects = [...allProjects, ...aProjects];
         isLoadingMoreAssigned.value = false;
       } else {
         final tProjects = projectModel.teamProjects ?? [];
         final sorted = sortProjectsByStatus(tProjects);
-        teamProjects.addAll(sorted);
+        teamProjects
+            .addAll(sorted.map((e) => ProjectCardModel.fromProjectData(e)));
         allProjects = [...allProjects, ...tProjects];
         isLoadingMoreTeam.value = false;
       }
@@ -332,8 +344,6 @@ class ProjectController extends GetxController {
         case 'Temporary Close':
           temporaryClose.add(project);
           break;
-        default:
-          myProjects.add(project);
       }
     }
   }
@@ -404,20 +414,66 @@ class ProjectController extends GetxController {
       if (streamedResponse.statusCode == 201) {
         print('statusCode--->${streamedResponse.statusCode}');
 
-        customSnackBar('Success', 'Project uploaded successfully');
+        CustomSnackbar.success('Project uploaded successfully');
 
         await getProjects(context);
         clearProjectContsData();
 
         return true;
       } else {
-        Get.snackbar('Failed', 'Project could not be added');
+        CustomSnackbar.error('Project could not be added');
         return false;
       }
     } catch (err) {
       loading.value = false;
       // Get.snackbar('Error', 'Something went wrong. Please try again later.');
       return false;
+    }
+  }
+
+  /// loader for the "add follow up" action on the project details screen
+  bool followUpLoader = false;
+
+  /// Adds a follow up note (with an optional image) to a project via
+  /// `/follow-up-project`.
+  Future<bool> addProjectFollowUp({
+    required String projectId,
+    required String text,
+    File? image,
+  }) async {
+    try {
+      followUpLoader = true;
+      update();
+
+      final res = await postRequest.customMultipartPost(
+        url: ApiUrls.followUpProject,
+        fields: {
+          'user_id': loginStorage.getUserId() ?? '',
+          'project_id': projectId,
+          'text': text,
+        },
+        file: image,
+      );
+
+      if (res == null) {
+        CustomSnackbar.error('No response from server');
+        return false;
+      }
+
+      if (res['status'] == false || res['success'] == false) {
+        CustomSnackbar.error(res['message'] ?? 'Failed to add follow up');
+        return false;
+      }
+
+      CustomSnackbar.success(res['message'] ?? 'Follow up added successfully');
+      return true;
+    } catch (err) {
+      log('addProjectFollowUp error: $err');
+      CustomSnackbar.error('Something went wrong. Please try again later.');
+      return false;
+    } finally {
+      followUpLoader = false;
+      update();
     }
   }
 
@@ -463,7 +519,7 @@ class ProjectController extends GetxController {
     assignmentLoader = false;
     update();
     if (res['status'] == true) {
-      customSnackBar('Success', res["message"]);
+      CustomSnackbar.success(res["message"]);
       return true;
     } else {
       return false;
@@ -523,15 +579,15 @@ class ProjectController extends GetxController {
       CommonResponse model = CommonResponse.fromJson(responce);
 
       if (model.status) {
-        customSnackBar('Success', 'Project Status Updated');
+        CustomSnackbar.success('Project Status Updated');
 
         return true;
       } else {
-        Get.snackbar("Error", model.message);
+        CustomSnackbar.error(model.message);
         return false;
       }
     } else {
-      Get.snackbar("Error", "Some error occured");
+      CustomSnackbar.error("Some error occured");
       return false;
     }
   }
@@ -549,7 +605,7 @@ class ProjectController extends GetxController {
     update();
 
     if (res['status'] == true) {
-      customSnackBar('Success', res["message"]);
+      CustomSnackbar.success(res["message"]);
 
       return true;
     } else {
@@ -632,15 +688,11 @@ class ProjectController extends GetxController {
     // getProjects(context as BuildContext?);
     // Handle the response
     if (response.statusCode == 200) {
-      customSnackBar('Success', 'Project Updated Successfully');
+      CustomSnackbar.success('Project Updated Successfully');
 
       Get.offAll(const BottomNavScreen());
     } else {
-      Get.snackbar('Failed', 'Project Update Failed');
+      CustomSnackbar.error('Project Update Failed');
     }
   }
-}
-
-customSnackBar(String? title, String? msg) {
-  return Get.snackbar(title!, msg!, backgroundColor: CupertinoColors.white);
 }

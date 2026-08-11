@@ -25,11 +25,8 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
+class _HomePageState extends State<HomePage> {
   ProjectController projectController = Get.find();
-
-  AnimationController? controller;
-  Animation? animation;
 
   LoginController loginController = Get.put(LoginController());
 
@@ -44,19 +41,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     projectController.getProjects(context);
 
     _scrollController.addListener(_onScroll);
-
-    controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 1),
-    );
-
-    animation = Tween<double>(begin: -1, end: 20).animate(
-      CurvedAnimation(
-        parent: controller!,
-        curve: Curves.easeInOutCubicEmphasized,
-      ),
-    );
-    controller!.forward().then((_) => controller!.reverse());
   }
 
   @override
@@ -108,6 +92,60 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     2: const Text('Team'),
   };
 
+  static final List<
+      ({String title, Color color, String image, String status})> _statusFilters = [
+    (title: 'All Projects', color: appColor, image: 'team-lead.png', status: ''),
+    (title: 'Lead', color: leadColor, image: 'team-lead.png', status: 'lead'),
+    (
+      title: 'Contacted',
+      color: contactedColor,
+      image: 'operator.png',
+      status: 'contacted'
+    ),
+    (
+      title: 'Pitched',
+      color: pitchedColor,
+      image: 'agreement.png',
+      status: 'pitched'
+    ),
+    (
+      title: 'Sent Sample',
+      color: sentSampleColor,
+      image: 'sent.png',
+      status: 'sentSample'
+    ),
+    (
+      title: 'Negotiating',
+      color: negotiatingColor,
+      image: 'presentation.png',
+      status: 'negotiating'
+    ),
+    (title: 'Closed - Won', color: wonColor, image: 'won.png', status: 'closeWon'),
+    (
+      title: 'Closed - Lost',
+      color: lostColor,
+      image: 'lost-items.png',
+      status: 'closedLost'
+    ),
+    (
+      title: 'Temporarily Closed',
+      color: Color(0xFFFFB74D),
+      image: 'lost-items.png',
+      status: 'temporaryClose'
+    ),
+  ];
+
+  void _selectStatusFilter(String status) {
+    projectController.leadB.value = status == 'lead';
+    projectController.contactedB.value = status == 'contacted';
+    projectController.pitchedB.value = status == 'pitched';
+    projectController.sentSampleB.value = status == 'sentSample';
+    projectController.negotiatingB.value = status == 'negotiating';
+    projectController.closeWonB.value = status == 'closeWon';
+    projectController.closedLostB.value = status == 'closedLost';
+    projectController.temporaryCloseB.value = status == 'temporaryClose';
+  }
+
   int currentIndex = 0;
 
   Future<void> onRefresh() async {
@@ -133,8 +171,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 onRefresh: onRefresh,
                 child: Scaffold(
                   extendBodyBehindAppBar: true,
-                  appBar: AppBar(
-                    actions: [
+                  appBar: mAppbar(
+                    'Dashboard',
+                    action: [
                       InkWell(
                         onTap: () {
                           Get.to(const NotificationScreen());
@@ -165,21 +204,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ),
                       const SizedBox(width: 4),
                     ],
-                    elevation: 0,
-                    centerTitle: true,
-                    backgroundColor: Colors.white,
-                    title: const Text(
-                      'Dashboard',
-                      style: TextStyle(
-                        color: Color(0xFF111827),
-                        fontWeight: FontWeight.w600,
-                        fontSize: 17,
-                      ),
-                    ),
-                    bottom: const PreferredSize(
-                      preferredSize: Size.fromHeight(1),
-                      child: Divider(height: 1, color: Color(0xFFE9EAEC)),
-                    ),
                   ),
                   drawer: const AdminDrawer(),
                   body: SafeArea(
@@ -196,368 +220,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               SingleChildScrollView(
                                 scrollDirection: Axis.horizontal,
                                 child: Row(
-                                  children: [
-                                    CustomStatusButton(
-                                        onTap: () {
-                                          controller = AnimationController(
-                                            vsync: this,
-                                            duration:
-                                                const Duration(seconds: 1),
-                                          );
-
-                                          animation =
-                                              Tween<double>(begin: 0, end: 20)
-                                                  .animate(
-                                            CurvedAnimation(
-                                              parent: controller!,
-                                              curve: Curves.easeOutQuart,
-                                            ),
-                                          );
-                                          controller!.forward().then(
-                                              (_) => controller!.reverse());
-
-                                          projectController.leadB.value = false;
-                                          projectController.contactedB.value =
-                                              false;
-                                          projectController.pitchedB.value =
-                                              false;
-                                          projectController.sentSampleB.value =
-                                              false;
-                                          projectController.negotiatingB.value =
-                                              false;
-                                          projectController.closeWonB.value =
-                                              false;
-                                          projectController.closedLostB.value =
-                                              false;
-                                          projectController
-                                              .temporaryCloseB.value = false;
-
-                                          print(projectController.leadB.value);
-                                        },
-                                        title: 'All Projects',
-                                        color: appColor,
-                                        image: 'team-lead.png'),
-                                    CustomStatusButton(
-                                        onTap: () {
-                                          controller = AnimationController(
-                                            vsync: this,
-                                            duration:
-                                                const Duration(seconds: 1),
-                                          );
-
-                                          animation =
-                                              Tween<double>(begin: 0, end: 20)
-                                                  .animate(
-                                            CurvedAnimation(
-                                              parent: controller!,
-                                              curve: Curves
-                                                  .easeInOutCubicEmphasized,
-                                            ),
-                                          );
-                                          controller!.forward().then(
-                                              (_) => controller!.reverse());
-
-                                          // filterController.visible.value =
-                                          //     false;
-
-                                          projectController.leadB.value = true;
-                                          projectController.contactedB.value =
-                                              false;
-                                          projectController.pitchedB.value =
-                                              false;
-                                          projectController.sentSampleB.value =
-                                              false;
-                                          projectController.negotiatingB.value =
-                                              false;
-                                          projectController.closeWonB.value =
-                                              false;
-                                          projectController.closedLostB.value =
-                                              false;
-                                          projectController
-                                              .temporaryCloseB.value = false;
-
-                                          print(projectController.leadB.value);
-                                        },
-                                        title: 'Lead',
-                                        color: leadColor,
-                                        image: 'team-lead.png'),
-                                    CustomStatusButton(
-                                        onTap: () {
-                                          controller = AnimationController(
-                                            vsync: this,
-                                            duration:
-                                                const Duration(seconds: 1),
-                                          );
-
-                                          animation =
-                                              Tween<double>(begin: -1, end: 20)
-                                                  .animate(
-                                            CurvedAnimation(
-                                              parent: controller!,
-                                              curve: Curves
-                                                  .easeInOutCubicEmphasized,
-                                            ),
-                                          );
-                                          controller!.forward().then(
-                                              (_) => controller!.reverse());
-
-                                          projectController.leadB.value = false;
-                                          projectController.contactedB.value =
-                                              true;
-                                          projectController.pitchedB.value =
-                                              false;
-                                          projectController.sentSampleB.value =
-                                              false;
-                                          projectController.negotiatingB.value =
-                                              false;
-                                          projectController.closeWonB.value =
-                                              false;
-                                          projectController.closedLostB.value =
-                                              false;
-                                          projectController
-                                              .temporaryCloseB.value = false;
-
-                                          print(projectController
-                                              .contactedB.value);
-                                        },
-                                        title: 'Contacted',
-                                        color: contactedColor,
-                                        image: 'operator.png'),
-                                    CustomStatusButton(
-                                        onTap: () {
-                                          controller = AnimationController(
-                                            vsync: this,
-                                            duration:
-                                                const Duration(seconds: 1),
-                                          );
-
-                                          animation =
-                                              Tween<double>(begin: -1, end: 20)
-                                                  .animate(
-                                            CurvedAnimation(
-                                              parent: controller!,
-                                              curve: Curves
-                                                  .easeInOutCubicEmphasized,
-                                            ),
-                                          );
-                                          controller!.forward().then(
-                                              (_) => controller!.reverse());
-
-                                          projectController.leadB.value = false;
-                                          projectController.contactedB.value =
-                                              false;
-                                          projectController.pitchedB.value =
-                                              true;
-                                          projectController.sentSampleB.value =
-                                              false;
-                                          projectController.negotiatingB.value =
-                                              false;
-                                          projectController.closeWonB.value =
-                                              false;
-                                          projectController.closedLostB.value =
-                                              false;
-                                        },
-                                        title: 'Pitched',
-                                        color: pitchedColor,
-                                        image: 'agreement.png'),
-                                    CustomStatusButton(
-                                        title: 'Sent Sample',
-                                        onTap: () {
-                                          controller = AnimationController(
-                                            vsync: this,
-                                            duration:
-                                                const Duration(seconds: 1),
-                                          );
-
-                                          animation =
-                                              Tween<double>(begin: -1, end: 20)
-                                                  .animate(
-                                            CurvedAnimation(
-                                              parent: controller!,
-                                              curve: Curves
-                                                  .easeInOutCubicEmphasized,
-                                            ),
-                                          );
-                                          controller!.forward().then(
-                                              (_) => controller!.reverse());
-
-                                          projectController.leadB.value = false;
-                                          projectController.contactedB.value =
-                                              false;
-                                          projectController.pitchedB.value =
-                                              false;
-                                          projectController.sentSampleB.value =
-                                              true;
-                                          projectController.negotiatingB.value =
-                                              false;
-                                          projectController.closeWonB.value =
-                                              false;
-                                          projectController.closedLostB.value =
-                                              false;
-                                          projectController
-                                              .temporaryCloseB.value = false;
-                                        },
-                                        color: sentSampleColor,
-                                        image: 'sent.png'),
-                                    CustomStatusButton(
-                                        title: 'Negotiating',
-                                        onTap: () {
-                                          controller = AnimationController(
-                                            vsync: this,
-                                            duration:
-                                                const Duration(seconds: 1),
-                                          );
-
-                                          animation =
-                                              Tween<double>(begin: -1, end: 20)
-                                                  .animate(
-                                            CurvedAnimation(
-                                              parent: controller!,
-                                              curve: Curves
-                                                  .easeInOutCubicEmphasized,
-                                            ),
-                                          );
-                                          controller!.forward().then(
-                                              (_) => controller!.reverse());
-
-                                          projectController.leadB.value = false;
-                                          projectController.contactedB.value =
-                                              false;
-                                          projectController.pitchedB.value =
-                                              false;
-                                          projectController.sentSampleB.value =
-                                              false;
-                                          projectController.negotiatingB.value =
-                                              true;
-                                          projectController.closeWonB.value =
-                                              false;
-                                          projectController.closedLostB.value =
-                                              false;
-                                          projectController
-                                              .temporaryCloseB.value = false;
-                                        },
-                                        color: negotiatingColor,
-                                        image: 'presentation.png'),
-                                    CustomStatusButton(
-                                        title: 'Closed - Won',
-                                        onTap: () {
-                                          controller = AnimationController(
-                                            vsync: this,
-                                            duration:
-                                                const Duration(seconds: 1),
-                                          );
-
-                                          animation =
-                                              Tween<double>(begin: -1, end: 20)
-                                                  .animate(
-                                            CurvedAnimation(
-                                              parent: controller!,
-                                              curve: Curves
-                                                  .easeInOutCubicEmphasized,
-                                            ),
-                                          );
-                                          controller!.forward().then(
-                                              (_) => controller!.reverse());
-
-                                          projectController.leadB.value = false;
-                                          projectController.contactedB.value =
-                                              false;
-                                          projectController.pitchedB.value =
-                                              false;
-                                          projectController.sentSampleB.value =
-                                              false;
-                                          projectController.negotiatingB.value =
-                                              false;
-                                          projectController.closeWonB.value =
-                                              true;
-                                          projectController
-                                              .temporaryCloseB.value = false;
-
-                                          projectController.closedLostB.value =
-                                              false;
-                                        },
-                                        color: wonColor,
-                                        image: 'won.png'),
-                                    CustomStatusButton(
-                                        title: 'Closed - Lost',
-                                        onTap: () {
-                                          controller = AnimationController(
-                                            vsync: this,
-                                            duration:
-                                                const Duration(seconds: 1),
-                                          );
-
-                                          animation =
-                                              Tween<double>(begin: -1, end: 20)
-                                                  .animate(
-                                            CurvedAnimation(
-                                              parent: controller!,
-                                              curve: Curves
-                                                  .easeInOutCubicEmphasized,
-                                            ),
-                                          );
-                                          controller!.forward().then(
-                                              (_) => controller!.reverse());
-
-                                          projectController
-                                              .temporaryCloseB.value = false;
-
-                                          projectController.leadB.value = false;
-                                          projectController.contactedB.value =
-                                              false;
-                                          projectController.pitchedB.value =
-                                              false;
-                                          projectController.sentSampleB.value =
-                                              false;
-                                          projectController.negotiatingB.value =
-                                              false;
-                                          projectController.closeWonB.value =
-                                              false;
-                                          projectController.closedLostB.value =
-                                              true;
-                                        },
-                                        color: lostColor,
-                                        image: 'lost-items.png'),
-                                    CustomStatusButton(
-                                        title: 'Temporarily Closed',
-                                        onTap: () {
-                                          controller = AnimationController(
-                                            vsync: this,
-                                            duration:
-                                                const Duration(seconds: 1),
-                                          );
-
-                                          animation =
-                                              Tween<double>(begin: -1, end: 20)
-                                                  .animate(
-                                            CurvedAnimation(
-                                              parent: controller!,
-                                              curve: Curves
-                                                  .easeInOutCubicEmphasized,
-                                            ),
-                                          );
-                                          controller!.forward().then(
-                                              (_) => controller!.reverse());
-
-                                          projectController.leadB.value = false;
-                                          projectController
-                                              .temporaryCloseB.value = true;
-                                          projectController.contactedB.value =
-                                              false;
-                                          projectController.pitchedB.value =
-                                              false;
-                                          projectController.sentSampleB.value =
-                                              false;
-                                          projectController.negotiatingB.value =
-                                              false;
-                                          projectController.closeWonB.value =
-                                              false;
-                                          projectController.closedLostB.value =
-                                              false;
-                                        },
-                                        color: Colors.orangeAccent.shade200,
-                                        image: 'lost-items.png'),
-                                  ],
+                                  children: _statusFilters
+                                      .map((filter) => CustomStatusButton(
+                                            title: filter.title,
+                                            color: filter.color,
+                                            image: filter.image,
+                                            onTap: () =>
+                                                _selectStatusFilter(filter.status),
+                                          ))
+                                      .toList(),
                                 ),
                               ),
                               const Divider(),
@@ -621,13 +292,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               if (currentIndex == 0)
                                 Obx(() {
                                   log("currentIndex in obx 0 = $currentIndex");
-                                  return Column(children: [
-                                    for (var l in
-                                        // filterController.visible.value
-                                        // ? filterController.projectData
-                                        // :
-                                        projectController.myProjects)
-                                      Padding(
+                                  final myProjects = projectController.myProjects;
+                                  return ListView.builder(
+                                    shrinkWrap: true,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    itemCount: myProjects.length,
+                                    itemBuilder: (context, index) {
+                                      final l = myProjects[index];
+                                      return Padding(
                                         padding: const EdgeInsets.all(10.0),
                                         child: InkWell(
                                             onTap: () {
@@ -636,33 +308,27 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                 receverId: '',
                                                 token: '',
                                                 senderName: '',
-                                                project: l,
+                                                projectId: l.sId!,
                                               ));
                                             },
-                                            child: AnimatedBuilder(
-                                                animation: animation!,
-                                                builder: (BuildContext context,
-                                                    Widget? child) {
-                                                  return Transform.translate(
-                                                      offset: Offset(
-                                                          0, animation!.value!),
-                                                      child: ProjectsWidget(
-                                                          project: l));
-                                                })),
-                                      )
-                                  ]);
+                                            child: ProjectsWidget(project: l)),
+                                      );
+                                    },
+                                  );
                                 }),
                               if (currentIndex == 1)
                                 Obx(() {
                                   log("currentIndex in obx 1 = $currentIndex");
 
-                                  return Column(children: [
-                                    for (var l in
-                                        //  filterController.visible.value
-                                        //     ? filterController.projectData
-                                        // :
-                                        projectController.assignedProjects)
-                                      Padding(
+                                  final assignedProjects =
+                                      projectController.assignedProjects;
+                                  return ListView.builder(
+                                    shrinkWrap: true,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    itemCount: assignedProjects.length,
+                                    itemBuilder: (context, index) {
+                                      final l = assignedProjects[index];
+                                      return Padding(
                                         padding: const EdgeInsets.all(10.0),
                                         child: InkWell(
                                             onTap: () {
@@ -671,56 +337,41 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                 receverId: '',
                                                 token: '',
                                                 senderName: '',
-                                                project: l,
+                                                projectId: l.sId!,
                                               ));
                                             },
-                                            child: AnimatedBuilder(
-                                                animation: animation!,
-                                                builder: (BuildContext context,
-                                                    Widget? child) {
-                                                  return Transform.translate(
-                                                      offset: Offset(
-                                                          0, animation!.value!),
-                                                      child: ProjectsWidget(
-                                                          project: l));
-                                                })),
-                                      )
-                                  ]);
+                                            child: ProjectsWidget(project: l)),
+                                      );
+                                    },
+                                  );
                                 }),
                               if (currentIndex == 2)
                                 Obx(() {
                                   log("currentIndex in obx 2 = $currentIndex");
 
-                                  return Column(children: [
-                                    for (var l in
-                                        // filterController.visible.value
-                                        //     ? filterController.projectData
-                                        // :
-                                        projectController.teamProjects)
-                                      Padding(
+                                  final teamProjects = projectController.teamProjects;
+                                  return ListView.builder(
+                                    shrinkWrap: true,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    itemCount: teamProjects.length,
+                                    itemBuilder: (context, index) {
+                                      final l = teamProjects[index];
+                                      return Padding(
                                         padding: const EdgeInsets.all(10.0),
                                         child: InkWell(
                                             onTap: () {
                                               Get.to(ProjectDetailsPage(
-                                                project: l,
+                                                projectId: l.sId!,
                                                 updateProject: false,
                                                 receverId: '',
                                                 token: '',
                                                 senderName: '',
                                               ));
                                             },
-                                            child: AnimatedBuilder(
-                                                animation: animation!,
-                                                builder: (BuildContext context,
-                                                    Widget? child) {
-                                                  return Transform.translate(
-                                                      offset: Offset(
-                                                          0, animation!.value!),
-                                                      child: ProjectsWidget(
-                                                          project: l));
-                                                })),
-                                      )
-                                  ]);
+                                            child: ProjectsWidget(project: l)),
+                                      );
+                                    },
+                                  );
                                 }),
                               Obx(() {
                                 final isLoading = currentIndex == 0
@@ -735,9 +386,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                     ? const Padding(
                                         padding: EdgeInsets.symmetric(
                                             vertical: 16),
-                                        child: Center(
-                                          child: CircularProgressIndicator(),
-                                        ),
+                                        child: Center(child: AppLoader(size: 28)),
                                       )
                                     : const SizedBox.shrink();
                               }),
@@ -794,29 +443,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     }
   }
 
-  Iterable<ProjectData> data(ProjectController addProjectController) {
-    if (addProjectController.leadB.value == true) {
-      return addProjectController.lead;
-    } else if (addProjectController.contactedB.value == true) {
-      return addProjectController.contacted;
-    } else if (addProjectController.pitchedB.value == true) {
-      return addProjectController.pitched;
-    } else if (addProjectController.sentSampleB.value == true) {
-      return addProjectController.sentSample;
-    } else if (addProjectController.negotiatingB.value == true) {
-      return addProjectController.negotiating;
-    } else if (addProjectController.closeWonB.value == true) {
-      return addProjectController.closeWon;
-    } else if (addProjectController.closedLostB.value == true) {
-      return addProjectController.closedLost;
-    } else if (addProjectController.temporaryCloseB.value == true) {
-      return addProjectController.temporaryClose;
-    } else {
-      return addProjectController.myProjects;
-    }
-  }
-
-  getProjects() {
+  List<ProjectCardModel> getProjects() {
     if (currentIndex == 0) {
       return projectController.myProjects;
     } else if (currentIndex == 1) {

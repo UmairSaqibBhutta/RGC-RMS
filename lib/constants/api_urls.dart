@@ -26,6 +26,7 @@ class ApiUrls {
 
   static const String assignProject = 'assignProject';
   static const String getAssignProjects = 'getAssignProjects';
+  static const String getProjectDetail = 'project-detail';
 
   // notifications
   static const String getNotificaton = 'getNotification';
@@ -41,6 +42,7 @@ class ApiUrls {
 
   static const String addNewVisitReport = 'addNewVisit';
   static const String getNewVisitReport = 'getNewVisit';
+  static const String getVisitReportDetail = 'vist-report-detail';
   static const String visitCheckIn = 'visitCheckIn';
   static const String visitCheckOut = 'visitCheckOut';
 
@@ -65,4 +67,8 @@ class ApiUrls {
   static const String getMainStage = 'getMainStage';
   static const String addSubStage = 'addSubStage';
   static const String getSubStage = 'getSubStage';
+
+  // follow ups
+  static const String followUpProject = 'follow-up-project';
+  static const String followUpVisitReport = 'follow-up-visit-report';
 }

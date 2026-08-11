@@ -294,13 +294,24 @@ class _RadioWithImageState extends State<RadioWithImage> {
 class PieChartSample2 extends StatefulWidget {
   PieChartSample2({super.key, required this.projects});
 
-  List<ProjectData> projects;
+  List<ProjectCardModel> projects;
 
   @override
   State<StatefulWidget> createState() => PieChart2State();
 }
 
 class PieChart2State extends State<PieChartSample2> {
+  static const _knownStatuses = {
+    'Lead',
+    'Contacted',
+    'Pitched',
+    'Sent Sample',
+    'Negotiating',
+    'Closed-Won',
+    'Closed-Lost',
+    'Temporary Close',
+  };
+
   int touchedIndex = -1;
 
   List<Map<String, dynamic>> pieData = [];
@@ -364,7 +375,7 @@ class PieChart2State extends State<PieChartSample2> {
           'count': widget.projects.isEmpty
               ? 0
               : widget.projects
-                  .where((p0) => p0.status == 'Closed - Won')
+                  .where((p0) => p0.status == 'Closed-Won')
                   .toList()
                   .length,
           'color': wonColor,
@@ -374,7 +385,7 @@ class PieChart2State extends State<PieChartSample2> {
           'count': widget.projects.isEmpty
               ? 0
               : widget.projects
-                  .where((p0) => p0.status == 'Closed - Lost')
+                  .where((p0) => p0.status == 'Closed-Lost')
                   .toList()
                   .length,
           'color': lostColor,
@@ -390,6 +401,26 @@ class PieChart2State extends State<PieChartSample2> {
           'color': Colors.orangeAccent.shade200,
         },
       ];
+
+      // Anything whose status doesn't match one of the buckets above
+      // (e.g. newly created projects that haven't had a status set yet)
+      // still counts toward the total, so surface it instead of silently
+      // dropping it from the chart.
+      final knownCount =
+          pieData.fold<int>(0, (sum, e) => sum + (e['count'] as int));
+      final unclassifiedCount = widget.projects.length - knownCount;
+      if (unclassifiedCount > 0) {
+        final unmatchedStatuses = widget.projects
+            .where((p) => !_knownStatuses.contains(p.status))
+            .map((p) => p.status)
+            .toSet();
+        log('Pie chart: $unclassifiedCount project(s) with unmatched status: $unmatchedStatuses');
+        pieData.add({
+          'title': 'Other',
+          'count': unclassifiedCount,
+          'color': Colors.grey,
+        });
+      }
 
       return SizedBox(
         height: kIsWeb ? Get.height / 2 : Get.height / 3,
@@ -480,6 +511,7 @@ class PieChart2State extends State<PieChartSample2> {
                       Indicators(
                         color: l['color'],
                         title: l['title'],
+                        count: l['count'],
                       )
                   ],
                 )
@@ -553,8 +585,9 @@ class PieChart2State extends State<PieChartSample2> {
 class Indicators extends StatefulWidget {
   Color? color;
   String? title;
+  int? count;
 
-  Indicators({super.key, this.color, this.title});
+  Indicators({super.key, this.color, this.title, this.count});
 
   @override
   State<Indicators> createState() => _IndicatorsState();
@@ -576,7 +609,9 @@ class _IndicatorsState extends State<Indicators> {
             ),
             const SizedBox(width: 8),
             Text(
-              widget.title!,
+              widget.count == null
+                  ? widget.title!
+                  : '${widget.title} (${widget.count})',
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
             )
           ],

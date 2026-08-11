@@ -10,6 +10,7 @@ import 'package:leadmanagementsystem/extensions/string_extensions.dart';
 import 'package:leadmanagementsystem/main.dart';
 import 'package:location/location.dart' as loc;
 import 'package:geocoding/geocoding.dart' as geoCoding;
+import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 import 'package:leadmanagementsystem/widgets/custom_widgets.dart';
 
 class MarkAttendanceScreen extends StatefulWidget {
@@ -54,13 +55,12 @@ class _MarkAttendanceScreenState extends State<MarkAttendanceScreen> {
     if (!_serviceEnabled) {
       bool requested = await location!.requestService();
       if (!requested) {
-        Get.snackbar("Error", "Location service is required to proceed.",
-            backgroundColor: whiteColor);
+        CustomSnackbar.error("Location service is required to proceed.");
         return;
       }
 
       // ✅ Exit the function and ask user to try again manually
-      Get.snackbar("Notice", "Location service enabled. Please try again.");
+      CustomSnackbar.info("Location service enabled. Please try again.");
       return;
     }
 
@@ -68,8 +68,7 @@ class _MarkAttendanceScreenState extends State<MarkAttendanceScreen> {
     if (_permissionGranted == loc.PermissionStatus.denied) {
       _permissionGranted = await location!.requestPermission();
       if (_permissionGranted != loc.PermissionStatus.granted) {
-        Get.snackbar("Error", "Location permission denied.",
-            backgroundColor: whiteColor);
+        CustomSnackbar.error("Location permission denied.");
         return;
       }
     }
@@ -80,7 +79,7 @@ class _MarkAttendanceScreenState extends State<MarkAttendanceScreen> {
 
     if (_locationData == null) {
       Navigator.of(context).pop();
-      Get.snackbar("Error", "Location data unavailable.");
+      CustomSnackbar.error("Location data unavailable.");
       return;
     }
 
@@ -330,8 +329,8 @@ class _MarkAttendanceScreenState extends State<MarkAttendanceScreen> {
                                         longitude:
                                             double.parse(attendance.long!));
                                   } else {
-                                    Get.snackbar(
-                                        "Error", "Location not available");
+                                    CustomSnackbar.error(
+                                        "Location not available");
                                   }
                                 },
                               ),

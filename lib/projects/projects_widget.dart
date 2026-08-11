@@ -8,7 +8,7 @@ class ProjectsWidget extends StatelessWidget {
     required this.project,
   });
 
-  final ProjectData project;
+  final ProjectCardModel project;
 
   @override
   Widget build(BuildContext context) {

@@ -1,22 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import 'package:leadmanagementsystem/constants/constants.dart';
 
-AppBar mAppbar(String text, {List<Widget>? action, Color? backgroundColor}) {
+AppBar mAppbar(String text,
+    {List<Widget>? action, Color? backgroundColor, Widget? leading}) {
   return AppBar(
-    title: Text(
-      text,
-      style: const TextStyle(
-        color: Color(0xFF111827),
-        fontWeight: FontWeight.w600,
-        fontSize: 17,
-      ),
-    ),
-    centerTitle: true,
-    elevation: 0,
-    backgroundColor: backgroundColor ?? Colors.white,
-    iconTheme: const IconThemeData(color: Color(0xFF111827)),
+    title: Text(text),
+    backgroundColor: backgroundColor,
     actions: action,
+    leading: leading,
     bottom: const PreferredSize(
       preferredSize: Size.fromHeight(1),
       child: Divider(height: 1, color: Color(0xFFE9EAEC)),
@@ -50,14 +43,41 @@ class LoadingDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Dialog(
+    return Dialog(
       backgroundColor: Colors.transparent,
       elevation: 0,
       child: Center(
-          child: CircularProgressIndicator(
-        color: appColor,
-      )),
-    );
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 26),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 24,
+                offset: Offset(0, 10),
+              ),
+            ],
+          ),
+          child: const Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AppLoader(size: 40),
+              SizedBox(height: 14),
+              Text(
+                'Please wait...',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black54,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ).animate().fadeIn(duration: 150.ms).scale(begin: const Offset(.9, .9));
   }
 }
 

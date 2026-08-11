@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // For rootBundle
 import 'package:path_provider/path_provider.dart'; // For temporary directory
 import 'package:open_file/open_file.dart';
+import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 
 class DataSheetScreens extends StatefulWidget {
   const DataSheetScreens({super.key});
@@ -53,11 +54,7 @@ class _DataSheetScreensState extends State<DataSheetScreens> {
                         if (localPath.isNotEmpty) {
                           await OpenFile.open(localPath);
                         } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Failed to open ${l.name}'),
-                            ),
-                          );
+                          CustomSnackbar.error('Failed to open ${l.name}');
                         }
                       },
                       title: Text(l.name.toString())),

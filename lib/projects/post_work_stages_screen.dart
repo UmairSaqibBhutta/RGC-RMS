@@ -163,13 +163,11 @@ class _PostWorkStagesScreenState extends State<PostWorkStagesScreen> {
                                   }
                                 },
                           child: stagesCont.addLoading.isTrue
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
+                              ? const AppLoader(
+                                  size: 20,
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                  trackColor: Colors.white24,
                                 )
                               : null,
                         )),
@@ -296,13 +294,11 @@ class _PostWorkStagesScreenState extends State<PostWorkStagesScreen> {
                                   }
                                 },
                           child: stagesCont.addLoading.isTrue
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
+                              ? const AppLoader(
+                                  size: 20,
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                  trackColor: Colors.white24,
                                 )
                               : null,
                         )),

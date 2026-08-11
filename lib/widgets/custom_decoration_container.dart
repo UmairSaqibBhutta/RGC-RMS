@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:leadmanagementsystem/constants/constants.dart';
 
 class CustomDecorationContainer extends StatefulWidget {
   Widget? child;
@@ -21,15 +22,14 @@ class _CustomDecorationContainerState extends State<CustomDecorationContainer> {
       width: widget.isDrawer == true ? Get.width * .65 : Get.width,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topRight,
-          colors: [
-            widget.isDrawer == true
-                ? Colors.brown.withValues(alpha: 1)
-                : Colors.brown.withValues(alpha: .2),
-            widget.isDrawer == true
-                ? Colors.blue.withValues(alpha: .5)
-                : Colors.blue.withValues(alpha: .1),
-          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: widget.isDrawer == true
+              ? [appColor, const Color(0xFF00794A)]
+              : [
+                  appColor.withValues(alpha: .08),
+                  appColor.withValues(alpha: .02),
+                ],
         ),
       ),
       child: widget.child,

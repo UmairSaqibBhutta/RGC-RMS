@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:leadmanagementsystem/constants/constants.dart';
 import 'package:leadmanagementsystem/controllers/daily_distance_controller.dart';
 import 'package:leadmanagementsystem/controllers/location_controller.dart';
+import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 import 'package:leadmanagementsystem/widgets/custom_widgets.dart';
 
 class DailyDistanceScreen extends StatefulWidget {
@@ -27,14 +28,8 @@ class _DailyDistanceScreenState extends State<DailyDistanceScreen> {
 
   Future<void> _handleCheckIn() async {
     if (controller.hasCheckedOut) {
-      Get.snackbar(
-        "Day Closed",
-        "You cannot check in again after checking out.",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.shade100,
-        colorText: Colors.orange.shade900,
-        icon: const Icon(Icons.info_outline, color: Colors.orange),
-      );
+      CustomSnackbar.warning(
+          "You cannot check in again after checking out.");
       return;
     }
 
@@ -54,13 +49,8 @@ class _DailyDistanceScreenState extends State<DailyDistanceScreen> {
     if (locationModel == null) {
       controller.isCheckInLoading = false;
       controller.update();
-      Get.snackbar(
-        "Location Error",
-        "Unable to get your current location. Please try again.",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade100,
-        colorText: Colors.red.shade900,
-      );
+      CustomSnackbar.error(
+          "Unable to get your current location. Please try again.");
       return;
     }
 
@@ -69,26 +59,12 @@ class _DailyDistanceScreenState extends State<DailyDistanceScreen> {
 
   Future<void> _handleCheckOut() async {
     if (!controller.hasAnyCheckIn) {
-      Get.snackbar(
-        "Check In First",
-        "Please check in before checking out.",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.shade100,
-        colorText: Colors.orange.shade900,
-        icon: const Icon(Icons.warning_amber, color: Colors.orange),
-      );
+      CustomSnackbar.warning("Please check in before checking out.");
       return;
     }
 
     if (controller.hasCheckedOut) {
-      Get.snackbar(
-        "Already Checked Out",
-        "You have already checked out for today.",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.shade100,
-        colorText: Colors.orange.shade900,
-        icon: const Icon(Icons.info_outline, color: Colors.orange),
-      );
+      CustomSnackbar.warning("You have already checked out for today.");
       return;
     }
 
@@ -108,13 +84,8 @@ class _DailyDistanceScreenState extends State<DailyDistanceScreen> {
     if (locationModel == null) {
       controller.isCheckOutLoading = false;
       controller.update();
-      Get.snackbar(
-        "Location Error",
-        "Unable to get your current location. Please try again.",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade100,
-        colorText: Colors.red.shade900,
-      );
+      CustomSnackbar.error(
+          "Unable to get your current location. Please try again.");
       return;
     }
 
@@ -433,14 +404,7 @@ class _DailyDistanceScreenState extends State<DailyDistanceScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             isLoading
-                ? SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      valueColor: AlwaysStoppedAnimation<Color>(effectiveColor),
-                    ),
-                  )
+                ? AppLoader(size: 24, strokeWidth: 2.5, color: effectiveColor)
                 : Icon(icon, size: 28, color: effectiveColor),
             const SizedBox(height: 8),
             Text(

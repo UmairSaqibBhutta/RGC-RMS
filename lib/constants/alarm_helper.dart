@@ -2,9 +2,9 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:alarm/alarm.dart';
-import 'package:leadmanagementsystem/controllers/project_controller.dart';
 import 'package:leadmanagementsystem/models/reminder_model.dart';
 import 'package:leadmanagementsystem/storage/reminder_storage.dart';
+import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 
 class AlarmHelper {
   static setReminder(
@@ -31,7 +31,7 @@ class AlarmHelper {
 
     await Alarm.set(alarmSettings: alarmSettings).then(
       (value) async {
-        customSnackBar("Success", "Alarm set for $title");
+        CustomSnackbar.success("Alarm set for $title");
         await ReminderStorage.saveReminder(ReminderModel(
           id: reminderId,
           title: title,
@@ -42,7 +42,7 @@ class AlarmHelper {
     ).onError(
       (error, stackTrace) {
         log("error in alarm set = ${error.toString()}");
-        customSnackBar("Error", "Alarm could not be set for $error");
+        CustomSnackbar.error("Alarm could not be set for $error");
       },
     );
   }

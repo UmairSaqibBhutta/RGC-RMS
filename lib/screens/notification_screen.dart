@@ -6,9 +6,11 @@ import 'package:intl/intl.dart';
 import 'package:leadmanagementsystem/constants/constants.dart';
 import 'package:leadmanagementsystem/controllers/login_controller.dart';
 import 'package:leadmanagementsystem/controllers/update_project_controller.dart';
+import 'package:leadmanagementsystem/projects/project_details_page.dart';
 import 'package:leadmanagementsystem/screens/leaves_page.dart';
 import 'package:leadmanagementsystem/screens/tasks_list_page.dart';
 import 'package:leadmanagementsystem/widgets/custom_decoration_container.dart';
+import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -95,22 +97,35 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                 .markReadNotification(notification.sId);
                           }
 
+                          if (!context.mounted) return;
+
                           // Handle different notification types
                           if (notification.type == "Project") {
-                            // Get.offAll(const AdminHomePage());
-                            // await updateProjectController
-                            //     .getProjectById(notification.projectId);
-                            Navigator.pop(context);
-                            // Get.to(ProjectDetailsPage(
-                            //   project: updateProjectController.projectUpdateModel?.updateProjectData,
-                            //   updateProject: notification.comment!.contains('project assignment!') ||
-                            //           notification.comment!.contains('is updated')
-                            //       ? false
-                            //       : true,
-                            //   receverId: notification.senderId!,
-                            //   token: notification. ?? '',
-                            //   senderName: notification.senderName!,
-                            // ));
+                            alertDialogueWithLoader(context);
+
+                            final project = await updateProjectController
+                                .getProjectById(notification.projectId);
+
+                            if (!context.mounted) return;
+                            Navigator.pop(context); // dismiss loader
+
+                            if (project == null) {
+                              CustomSnackbar.error(
+                                  'Unable to load project details');
+                              return;
+                            }
+
+                            final comment = notification.comment ?? '';
+
+                            Get.to(() => ProjectDetailsPage(
+                                  projectId: project.sId!,
+                                  updateProject: !(comment.contains(
+                                          'project assignment!') ||
+                                      comment.contains('is updated')),
+                                  receverId: notification.senderId ?? '',
+                                  token: '',
+                                  senderName: notification.senderName ?? '',
+                                ));
                           } else if (notification.type == "Task") {
                             Get.to(TaskListPage(
                               getTasksNyIndividualUsers: true,

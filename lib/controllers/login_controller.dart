@@ -14,6 +14,7 @@ import 'package:leadmanagementsystem/models/user_region_model.dart';
 import 'package:leadmanagementsystem/screens/login_screen.dart';
 import 'package:leadmanagementsystem/services/custom_get_request.dart';
 import 'package:leadmanagementsystem/services/custom_post_request.dart';
+import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 
 class LoginController extends GetxController {
   var loginModel = LoginModel().obs;
@@ -85,7 +86,7 @@ class LoginController extends GetxController {
           return false;
         }
       } else {
-        Get.snackbar("Failed", res['message']);
+        CustomSnackbar.error(res['message']);
         return false;
       }
     } catch (e) {
@@ -106,12 +107,12 @@ class LoginController extends GetxController {
     update();
 
     if (res['status'] == true) {
-      Get.snackbar('Success', 'Password changed successfully');
+      CustomSnackbar.success('Password changed successfully');
       Get.offAll(const LoginScreen());
 
       return true;
     } else {
-      Get.snackbar('Failed', res['message']);
+      CustomSnackbar.error(res['message']);
 
       return false;
     }
@@ -177,7 +178,7 @@ class LoginController extends GetxController {
     update();
 
     if (res['status'] != false) {
-      Get.snackbar('Success', res['message']);
+      CustomSnackbar.success(res['message']);
 
       return true;
     } else {
@@ -224,15 +225,13 @@ class LoginController extends GetxController {
 
     update();
     if (res['status'] != false) {
-      Get.snackbar('Success', res['message'],
-          backgroundColor: CupertinoColors.white);
+      CustomSnackbar.success(res['message']);
 
       Get.to(OtpScreen(email: email));
 
       return true;
     } else {
-      Get.snackbar('Success', res['message'],
-          backgroundColor: CupertinoColors.white);
+      CustomSnackbar.error(res['message']);
       return false;
     }
   }
@@ -248,15 +247,13 @@ class LoginController extends GetxController {
     update();
 
     if (res['status'] != false) {
-      Get.snackbar('Success', res['message'],
-          backgroundColor: CupertinoColors.white,
-          colorText: CupertinoColors.black);
+      CustomSnackbar.success(res['message']);
 
       Get.off(const LoginScreen());
 
       return true;
     } else {
-      Get.snackbar('Error', 'Failed');
+      CustomSnackbar.error('Failed');
 
       return false;
     }

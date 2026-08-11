@@ -8,7 +8,7 @@ import 'package:leadmanagementsystem/constants/user_roles.dart';
 import 'package:leadmanagementsystem/controllers/drawer_controller.dart';
 import 'package:leadmanagementsystem/controllers/login_controller.dart';
 import 'package:leadmanagementsystem/screens/login_screen.dart';
-import 'package:leadmanagementsystem/widgets/custom_decoration_container.dart';
+import 'package:leadmanagementsystem/widgets/custom_widgets.dart';
 
 import '../main.dart';
 
@@ -35,17 +35,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         init: loginController,
         builder: (cont) {
           return Scaffold(
-              extendBodyBehindAppBar: true,
               backgroundColor: Colors.white,
-              appBar: AppBar(
-                backgroundColor: Colors.transparent,
-                centerTitle: true,
-                title: const Text(
-                  'Profile',
-                  style: TextStyle(color: Colors.black),
-                ),
-                elevation: 0,
-              ),
+              appBar: mAppbar('Profile'),
               body: cont.profileData == null || cont.profileData == ''
                   ? showSpinkit()
                   : SafeArea(
@@ -65,19 +56,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           const SizedBox(height: 10),
                           Text(
                             cont.profileData!.name ?? '',
-                            style: const TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF111827),
-                            ),
+                            style: Theme.of(context).textTheme.titleMedium,
                           ),
                           const SizedBox(height: 2),
                           Text(
                             cont.profileData!.role ?? '',
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: Color(0xFF6B7280),
-                            ),
+                            style: Theme.of(context).textTheme.labelMedium,
                           ),
                           const SizedBox(height: 20),
                           Expanded(

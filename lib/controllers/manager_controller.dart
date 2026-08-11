@@ -7,6 +7,7 @@ import 'package:leadmanagementsystem/constants/api_urls.dart';
 import 'package:leadmanagementsystem/main.dart';
 import 'package:leadmanagementsystem/models/common_model.dart';
 import 'package:leadmanagementsystem/models/users_list_model.dart';
+import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 
 class ManagerController extends GetxController {
   bool getManagersLoading = false;
@@ -59,11 +60,11 @@ class ManagerController extends GetxController {
       if (model.status == true) {
         // getManagers();
 
-        Get.snackbar("Success", model.message);
+        CustomSnackbar.success(model.message);
 
         Get.offAll(const BottomNavScreen());
       } else {
-        Get.snackbar("Error", model.message);
+        CustomSnackbar.error(model.message);
       }
 
       // Get.back();
@@ -88,7 +89,7 @@ class ManagerController extends GetxController {
 
       Get.back();
 
-      Get.snackbar('Success', 'User updated successfully');
+      CustomSnackbar.success('User updated successfully');
 
       return true;
     } else {
@@ -108,7 +109,7 @@ class ManagerController extends GetxController {
 
       Get.back();
 
-      Get.snackbar('Success', 'User deleted successfully');
+      CustomSnackbar.success('User deleted successfully');
 
       return true;
     } else {

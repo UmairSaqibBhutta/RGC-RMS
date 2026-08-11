@@ -9,6 +9,7 @@ import 'package:leadmanagementsystem/extensions/string_extensions.dart';
 import 'package:leadmanagementsystem/main.dart';
 import 'package:leadmanagementsystem/models/leaves_model.dart';
 import 'package:leadmanagementsystem/widgets/custom_button.dart';
+import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 import 'package:leadmanagementsystem/widgets/custom_widgets.dart';
 import 'package:leadmanagementsystem/widgets/data_formatter.dart';
 
@@ -305,7 +306,7 @@ class _AdminLeaveActionsPageState extends State<AdminLeaveActionsPage> {
     String leaveActionTaken = "";
 
     if (action.isEmpty) {
-      Get.snackbar("Error", "Please approve or reject the leave first");
+      CustomSnackbar.error("Please approve or reject the leave first");
       return;
     }
 

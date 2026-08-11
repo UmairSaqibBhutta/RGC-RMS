@@ -61,133 +61,99 @@ class _TaskListPageState extends State<TaskListPage> {
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: SafeArea(
-              child: SingleChildScrollView(
-                  child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Uncomment if you need a search field
-                  // CustomTextField(
-                  //   controller: searchCont,
-                  //   hint: "Search Tasks",
-                  //   prefixIcon: Icons.search,
-                  //   onChanged: (p0) {
-                  //     taskCont.searchTasks(p0);
-                  //   },
-                  // ),
+              child: GetBuilder<TaskController>(
+                init: taskCont,
+                builder: (controller) {
+                  if (controller.loading.isTrue) {
+                    return showSpinkit();
+                  }
 
-                  GetBuilder<TaskController>(
-                    init: taskCont,
-                    builder: (controller) {
-                      if (controller.loading.isTrue) {
-                        return showSpinkit();
-                      }
+                  final tasks = currentIndex == 0
+                      ? controller.filteredTasksList
+                      : controller.assignedTasksList;
 
-                      return Column(
-                        children: [
-                          Stack(
-                            children: [
-                              SizedBox(
-                                width: Get.width,
+                  return CustomScrollView(
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: Stack(
+                          children: [
+                            SizedBox(
+                              width: Get.width,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: CupertinoSlidingSegmentedControl<int>(
+                                  padding: const EdgeInsets.all(10),
+                                  children: dataWidget,
+                                  groupValue: currentIndex,
+                                  onValueChanged: (val) {
+                                    currentIndex = val!;
+                                    taskCont
+                                        .update(); // Notify GetBuilder to rebuild
+                                  },
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              left: 30,
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                  color: appColor,
+                                  shape: BoxShape.circle,
+                                ),
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
-                                  child: CupertinoSlidingSegmentedControl<int>(
-                                    padding: const EdgeInsets.all(10),
-                                    children: dataWidget,
-                                    groupValue: currentIndex,
-                                    onValueChanged: (val) {
-                                      currentIndex = val!;
-                                      taskCont
-                                          .update(); // Notify GetBuilder to rebuild
-                                    },
+                                  child: Text(
+                                    controller.filteredTasksList.length
+                                        .toString(),
+                                    style:
+                                        const TextStyle(color: Colors.white),
                                   ),
                                 ),
                               ),
-                              Positioned(
-                                left: 30,
-                                child: Container(
-                                  decoration: const BoxDecoration(
-                                    color: appColor,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      controller.filteredTasksList.length
-                                          .toString(),
-                                      style:
-                                          const TextStyle(color: Colors.white),
-                                    ),
+                            ),
+                            Positioned(
+                              right: 30,
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                    color: Colors.blueAccent,
+                                    shape: BoxShape.circle),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    controller.assignedTasksList.length
+                                        .toString(),
+                                    style:
+                                        const TextStyle(color: Colors.white),
                                   ),
                                 ),
                               ),
-                              Positioned(
-                                right: 30,
-                                child: Container(
-                                  decoration: const BoxDecoration(
-                                      color: Colors.blueAccent,
-                                      shape: BoxShape.circle),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      controller.assignedTasksList.length
-                                          .toString(),
-                                      style:
-                                          const TextStyle(color: Colors.white),
-                                    ),
-                                  ),
-                                ),
-                              )
-                            ],
-                          ),
-                          currentIndex == 0
-                              ? ListView.builder(
-                                  reverse: true,
-                                  physics: const BouncingScrollPhysics(),
-                                  shrinkWrap: true,
-                                  itemCount:
-                                      controller.filteredTasksList.length,
-                                  itemBuilder: (context, index) {
-                                    final task =
-                                        controller.filteredTasksList[index];
-                                    return GestureDetector(
-                                      onTap: () {
-                                        Get.to(TaskDetailPage(task: task));
-                                      },
-                                      child: TaskWidget(task: task),
-                                    );
-                                  },
-                                )
-                                  .animate()
-                                  .untint()
-                                  .scale()
-                                  .move(delay: 300.ms, duration: 600.ms)
-                              : ListView.builder(
-                                  reverse: true,
-                                  physics: const BouncingScrollPhysics(),
-                                  shrinkWrap: true,
-                                  itemCount:
-                                      controller.assignedTasksList.length,
-                                  itemBuilder: (context, index) {
-                                    final task =
-                                        controller.assignedTasksList[index];
-                                    return GestureDetector(
-                                      onTap: () {
-                                        Get.to(TaskDetailPage(task: task));
-                                      },
-                                      child: TaskWidget(task: task),
-                                    );
-                                  },
-                                )
-                                  .animate()
-                                  .untint()
-                                  .scale()
-                                  .move(delay: 300.ms, duration: 600.ms),
-                        ],
-                      );
-                    },
-                  ),
-                ],
-              )),
+                            )
+                          ],
+                        ),
+                      ),
+                      SliverList.builder(
+                        itemCount: tasks.length,
+                        itemBuilder: (context, index) {
+                          // Newest-first ordering (previously achieved via
+                          // ListView `reverse: true`), without reversing the
+                          // whole scroll view (which would flip the header too).
+                          final task = tasks[tasks.length - 1 - index];
+                          return GestureDetector(
+                            onTap: () {
+                              Get.to(TaskDetailPage(task: task));
+                            },
+                            child: TaskWidget(task: task),
+                          )
+                              .animate()
+                              .untint()
+                              .scale()
+                              .move(delay: 300.ms, duration: 600.ms);
+                        },
+                      ),
+                    ],
+                  );
+                },
+              ),
             ),
           ),
         ),

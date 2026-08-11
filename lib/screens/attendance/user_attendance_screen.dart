@@ -7,6 +7,7 @@ import 'package:leadmanagementsystem/constants/constants.dart';
 import 'package:leadmanagementsystem/constants/launchers_helper.dart';
 import 'package:leadmanagementsystem/controllers/attendance_controller.dart';
 import 'package:leadmanagementsystem/screens/attendance/working_hours_screen.dart';
+import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 import 'package:leadmanagementsystem/widgets/custom_widgets.dart';
 
 class UserAttendanceScreen extends StatefulWidget {
@@ -185,7 +186,7 @@ class _UserAttendanceScreenState extends State<UserAttendanceScreen> {
                                   longitude: double.parse(attendance.long!),
                                 );
                               } else {
-                                Get.snackbar("Error", "Location not available");
+                                CustomSnackbar.error("Location not available");
                               }
                             },
                           ),

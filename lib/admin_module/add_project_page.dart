@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
-import 'package:leadmanagementsystem/bottom_nav_screen.dart';
 import 'package:leadmanagementsystem/constants/companies_strings.dart';
 import 'package:leadmanagementsystem/constants/constants.dart';
 import 'package:leadmanagementsystem/controllers/project_controller.dart';
@@ -13,6 +12,7 @@ import 'package:leadmanagementsystem/models/project_model.dart';
 import 'package:leadmanagementsystem/models/workscope_model.dart';
 import 'package:leadmanagementsystem/screens/login_screen.dart';
 import 'package:leadmanagementsystem/widgets/custom_button.dart';
+import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 import 'package:leadmanagementsystem/widgets/custom_text_field.dart';
 import 'package:leadmanagementsystem/widgets/custom_widgets.dart';
 
@@ -899,7 +899,7 @@ class _AddProjectPageState extends State<AddProjectPage> {
                                 projectController.workScope.clear();
                                 selectWorkScope = false;
 
-                                await Get.offAll(const BottomNavScreen());
+                                Get.back();
                               }
                             }
                           }
@@ -967,20 +967,16 @@ class _AddProjectPageState extends State<AddProjectPage> {
 
   bool validation() {
     if (projectController.projectNameControl.text.isEmpty) {
-      Get.snackbar('Error', 'Please enter the project name',
-          backgroundColor: Colors.red, colorText: Colors.white);
+      CustomSnackbar.error('Please enter the project name');
       return false;
     } else if (projectController.clientNameControl.text.isEmpty) {
-      Get.snackbar('Error', 'Please enter the client name',
-          backgroundColor: Colors.red, colorText: Colors.white);
+      CustomSnackbar.error('Please enter the client name');
       return false;
     } else if (projectController.company.value == '') {
-      Get.snackbar('Error', 'Please select the company name',
-          backgroundColor: Colors.red, colorText: Colors.white);
+      CustomSnackbar.error('Please select the company name');
       return false;
     } else if (projectController.workScope.isEmpty) {
-      Get.snackbar('Error', 'Please select the workscope',
-          backgroundColor: Colors.red, colorText: Colors.white);
+      CustomSnackbar.error('Please select the workscope');
       return false;
     } else {
       return true;

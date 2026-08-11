@@ -8,7 +8,9 @@ import 'package:leadmanagementsystem/controllers/visit_controller.dart';
 import 'package:leadmanagementsystem/main.dart';
 import 'package:leadmanagementsystem/models/visit_report_model.dart';
 import 'package:leadmanagementsystem/screens/add_visit_screen.dart';
+import 'package:leadmanagementsystem/screens/visit_report_detail_screen.dart';
 import 'package:leadmanagementsystem/services/visit_pdf_service.dart';
+import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 import 'package:leadmanagementsystem/widgets/custom_widgets.dart';
 
 class VisitListScreen extends StatefulWidget {
@@ -57,13 +59,7 @@ class _VisitListScreenState extends State<VisitListScreen> {
             .toList();
 
     if (visits.isEmpty) {
-      Get.snackbar(
-        'No Data',
-        'No visit reports available to export.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.shade100,
-        colorText: Colors.orange.shade900,
-      );
+      CustomSnackbar.warning('No visit reports available to export.');
       return;
     }
 
@@ -75,14 +71,7 @@ class _VisitListScreenState extends State<VisitListScreen> {
             isCeo ? 'All Users — Visit Reports' : 'My Visit Reports',
       );
     } catch (e) {
-      Get.snackbar(
-        'Export Failed',
-        'Unable to generate PDF. Please try again.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade100,
-        colorText: Colors.red.shade900,
-        icon: const Icon(Icons.error_outline, color: Colors.red),
-      );
+      CustomSnackbar.error('Unable to generate PDF. Please try again.');
     } finally {
       setState(() => _isExporting = false);
     }
@@ -171,14 +160,7 @@ class _VisitListScreenState extends State<VisitListScreen> {
 
   Future<void> _handleCheckIn(dynamic visit) async {
     if (_hasCheckedOut(visit)) {
-      Get.snackbar(
-        "Visit Closed",
-        "You cannot check in again after checkout.",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.shade100,
-        colorText: Colors.orange.shade900,
-        icon: const Icon(Icons.info_outline, color: Colors.orange),
-      );
+      CustomSnackbar.warning("You cannot check in again after checkout.");
       return;
     }
 
@@ -197,13 +179,8 @@ class _VisitListScreenState extends State<VisitListScreen> {
           await locationController.getCurrentAddress();
 
       if (locationModel == null) {
-        Get.snackbar(
-          "Location Error",
-          "Unable to get your current location. Please try again.",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.shade100,
-          colorText: Colors.red.shade900,
-        );
+        CustomSnackbar.error(
+            "Unable to get your current location. Please try again.");
         return;
       }
 
@@ -212,48 +189,20 @@ class _VisitListScreenState extends State<VisitListScreen> {
         locationModel: locationModel,
       );
 
-      Get.snackbar(
-        "Checked In ✅",
-        "Location recorded successfully.",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green.shade100,
-        colorText: Colors.green.shade900,
-        icon: const Icon(Icons.check_circle, color: Colors.green),
-      );
+      CustomSnackbar.success("Location recorded successfully.");
     } catch (e) {
-      Get.snackbar(
-        "Error",
-        "Failed to check in: ${e.toString()}",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade100,
-        colorText: Colors.red.shade900,
-        icon: const Icon(Icons.error_outline, color: Colors.red),
-      );
+      CustomSnackbar.error("Failed to check in: ${e.toString()}");
     }
   }
 
   Future<void> _handleCheckOut(dynamic visit) async {
     if (!_hasAnyCheckIn(visit)) {
-      Get.snackbar(
-        "Check In First",
-        "Please check in before checking out.",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.shade100,
-        colorText: Colors.orange.shade900,
-        icon: const Icon(Icons.warning_amber, color: Colors.orange),
-      );
+      CustomSnackbar.warning("Please check in before checking out.");
       return;
     }
 
     if (_hasCheckedOut(visit)) {
-      Get.snackbar(
-        "Already Checked Out",
-        "You have already checked out for this visit.",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.shade100,
-        colorText: Colors.orange.shade900,
-        icon: const Icon(Icons.info_outline, color: Colors.orange),
-      );
+      CustomSnackbar.warning("You have already checked out for this visit.");
       return;
     }
 
@@ -272,13 +221,8 @@ class _VisitListScreenState extends State<VisitListScreen> {
           await locationController.getCurrentAddress();
 
       if (locationModel == null) {
-        Get.snackbar(
-          "Location Error",
-          "Unable to get your current location. Please try again.",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.shade100,
-          colorText: Colors.red.shade900,
-        );
+        CustomSnackbar.error(
+            "Unable to get your current location. Please try again.");
         return;
       }
 
@@ -287,23 +231,9 @@ class _VisitListScreenState extends State<VisitListScreen> {
         locationModel: locationModel,
       );
 
-      Get.snackbar(
-        "Checked Out ✅",
-        "Visit closed successfully.",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.blue.shade100,
-        colorText: Colors.blue.shade900,
-        icon: const Icon(Icons.check_circle, color: Colors.blue),
-      );
+      CustomSnackbar.success("Visit closed successfully.");
     } catch (e) {
-      Get.snackbar(
-        "Error",
-        "Failed to check out: ${e.toString()}",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade100,
-        colorText: Colors.red.shade900,
-        icon: const Icon(Icons.error_outline, color: Colors.red),
-      );
+      CustomSnackbar.error("Failed to check out: ${e.toString()}");
     }
   }
 
@@ -362,14 +292,7 @@ class _VisitListScreenState extends State<VisitListScreen> {
           _isExporting
               ? const Padding(
                   padding: EdgeInsets.all(14),
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: appColor,
-                    ),
-                  ),
+                  child: AppLoader(size: 20, strokeWidth: 2),
                 )
               : IconButton(
                   icon: const Icon(
@@ -401,7 +324,7 @@ class _VisitListScreenState extends State<VisitListScreen> {
                   return cont.isLoadingMoreVisits
                       ? const Padding(
                           padding: EdgeInsets.symmetric(vertical: 16),
-                          child: Center(child: CircularProgressIndicator()),
+                          child: Center(child: AppLoader(size: 28)),
                         )
                       : const SizedBox.shrink();
                 }
@@ -506,6 +429,10 @@ class _VisitListScreenState extends State<VisitListScreen> {
                           padding: const EdgeInsets.only(top: 10),
                           child: _distanceBox(totalDistanceKm),
                         ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 10),
+                          child: _viewDetailsButton(visit),
+                        ),
                         if (isVisitClosed)
                           Padding(
                             padding: const EdgeInsets.only(top: 10),
@@ -548,6 +475,23 @@ class _VisitListScreenState extends State<VisitListScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _viewDetailsButton(VisitData visit) {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: TextButton.icon(
+        onPressed: () {
+          if (visit.sId == null) return;
+          Get.to(() => VisitReportDetailScreen(visitId: visit.sId!));
+        },
+        icon: const Icon(Icons.info_outline, size: 18, color: appColor),
+        label: const Text(
+          'View Full Details',
+          style: TextStyle(color: appColor, fontWeight: FontWeight.w600),
+        ),
       ),
     );
   }

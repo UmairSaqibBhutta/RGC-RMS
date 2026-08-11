@@ -5,6 +5,7 @@ import 'package:leadmanagementsystem/constants/api_urls.dart';
 import 'package:leadmanagementsystem/constants/constants.dart';
 import 'package:leadmanagementsystem/main.dart';
 import 'package:leadmanagementsystem/models/today_attendance_model.dart';
+import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 
 class AttendanceController extends GetxController {
   bool attendanceLoading = false;
@@ -30,17 +31,16 @@ class AttendanceController extends GetxController {
       updateAttendance(false);
 
       if (res['status'] == true) {
-        Get.snackbar('Success', res['message'], backgroundColor: whiteColor);
+        CustomSnackbar.success(res['message']);
         return true;
       } else {
-        Get.snackbar('Failed', res['message'], backgroundColor: whiteColor);
+        CustomSnackbar.error(res['message']);
         return false;
       }
     } catch (e) {
       updateAttendance(false);
 
-      Get.snackbar('Error', 'Something went wrong. Please try again later.',
-          backgroundColor: whiteColor);
+      CustomSnackbar.error('Something went wrong. Please try again later.');
       return false;
     }
   }
@@ -56,15 +56,14 @@ class AttendanceController extends GetxController {
         Navigator.of(Get.context!).pop();
         update();
       } else {
-        Get.snackbar('Failed', res['message'], backgroundColor: whiteColor);
+        CustomSnackbar.error(res['message']);
         todayAttendance = [];
         Navigator.of(Get.context!).pop();
 
         update();
       }
     } catch (e) {
-      Get.snackbar('Error', 'Something went wrong. Please try again later.',
-          backgroundColor: whiteColor);
+      CustomSnackbar.error('Something went wrong. Please try again later.');
       todayAttendance = [];
       Navigator.of(Get.context!).pop();
 
@@ -86,7 +85,7 @@ class AttendanceController extends GetxController {
           Navigator.of(Get.context!).pop();
           update();
         } else {
-          Get.snackbar('Failed', res['message'], backgroundColor: whiteColor);
+          CustomSnackbar.error(res['message']);
           userAttendance = [];
           Navigator.of(Get.context!).pop();
 
@@ -94,8 +93,7 @@ class AttendanceController extends GetxController {
         }
       });
     } catch (e) {
-      Get.snackbar('Error', 'Something went wrong. Please try again later.',
-          backgroundColor: whiteColor);
+      CustomSnackbar.error('Something went wrong. Please try again later.');
       userAttendance = [];
       Navigator.of(Get.context!).pop();
 

@@ -129,6 +129,7 @@ class ProjectData {
   String? filePath;
   String? creatorName;
   String? creatorRole;
+  List<FollowUp>? followUp;
 
   ProjectData(
       {this.sId,
@@ -175,7 +176,8 @@ class ProjectData {
       this.workScope,
       this.filePath,
       this.creatorName,
-      this.creatorRole});
+      this.creatorRole,
+      this.followUp});
 
   ProjectData.fromJson(Map<String, dynamic> json) {
     sId = json['_id'];
@@ -231,6 +233,14 @@ class ProjectData {
     filePath = json['filePath'] ?? '';
     creatorName = json['creatorName'];
     creatorRole = json['creatorRole'];
+    if (json['followUp'] != null) {
+      followUp = <FollowUp>[];
+      json['followUp'].forEach((v) {
+        followUp!.add(FollowUp.fromJson(v));
+      });
+    } else {
+      followUp = [];
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -282,7 +292,125 @@ class ProjectData {
     data['filePath'] = filePath;
     data['creatorName'] = creatorName;
     data['creatorRole'] = creatorRole;
+    if (followUp != null) {
+      data['followUp'] = followUp!.map((v) => v.toJson()).toList();
+    }
     return data;
+  }
+}
+
+class FollowUp {
+  String? sId;
+  String? text;
+  String? image;
+  String? userId;
+  FollowUpUser? user;
+
+  FollowUp({this.sId, this.text, this.image, this.userId, this.user});
+
+  /// Follow-up entries carry no timestamp of their own, but a Mongo
+  /// ObjectId's first 4 bytes encode its creation time, so this is
+  /// recovered from [sId] instead of needing a backend change.
+  DateTime? get createdAt {
+    final id = sId;
+    if (id == null || id.length < 8) return null;
+    final seconds = int.tryParse(id.substring(0, 8), radix: 16);
+    if (seconds == null) return null;
+    return DateTime.fromMillisecondsSinceEpoch(seconds * 1000, isUtc: true)
+        .toLocal();
+  }
+
+  FollowUp.fromJson(Map<String, dynamic> json) {
+    sId = json['_id'];
+    text = json['text'];
+    image = json['image'];
+    userId = json['user_id'];
+    user = json['user'] != null ? FollowUpUser.fromJson(json['user']) : null;
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['_id'] = sId;
+    data['text'] = text;
+    data['image'] = image;
+    data['user_id'] = userId;
+    if (user != null) {
+      data['user'] = user!.toJson();
+    }
+    return data;
+  }
+}
+
+/// The follow-up author, embedded on newer follow-up entries only —
+/// older ones only carry `user_id` (or neither, pre-attribution).
+class FollowUpUser {
+  String? sId;
+  String? name;
+  String? email;
+  String? role;
+
+  FollowUpUser({this.sId, this.name, this.email, this.role});
+
+  FollowUpUser.fromJson(Map<String, dynamic> json) {
+    sId = json['_id'];
+    name = json['name'];
+    email = json['email'];
+    role = json['role'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['_id'] = sId;
+    data['name'] = name;
+    data['email'] = email;
+    data['role'] = role;
+    return data;
+  }
+}
+
+/// Lean projection of [ProjectData] carrying only what the project list
+/// cards (`ProjectsWidget`) render/need, so the list screens don't depend on
+/// the full project payload. `status` is included even though the card
+/// doesn't display it — it's needed client-side for [sortProjectsByStatus]
+/// and the dashboard pie chart.
+class ProjectCardModel {
+  final String? sId;
+  final String? title;
+  final String? description;
+  final String? projectPriority;
+  final String? projectCreatedDate;
+  final String? status;
+
+  ProjectCardModel({
+    this.sId,
+    this.title,
+    this.description,
+    this.projectPriority,
+    this.projectCreatedDate,
+    this.status,
+  });
+
+  factory ProjectCardModel.fromJson(Map<String, dynamic> json) {
+    return ProjectCardModel(
+      sId: json['_id'],
+      title: json['title'],
+      description: json['description'],
+      projectPriority: json['projectPriority'],
+      projectCreatedDate:
+          json['projectCreatedDate'] ?? DateTime.now().toIso8601String(),
+      status: json['status'] ?? '',
+    );
+  }
+
+  factory ProjectCardModel.fromProjectData(ProjectData project) {
+    return ProjectCardModel(
+      sId: project.sId,
+      title: project.title,
+      description: project.description,
+      projectPriority: project.projectPriority,
+      projectCreatedDate: project.projectCreatedDate,
+      status: project.status,
+    );
   }
 }
 

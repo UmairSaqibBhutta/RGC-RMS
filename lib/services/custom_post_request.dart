@@ -31,6 +31,44 @@ class CustomPostRequest {
     }
   }
 
+  /// Multipart POST where the file is optional — used for endpoints like
+  /// follow-ups where an image may or may not be attached alongside text
+  /// fields.
+  Future customMultipartPost({
+    required String url,
+    required Map<String, String> fields,
+    File? file,
+    String fileField = "image",
+  }) async {
+    try {
+      var urlPath = '$baseUrl$url';
+      if (kDebugMode) log('url--->$urlPath');
+
+      var request = http.MultipartRequest('POST', Uri.parse(urlPath));
+      request.fields.addAll(fields);
+
+      if (file != null) {
+        request.files
+            .add(await http.MultipartFile.fromPath(fileField, file.path));
+      }
+
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      if (kDebugMode) {
+        print('response--->${response.body}');
+        log('body---${response.body}');
+        log('statusCode---${response.statusCode}');
+      }
+
+      var jsonDecoded = json.decode(response.body);
+      return jsonDecoded;
+    } catch (err) {
+      log(err.toString());
+      return null;
+    }
+  }
+
   Future customFileUpload({
     required String url,
     required File file,

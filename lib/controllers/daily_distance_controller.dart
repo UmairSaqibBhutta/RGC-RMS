@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:leadmanagementsystem/constants/api_urls.dart';
 import 'package:leadmanagementsystem/controllers/location_controller.dart';
 import 'package:leadmanagementsystem/main.dart';
+import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 
 class DailyDistanceUser {
   final String name;
@@ -313,20 +314,20 @@ class DailyDistanceController extends GetxController {
       log("📥 Daily CheckIn Response: $response");
 
       if (response == null) {
-        Get.snackbar("Error", "No response from server");
+        CustomSnackbar.error("No response from server");
         return;
       }
 
       if (response['success'] != true && response['status'] != true) {
-        Get.snackbar("Error", response['message'] ?? "Check-In failed");
+        CustomSnackbar.error(response['message'] ?? "Check-In failed");
         return;
       }
 
-      Get.snackbar("Checked In", "Location recorded successfully.");
+      CustomSnackbar.success("Location recorded successfully.");
       await getTodayRecord();
     } catch (e) {
       log("❌ Daily CheckIn Exception: $e");
-      Get.snackbar("Error", "Something went wrong");
+      CustomSnackbar.error("Something went wrong");
     } finally {
       isCheckInLoading = false;
       update();
@@ -356,20 +357,20 @@ class DailyDistanceController extends GetxController {
       log("📥 Daily CheckOut Response: $response");
 
       if (response == null) {
-        Get.snackbar("Error", "No response from server");
+        CustomSnackbar.error("No response from server");
         return;
       }
 
       if (response['success'] != true && response['status'] != true) {
-        Get.snackbar("Error", response['message'] ?? "Check-Out failed");
+        CustomSnackbar.error(response['message'] ?? "Check-Out failed");
         return;
       }
 
-      Get.snackbar("Checked Out", "Day closed successfully.");
+      CustomSnackbar.success("Day closed successfully.");
       await getTodayRecord();
     } catch (e) {
       log("❌ Daily CheckOut Exception: $e");
-      Get.snackbar("Error", "Something went wrong");
+      CustomSnackbar.error("Something went wrong");
     } finally {
       isCheckOutLoading = false;
       update();

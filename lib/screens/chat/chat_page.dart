@@ -14,6 +14,7 @@ import 'package:leadmanagementsystem/controllers/chat_controller.dart';
 import 'package:leadmanagementsystem/main.dart';
 import 'package:leadmanagementsystem/models/chat_members_model.dart';
 import 'package:leadmanagementsystem/screens/chat/chat_theme.dart';
+import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -36,6 +37,7 @@ class _ChatPageState extends State<ChatPage> {
   List<Member> members = [];
   final chatCont = Get.find<MyChatController>();
   String roomId = "RGCChats";
+  StreamSubscription<QuerySnapshot>? _messagesSubscription;
   @override
   void initState() {
     super.initState();
@@ -75,6 +77,13 @@ class _ChatPageState extends State<ChatPage> {
     //     sentBy: '2',
     //   ),
     // );
+  }
+
+  @override
+  void dispose() {
+    _messagesSubscription?.cancel();
+    _chatController.dispose();
+    super.dispose();
   }
 
   @override
@@ -241,7 +250,7 @@ class _ChatPageState extends State<ChatPage> {
         message,
       );
       if (imageUrl == null) {
-        Get.snackbar("Error", "Message not sent");
+        CustomSnackbar.error("Message not sent");
       } else {
         _chatController.addMessage(
           Message(
@@ -364,7 +373,7 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void listenNewMessages() {
-    collectionRef
+    _messagesSubscription = collectionRef
         .orderBy('createdAt', descending: false)
         .snapshots()
         .listen((querySnapshot) {

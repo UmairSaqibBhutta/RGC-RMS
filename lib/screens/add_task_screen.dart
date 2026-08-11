@@ -184,14 +184,15 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                         items: [
                           ...projCont.myProjects.map((e) {
                             return DropdownMenuItem(
-                                value: e.name, child: Text(e.name.toString()));
+                                value: e.title,
+                                child: Text(e.title.toString()));
                           }).toList(),
                           ...projCont.assignedProjects.map((e) {
                             return DropdownMenuItem(
-                                value: e.name,
+                                value: e.title,
                                 child: Column(
                                   children: [
-                                    Text(e.name.toString()),
+                                    Text(e.title.toString()),
                                   ],
                                 ));
                           }).toList(),

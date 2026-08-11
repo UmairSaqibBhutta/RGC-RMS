@@ -11,12 +11,21 @@ class CustomButton extends StatefulWidget {
 
   Function()? onTap;
 
+  bool fullWidth;
+
+  bool outlined;
+
+  double height;
+
   CustomButton(
       {super.key,
       required this.title,
       this.onTap,
       this.color = appColor,
-      this.child});
+      this.child,
+      this.fullWidth = true,
+      this.outlined = false,
+      this.height = 50});
 
   @override
   State<CustomButton> createState() => _CustomButtonState();
@@ -25,31 +34,51 @@ class CustomButton extends StatefulWidget {
 class _CustomButtonState extends State<CustomButton> {
   @override
   Widget build(BuildContext context) {
+    final Color brandColor = widget.color ?? appColor;
+    final buttonStyle = widget.outlined
+        ? OutlinedButton.styleFrom(
+            foregroundColor: brandColor,
+            side: BorderSide(color: brandColor, width: 1.5),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10)),
+          )
+        : ElevatedButton.styleFrom(
+            elevation: 0,
+            shadowColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10)),
+            backgroundColor: brandColor,
+          );
+
+    final label = widget.child ??
+        Text(
+          widget.title,
+          style: TextStyle(
+            color: widget.outlined ? brandColor : Colors.white,
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.2,
+          ),
+        );
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
       child: PointerInterceptor(
           intercepting: false,
           child: SizedBox(
-              height: 50,
-              width: double.infinity,
-              child: ElevatedButton(
-                  onPressed: widget.onTap,
-                  style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      shadowColor: Colors.transparent,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
-                      backgroundColor: widget.color),
-                  child: widget.child ??
-                      Text(
-                        widget.title,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.2,
-                        ),
-                      )))),
+              height: widget.height,
+              width: widget.fullWidth ? double.infinity : null,
+              child: widget.outlined
+                  ? OutlinedButton(
+                      onPressed: widget.onTap,
+                      style: buttonStyle,
+                      child: label,
+                    )
+                  : ElevatedButton(
+                      onPressed: widget.onTap,
+                      style: buttonStyle,
+                      child: label,
+                    ))),
     );
   }
 }

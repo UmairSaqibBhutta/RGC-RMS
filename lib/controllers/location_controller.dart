@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:leadmanagementsystem/constants/api_urls.dart';
 import 'package:leadmanagementsystem/main.dart';
 import 'package:leadmanagementsystem/models/users_location_model.dart';
+import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 import 'package:location/location.dart';
 
 class LocationController extends GetxController {
@@ -31,16 +32,16 @@ class LocationController extends GetxController {
 
     if (responce != null) {
       if (responce["status"] == true) {
-        Get.snackbar("Success", "User location fetched successfully");
+        CustomSnackbar.success("User location fetched successfully");
 
         return true;
       } else {
-        Get.snackbar("Success", "User location could not be fetched");
+        CustomSnackbar.error("User location could not be fetched");
 
         return false;
       }
     } else {
-      Get.snackbar("Success", "User location could not be fetched");
+      CustomSnackbar.error("User location could not be fetched");
 
       return false;
     }
@@ -100,12 +101,12 @@ class LocationController extends GetxController {
         // Get.snackbar("Success", "User list fetched successfully");
       } else {
         usersLocationList = [];
-        Get.snackbar("Failed", "User list could not be fetched");
+        CustomSnackbar.error("User list could not be fetched");
       }
     } else {
       usersLocationList = [];
 
-      Get.snackbar("Failed", "User list could not be fetched");
+      CustomSnackbar.error("User list could not be fetched");
     }
   }
 
@@ -115,7 +116,7 @@ class LocationController extends GetxController {
       if (!serviceEnabled) {
         serviceEnabled = await location.requestService();
         if (!serviceEnabled) {
-          Get.snackbar("Error", "Location service disabled");
+          CustomSnackbar.error("Location service disabled");
           return null;
         }
       }
@@ -124,7 +125,7 @@ class LocationController extends GetxController {
       if (permission == PermissionStatus.denied) {
         permission = await location.requestPermission();
         if (permission != PermissionStatus.granted) {
-          Get.snackbar("Error", "Location permission denied");
+          CustomSnackbar.error("Location permission denied");
           return null;
         }
       }
@@ -155,7 +156,7 @@ class LocationController extends GetxController {
       );
     } catch (e) {
       log("❌ Location Exception: $e");
-      Get.snackbar("Error", "Failed to get location");
+      CustomSnackbar.error("Failed to get location");
       return null;
     }
   }

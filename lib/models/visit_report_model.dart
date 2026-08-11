@@ -41,6 +41,27 @@ class VisitReportModel {
   }
 }
 
+class VisitReportDetailModel {
+  bool? status;
+  VisitData? data;
+
+  VisitReportDetailModel({this.status, this.data});
+
+  VisitReportDetailModel.fromJson(Map<String, dynamic> json) {
+    status = json['status'];
+    data = json['data'] != null ? VisitData.fromJson(json['data']) : null;
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> json = <String, dynamic>{};
+    json['status'] = status;
+    if (data != null) {
+      json['data'] = data!.toJson();
+    }
+    return json;
+  }
+}
+
 class VisitData {
   String? sId;
   String? userId;

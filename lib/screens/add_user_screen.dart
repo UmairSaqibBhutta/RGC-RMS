@@ -8,6 +8,7 @@ import 'package:leadmanagementsystem/constants/constants.dart';
 import 'package:leadmanagementsystem/constants/user_roles.dart';
 import 'package:leadmanagementsystem/controllers/manager_controller.dart';
 import 'package:leadmanagementsystem/widgets/custom_button.dart';
+import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 import 'package:leadmanagementsystem/widgets/custom_text_field.dart';
 import 'package:leadmanagementsystem/widgets/custom_widgets.dart';
 
@@ -312,30 +313,30 @@ class _AddUserScreenState extends State<AddUserScreen> {
     log("selected role = $selectedRole");
 
     if (nameController.text.trim().isEmpty) {
-      Get.snackbar('Validation Error', 'Name is required');
+      CustomSnackbar.error('Name is required');
       return false;
     }
     if (emailController.text.trim().isEmpty) {
-      Get.snackbar('Validation Error', 'Email is required');
+      CustomSnackbar.error('Email is required');
       return false;
     }
     if (passwordController.text.trim().isEmpty) {
-      Get.snackbar('Validation Error', 'Password is required');
+      CustomSnackbar.error('Password is required');
       return false;
     }
     if (phoneController.text.trim().isEmpty) {
-      Get.snackbar('Validation Error', 'Phone number is required');
+      CustomSnackbar.error('Phone number is required');
       return false;
     }
     if (selectedRole == null) {
-      Get.snackbar('Validation Error', 'Please select a role');
+      CustomSnackbar.error('Please select a role');
       return false;
     }
 
     // Company is required for all roles except CEO
     if (selectedRole != UserRole.CEO) {
       if (selectedCompany == null) {
-        Get.snackbar('Validation Error', 'Please select a company');
+        CustomSnackbar.error('Please select a company');
         return false;
       }
     }
@@ -345,7 +346,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
         selectedRole != UserRole.COMPANY_DIRECTOR &&
         selectedRole != UserRole.COUNTRY_HEAD) {
       if (selectedArea == null) {
-        Get.snackbar('Validation Error', 'Please select a region');
+        CustomSnackbar.error('Please select a region');
         return false;
       }
     }
@@ -353,8 +354,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
     if ((selectedRole == UserRole.ASM ||
             selectedRole == UserRole.NEW_RECRUITS) &&
         manualRegionController.text.trim().isEmpty) {
-      Get.snackbar(
-          'Validation Error', 'Area is required for the selected role');
+      CustomSnackbar.error('Area is required for the selected role');
       return false;
     }
 

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:leadmanagementsystem/constants/constants.dart';
 import 'package:leadmanagementsystem/controllers/login_controller.dart';
 import 'package:leadmanagementsystem/widgets/custom_button.dart';
+import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 import 'package:leadmanagementsystem/widgets/custom_text_field.dart';
 import 'package:pinput/pinput.dart';
 
@@ -46,7 +47,7 @@ class _OtpScreenState extends State<OtpScreen> {
                       ),
                       const SizedBox(height: 10),
                       cont.loadingData
-                          ? const CircularProgressIndicator(color: appColor)
+                          ? const AppLoader()
                           : CustomButton(
                               title: 'Save',
                               onTap: () {
@@ -87,9 +88,7 @@ class _OtpScreenState extends State<OtpScreen> {
                               currentIndex = 1;
                               setState(() {});
                             } else {
-                              Get.snackbar('Failed', 'Invalid Otp',
-                                  backgroundColor: Colors.red,
-                                  colorText: Colors.white);
+                              CustomSnackbar.error('Invalid Otp');
                               setState(() {});
                             }
                           },
@@ -103,16 +102,13 @@ class _OtpScreenState extends State<OtpScreen> {
 
   bool validation() {
     if (password.text.isEmpty) {
-      Get.snackbar('Error', 'Enter your password',
-          backgroundColor: Colors.red, colorText: Colors.white);
+      CustomSnackbar.error('Enter your password');
       return false;
     } else if (confirmPassword.text.isEmpty) {
-      Get.snackbar('Error', 'Enter your Confirm Password',
-          backgroundColor: Colors.red, colorText: Colors.white);
+      CustomSnackbar.error('Enter your Confirm Password');
       return false;
     } else if (password.text != confirmPassword.text) {
-      Get.snackbar('Error', 'Password not matched',
-          backgroundColor: Colors.red, colorText: Colors.white);
+      CustomSnackbar.error('Password not matched');
       return false;
     } else {
       return true;

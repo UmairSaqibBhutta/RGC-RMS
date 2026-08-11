@@ -454,7 +454,8 @@ class _ProjectListPageState extends State<ProjectListPage> {
                                                     // Handle project detail navigation
                                                     Get.to(() =>
                                                         ProjectDetailsPage(
-                                                          project: project,
+                                                          projectId:
+                                                              project.sId!,
                                                           updateProject: false,
                                                           receverId: '',
                                                           token: '',
@@ -462,7 +463,9 @@ class _ProjectListPageState extends State<ProjectListPage> {
                                                         ));
                                                   },
                                                   child: ProjectsWidget(
-                                                      project: project),
+                                                      project: ProjectCardModel
+                                                          .fromProjectData(
+                                                              project)),
                                                 ),
                                               );
                                             },
@@ -486,7 +489,8 @@ class _ProjectListPageState extends State<ProjectListPage> {
                                                     // Handle project detail navigation
                                                     Get.to(() =>
                                                         ProjectDetailsPage(
-                                                          project: project,
+                                                          projectId:
+                                                              project.sId!,
                                                           updateProject: false,
                                                           receverId: '',
                                                           token: '',
@@ -518,7 +522,8 @@ class _ProjectListPageState extends State<ProjectListPage> {
                                                     // Handle project detail navigation
                                                     Get.to(() =>
                                                         ProjectDetailsPage(
-                                                          project: project,
+                                                          projectId:
+                                                              project.sId!,
                                                           updateProject: false,
                                                           receverId: '',
                                                           token: '',
@@ -547,7 +552,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
                                                           receverId: '',
                                                           token: '',
                                                           senderName: '',
-                                                          project: l,
+                                                          projectId: l.sId!,
                                                         ));
                                                       },
                                                       child: ProjectsWidget(
@@ -578,7 +583,8 @@ class _ProjectListPageState extends State<ProjectListPage> {
                                                 onTap: () {
                                                   Get.to(
                                                       () => ProjectDetailsPage(
-                                                            project: project,
+                                                            projectId:
+                                                                project.sId!,
                                                             updateProject: true,
                                                             receverId: '',
                                                             token: '',
@@ -586,7 +592,9 @@ class _ProjectListPageState extends State<ProjectListPage> {
                                                           ));
                                                 },
                                                 child: ProjectsWidget(
-                                                    project: project),
+                                                    project: ProjectCardModel
+                                                        .fromProjectData(
+                                                            project)),
                                               ),
                                             );
                                           },
@@ -608,9 +616,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
                                   ? const Padding(
                                       padding:
                                           EdgeInsets.symmetric(vertical: 16),
-                                      child: Center(
-                                        child: CircularProgressIndicator(),
-                                      ),
+                                      child: Center(child: AppLoader(size: 28)),
                                     )
                                   : const SizedBox.shrink();
                             }),
@@ -743,7 +749,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
           InkWell(
             onTap: () {
               Get.to(() => ProjectDetailsPage(
-                    project: l,
+                    projectId: l.sId!,
                     updateProject: false,
                     receverId: '',
                     token: '',

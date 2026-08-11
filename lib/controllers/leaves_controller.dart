@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:leadmanagementsystem/constants/api_urls.dart';
 import 'package:leadmanagementsystem/main.dart';
 import 'package:leadmanagementsystem/models/leaves_model.dart';
+import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 
 class LeavesController extends GetxController {
   bool addLeaveLoader = false;
@@ -55,15 +56,15 @@ class LeavesController extends GetxController {
       updateAddLeaveLoading(false);
 
       if (responce["status"] == true) {
-        Get.snackbar("Success", "Leave added successfully");
+        CustomSnackbar.success("Leave added successfully");
         return true;
       } else {
-        Get.snackbar("Failed", "Leave could not be added");
+        CustomSnackbar.error("Leave could not be added");
         return false;
       }
     } catch (e) {
       updateAddLeaveLoading(false);
-      Get.snackbar("Failed", "Leave could not be added");
+      CustomSnackbar.error("Leave could not be added");
 
       log("someting went wrong = ${e.toString()}");
       return false;
@@ -75,14 +76,14 @@ class LeavesController extends GetxController {
         url: ApiUrls.adminLeaveActions, body: body);
     if (responce != null) {
       if (responce["status"] == true) {
-        Get.snackbar("Success", "Leave updated successfully");
+        CustomSnackbar.success("Leave updated successfully");
         return true;
       } else {
-        Get.snackbar("Failed", "Leave could not be updated");
+        CustomSnackbar.error("Leave could not be updated");
         return false;
       }
     } else {
-      Get.snackbar("Failed", "Leave could not be updated");
+      CustomSnackbar.error("Leave could not be updated");
       return false;
     }
   }

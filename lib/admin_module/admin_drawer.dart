@@ -20,7 +20,6 @@ import 'package:leadmanagementsystem/screens/tasks_list_page.dart';
 import 'package:leadmanagementsystem/screens/add_user_screen.dart';
 import 'package:leadmanagementsystem/screens/profile_screen.dart';
 import 'package:leadmanagementsystem/screens/change_password_screen.dart';
-import 'package:leadmanagementsystem/projects/post_work_stages_screen.dart';
 import 'package:leadmanagementsystem/widgets/custom_decoration_container.dart';
 import 'package:leadmanagementsystem/widgets/custom_drawer_item.dart';
 
@@ -170,14 +169,14 @@ class _AdminDrawerState extends State<AdminDrawer> {
                     },
                     title: "Add User",
                   ),
-                CustomDrawerItem(
-                  icon: CupertinoIcons.layers_alt,
-                  onTap: () {
-                    Get.back();
-                    Get.to(const PostWorkStagesScreen());
-                  },
-                  title: "Post Work Stages",
-                ),
+                // CustomDrawerItem(
+                //   icon: CupertinoIcons.layers_alt,
+                //   onTap: () {
+                //     Get.back();
+                //     Get.to(const PostWorkStagesScreen());
+                //   },
+                //   title: "Post Work Stages",
+                // ),
                 CustomDrawerItem(
                   icon: CupertinoIcons.lock,
                   onTap: () {

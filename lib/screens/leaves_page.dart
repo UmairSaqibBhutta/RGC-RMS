@@ -13,6 +13,7 @@ import 'package:leadmanagementsystem/models/leaves_model.dart';
 import 'package:leadmanagementsystem/constants/my_extensions.dart';
 import 'package:leadmanagementsystem/screens/admin_leave_actions.dart';
 import 'package:leadmanagementsystem/widgets/custom_button.dart';
+import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 import 'package:leadmanagementsystem/widgets/custom_text_field.dart';
 import 'package:leadmanagementsystem/widgets/custom_widgets.dart';
 import 'package:leadmanagementsystem/widgets/data_formatter.dart';
@@ -451,8 +452,11 @@ class _LeavesPageState extends State<LeavesPage> {
                       return CustomButton(
                         title: leave != null ? "Update Leave" : "Add Leave +",
                         child: cont.addLeaveLoader
-                            ? const CircularProgressIndicator(
+                            ? const AppLoader(
+                                size: 22,
+                                strokeWidth: 2.2,
                                 color: whiteColor,
+                                trackColor: Colors.white24,
                               )
                             : Text(
                                 leave != null ? "Update Leave" : "Add Leave +",
@@ -493,10 +497,8 @@ class _LeavesPageState extends State<LeavesPage> {
                               cont.getLeaves();
                             }
                           } else {
-                            Get.snackbar(
-                              "Error",
+                            CustomSnackbar.error(
                               "Please fill all required fields!",
-                              backgroundColor: whiteColor,
                             );
                           }
                           Navigator.of(context).pop();

@@ -9,9 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:leadmanagementsystem/constants/constants.dart';
+import 'package:leadmanagementsystem/constants/app_theme.dart';
 import 'package:leadmanagementsystem/controllers/location_controller.dart';
 import 'package:leadmanagementsystem/controllers/project_controller.dart';
 import 'package:leadmanagementsystem/firebase_options.dart';
@@ -102,73 +101,9 @@ class _MyAppState extends State<MyApp> {
           child: child!,
         );
       },
-
-      theme: ThemeData(
-          primaryColor: appColor,
-          scaffoldBackgroundColor: const Color(0xFFF7F8FA),
-          fontFamily: GoogleFonts.lato().fontFamily,
-          textTheme: GoogleFonts.mulishTextTheme(),
-          floatingActionButtonTheme: const FloatingActionButtonThemeData(
-            backgroundColor: appColor,
-            elevation: 2,
-          ),
-          useMaterial3: false,
-          colorScheme: const ColorScheme.light(
-            primary: appColor,
-            surface: Colors.white,
-            onPrimary: Colors.white,
-          ),
-          cardTheme: CardThemeData(
-            color: Colors.white,
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: const BorderSide(color: Color(0xFFE9EAEC)),
-            ),
-            margin: EdgeInsets.zero,
-          ),
-          dividerTheme: const DividerThemeData(
-            color: Color(0xFFE9EAEC),
-            thickness: 1,
-            space: 1,
-          ),
-          inputDecorationTheme: InputDecorationTheme(
-            filled: true,
-            fillColor: Colors.white,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: appColor, width: 1.5),
-            ),
-            hintStyle: const TextStyle(
-              color: Color(0xFF9CA3AF),
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-          appBarTheme: const AppBarTheme(
-            iconTheme: IconThemeData(color: Color(0xFF111827)),
-            backgroundColor: Colors.white,
-            elevation: 0,
-            centerTitle: true,
-            titleTextStyle: TextStyle(
-              color: Color(0xFF111827),
-              fontWeight: FontWeight.w600,
-              fontSize: 17,
-              letterSpacing: 0,
-            ),
-          )),
+      theme: buildAppTheme(),
       title: 'RGC RMS',
       home: const SplashScreen(),
-      // home: AddProjectPage(),
     );
   }
 }

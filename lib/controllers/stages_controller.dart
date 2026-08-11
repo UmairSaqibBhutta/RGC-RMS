@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:leadmanagementsystem/constants/api_urls.dart';
 import 'package:leadmanagementsystem/main.dart';
 import 'package:leadmanagementsystem/models/stages_model.dart';
+import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 
 class StagesController extends GetxController {
   var mainStages = <MainStageData>[].obs;
@@ -66,18 +67,18 @@ class StagesController extends GetxController {
       addLoading.value = false;
 
       if (response != null && response['status'] == true) {
-        Get.snackbar('Success', 'Main stage added successfully');
+        CustomSnackbar.success('Main stage added successfully');
         await getMainStages();
         return true;
       } else {
-        Get.snackbar('Error',
+        CustomSnackbar.error(
             response?['message']?.toString() ?? 'Failed to add main stage');
         return false;
       }
     } catch (e) {
       addLoading.value = false;
       log('addMainStage error: $e');
-      Get.snackbar('Error', e.toString());
+      CustomSnackbar.error(e.toString());
       return false;
     }
   }
@@ -93,18 +94,18 @@ class StagesController extends GetxController {
       addLoading.value = false;
 
       if (response != null && response['status'] == true) {
-        Get.snackbar('Success', 'Sub stage added successfully');
+        CustomSnackbar.success('Sub stage added successfully');
         await getSubStages();
         return true;
       } else {
-        Get.snackbar('Error',
+        CustomSnackbar.error(
             response?['message']?.toString() ?? 'Failed to add sub stage');
         return false;
       }
     } catch (e) {
       addLoading.value = false;
       log('addSubStage error: $e');
-      Get.snackbar('Error', e.toString());
+      CustomSnackbar.error(e.toString());
       return false;
     }
   }

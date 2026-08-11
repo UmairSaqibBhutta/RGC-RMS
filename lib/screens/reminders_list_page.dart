@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:leadmanagementsystem/constants/alarm_helper.dart';
 import 'package:leadmanagementsystem/constants/constants.dart';
-import 'package:leadmanagementsystem/controllers/project_controller.dart';
 import 'package:leadmanagementsystem/models/reminder_model.dart';
 import 'package:leadmanagementsystem/screens/set_reminder_screen.dart';
 import 'package:leadmanagementsystem/storage/reminder_storage.dart';
+import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 import 'package:leadmanagementsystem/widgets/custom_widgets.dart';
 
 class ReminderListScreen extends StatefulWidget {
@@ -39,9 +39,9 @@ class _ReminderListScreenState extends State<ReminderListScreen> {
       setState(() {
         reminders.removeWhere((r) => r.id == reminder.id);
       });
-      customSnackBar("Success", "Alarm deleted successfully");
+      CustomSnackbar.success("Alarm deleted successfully");
     } else {
-      customSnackBar("Failure", "Alarm could not be deleted");
+      CustomSnackbar.error("Alarm could not be deleted");
     }
   }
 
