@@ -65,7 +65,7 @@ class _TaskListPageState extends State<TaskListPage> {
                 init: taskCont,
                 builder: (controller) {
                   if (controller.loading.isTrue) {
-                    return showSpinkit();
+                    return pleaseWaitLoader();
                   }
 
                   final tasks = currentIndex == 0
@@ -160,6 +160,7 @@ class _TaskListPageState extends State<TaskListPage> {
         floatingActionButton: widget.isReportView == true
             ? const SizedBox.shrink()
             : FloatingActionButton(
+                heroTag: 'taskListAddTaskFAB',
                 onPressed: () {
                   Get.to(const AddTaskScreen());
                 },

@@ -107,7 +107,7 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
           if (cont.isProjectDetailLoading) {
             return Scaffold(
               appBar: mAppbar('Project Details', leading: _backButton(context)),
-              body: const Center(child: AppLoader()),
+              body: pleaseWaitLoader(),
             );
           }
           return Scaffold(
@@ -170,6 +170,9 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
                         },
                         style: ElevatedButton.styleFrom(
                             backgroundColor: appColor,
+                            minimumSize: Size.zero,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10)),
                             elevation: 0),

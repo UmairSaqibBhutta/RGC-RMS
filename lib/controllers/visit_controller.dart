@@ -324,11 +324,18 @@ class VisitController extends GetxController {
       }
 
       if (res['status'] == false || res['success'] == false) {
-        CustomSnackbar.error(res['message'] ?? 'Failed to add follow up');
+        final message = res['message'];
+        CustomSnackbar.error(
+            message is String && message.isNotEmpty
+                ? message
+                : 'Failed to add follow up');
         return false;
       }
 
-      CustomSnackbar.success(res['message'] ?? 'Follow up added successfully');
+      final message = res['message'];
+      CustomSnackbar.success(message is String && message.isNotEmpty
+          ? message
+          : 'Follow up added successfully');
       return true;
     } catch (e) {
       log('addVisitReportFollowUp Exception: $e');

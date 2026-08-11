@@ -49,7 +49,7 @@ class _LeavesPageState extends State<LeavesPage> {
         init: leavesController,
         builder: (cont) {
           if (cont.getLeavesLoader) {
-            return showSpinkit();
+            return pleaseWaitLoader();
           } else if (cont.leavesList.isEmpty) {
             return const Center(
               child: Text(

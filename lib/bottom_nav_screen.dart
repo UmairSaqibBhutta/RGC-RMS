@@ -142,6 +142,7 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
       return null;
     } else {
       return FloatingActionButton(
+          heroTag: 'bottomNavAddProjectFAB',
           backgroundColor: appColor,
           elevation: 0,
           onPressed: () {
@@ -187,25 +188,29 @@ class _BottomAppBarWidgetState extends State<BottomAppBarWidget> {
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: InkWell(
         onTap: (widget.onTap),
-        child: Column(
-          children: [
-            Icon(
-              widget.changeIndex == true ? widget.activeIcon : widget.icon,
-              size: 26,
-              color: color,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              widget.title!,
-              style: TextStyle(
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                widget.changeIndex == true ? widget.activeIcon : widget.icon,
+                size: 26,
                 color: color,
-                fontSize: 11,
-                fontWeight: widget.changeIndex
-                    ? FontWeight.w600
-                    : FontWeight.w400,
               ),
-            )
-          ],
+              const SizedBox(height: 4),
+              Text(
+                widget.title!,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 11,
+                  fontWeight: widget.changeIndex
+                      ? FontWeight.w600
+                      : FontWeight.w400,
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );

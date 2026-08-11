@@ -51,7 +51,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
             var notifications = controller.notificationsList;
 
             if (notifications.isEmpty && !controller.emptyList) {
-              return showSpinkit();
+              return pleaseWaitLoader();
             } else if (controller.emptyList) {
               return const Center(
                 child: Text(

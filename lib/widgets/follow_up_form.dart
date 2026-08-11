@@ -49,6 +49,7 @@ class _FollowUpFormState extends State<FollowUpForm> {
     }
 
     final success = await widget.onSubmit(text, _image);
+    if (!mounted) return;
     if (success) {
       _textController.clear();
       setState(() => _image = null);

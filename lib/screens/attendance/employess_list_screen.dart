@@ -54,7 +54,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
           init: usersController,
           builder: (controller) {
             if (controller.getUsersLoading) {
-              return showSpinkit();
+              return pleaseWaitLoader();
             }
 
             return Column(

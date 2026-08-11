@@ -6,6 +6,8 @@ import 'package:intl/intl.dart';
 import 'package:leadmanagementsystem/constants/constants.dart';
 import 'package:leadmanagementsystem/constants/launchers_helper.dart';
 import 'package:leadmanagementsystem/controllers/visit_controller.dart';
+import 'package:leadmanagementsystem/extensions/string_extensions.dart';
+import 'package:leadmanagementsystem/models/project_model.dart' show FollowUp;
 import 'package:leadmanagementsystem/models/visit_report_model.dart';
 import 'package:leadmanagementsystem/widgets/custom_widgets.dart';
 import 'package:leadmanagementsystem/widgets/follow_up_form.dart';
@@ -114,7 +116,7 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
       appBar: mAppbar("Visit Report Details"),
       body: GetBuilder<VisitController>(
         builder: (cont) {
-          if (cont.isVisitDetailLoading) return showSpinkit();
+          if (cont.isVisitDetailLoading) return pleaseWaitLoader();
 
           final visit = cont.visitDetail;
 
@@ -234,13 +236,21 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
                     ],
                   ),
                   const SizedBox(height: 12),
+                  _buildFollowUpsSection(visit),
+                  const SizedBox(height: 12),
                   FollowUpForm(
                     isLoading: cont.followUpLoader,
-                    onSubmit: (text, image) => cont.addVisitReportFollowUp(
-                      visitReportId: widget.visitId,
-                      text: text,
-                      image: image,
-                    ),
+                    onSubmit: (text, image) async {
+                      final added = await cont.addVisitReportFollowUp(
+                        visitReportId: widget.visitId,
+                        text: text,
+                        image: image,
+                      );
+                      if (added) {
+                        await cont.getVisitDetail(widget.visitId);
+                      }
+                      return added;
+                    },
                   ),
                   const SizedBox(height: 20),
                 ],
@@ -248,6 +258,146 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildFollowUpsSection(VisitData visit) {
+    final followUps = visit.followUp ?? [];
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text(
+                'Follow Ups',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                decoration: BoxDecoration(
+                  color: appColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '${followUps.length}',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: appColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          if (followUps.isEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFE9EAEC)),
+              ),
+              child: const Text(
+                'No follow ups yet.',
+                style: TextStyle(fontSize: 14, color: Colors.black54),
+              ),
+            )
+          else
+            for (final followUp in followUps.reversed)
+              _buildFollowUpTile(followUp),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFollowUpTile(FollowUp followUp) {
+    final name = followUp.user?.name;
+    final hasName = name.isNotNullOrEmpty;
+    final initial = hasName ? name!.substring(0, 1).toUpperCase() : '?';
+    final createdAt = followUp.createdAt;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 10,
+            spreadRadius: 2,
+            offset: Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 14,
+                backgroundColor: appColor.withValues(alpha: 0.15),
+                child: Text(
+                  initial,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: appColor,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  hasName ? name! : 'Unknown',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (createdAt != null)
+                Text(
+                  DateFormat('MMM d, h:mm a').format(createdAt),
+                  style: const TextStyle(fontSize: 11, color: Colors.black45),
+                ),
+            ],
+          ),
+          if (followUp.text.isNotNullOrEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              followUp.text!,
+              style: const TextStyle(fontSize: 15, height: 1.4),
+            ),
+          ],
+          if (followUp.image.isNotNullOrEmpty) ...[
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              // Same `baseUrl + <path>` convention used for chat images
+              // (see chat_page.dart) and the project details follow-ups —
+              // the API returns a bare filename here.
+              child: Image.network(
+                baseUrl + followUp.image!,
+                height: 150,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

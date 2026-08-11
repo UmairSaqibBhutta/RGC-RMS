@@ -133,7 +133,7 @@ class _ManagersPageState extends State<ManagersPage> {
               init: managersCont,
               builder: (controller) {
                 if (controller.getManagersLoading) {
-                  return showSpinkit();
+                  return pleaseWaitLoader();
                 } else if (controller.managersData.isEmpty) {
                   return const Center(child: Text('No managers found'));
                 }

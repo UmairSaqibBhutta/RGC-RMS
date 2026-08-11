@@ -137,7 +137,7 @@ class _DailyDistanceScreenState extends State<DailyDistanceScreen> {
       backgroundColor: Colors.grey.shade100,
       body: GetBuilder<DailyDistanceController>(
         builder: (cont) {
-          if (cont.isRecordLoading) return showSpinkit();
+          if (cont.isRecordLoading) return pleaseWaitLoader();
 
           return RefreshIndicator(
             onRefresh: () => cont.getTodayRecord(),

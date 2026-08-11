@@ -1,3 +1,5 @@
+import 'project_model.dart' show FollowUp;
+
 class VisitPagination {
   final int page;
   final int limit;
@@ -79,6 +81,7 @@ class VisitData {
   int? iV;
   CheckIn? checkOut;
   UserDetail? userDetail;
+  List<FollowUp>? followUp;
 
   VisitData({
     this.sId,
@@ -97,6 +100,7 @@ class VisitData {
     this.iV,
     this.checkOut,
     this.userDetail,
+    this.followUp,
   });
 
   VisitData.fromJson(Map<String, dynamic> json) {
@@ -128,6 +132,13 @@ class VisitData {
     userDetail = json['userDetail'] != null
         ? UserDetail.fromJson(json['userDetail'])
         : null;
+
+    if (json['followUp'] != null) {
+      followUp = <FollowUp>[];
+      json['followUp'].forEach((v) {
+        followUp!.add(FollowUp.fromJson(v));
+      });
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -157,6 +168,10 @@ class VisitData {
 
     if (userDetail != null) {
       data['userDetail'] = userDetail!.toJson();
+    }
+
+    if (followUp != null) {
+      data['followUp'] = followUp!.map((v) => v.toJson()).toList();
     }
 
     return data;

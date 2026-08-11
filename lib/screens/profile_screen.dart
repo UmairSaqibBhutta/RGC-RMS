@@ -38,7 +38,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               backgroundColor: Colors.white,
               appBar: mAppbar('Profile'),
               body: cont.profileData == null || cont.profileData == ''
-                  ? showSpinkit()
+                  ? pleaseWaitLoader()
                   : SafeArea(
                       child: Column(
                         children: [

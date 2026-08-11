@@ -94,7 +94,7 @@ class _AllUsersScreenState extends State<AllUsersScreen> {
               ),
               body: CustomDecorationContainer(
                 child: controller.usersData.isEmpty
-                    ? showSpinkit()
+                    ? pleaseWaitLoader()
                     : SingleChildScrollView(
                         padding: const EdgeInsets.all(16.0),
                         child: SafeArea(

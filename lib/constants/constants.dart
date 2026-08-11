@@ -69,6 +69,55 @@ Widget showSpinkit() {
   );
 }
 
+/// Full-screen version of the "Please wait..." card shown by
+/// [alertDialogueWithLoader], for screens whose whole body depends on an
+/// initial fetch completing — keeps that loading style consistent with Home.
+Widget pleaseWaitLoader() {
+  return Center(
+    child: const PleaseWaitCard()
+        .animate()
+        .fadeIn(duration: 150.ms)
+        .scale(begin: const Offset(.9, .9)),
+  );
+}
+
+class PleaseWaitCard extends StatelessWidget {
+  const PleaseWaitCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 26),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 24,
+            offset: Offset(0, 10),
+          ),
+        ],
+      ),
+      child: const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AppLoader(size: 40),
+          SizedBox(height: 14),
+          Text(
+            'Please wait...',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: Colors.black54,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Branded circular loader used everywhere in place of a bare
 /// [CircularProgressIndicator], so every loading state in the app —
 /// full-page, in-dialog, or inline in a button — looks like one

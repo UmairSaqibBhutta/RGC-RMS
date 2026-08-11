@@ -307,7 +307,7 @@ class _VisitListScreenState extends State<VisitListScreen> {
       backgroundColor: Colors.grey.shade100,
       body: GetBuilder<VisitController>(
         builder: (cont) {
-          if (cont.isReportLoading) return showSpinkit();
+          if (cont.isReportLoading) return pleaseWaitLoader();
 
           if (cont.visitList.isEmpty) {
             return const Center(child: Text("No Visits Found"));
