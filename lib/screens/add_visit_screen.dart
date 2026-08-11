@@ -70,7 +70,7 @@ class _AddVisitScreenState extends State<AddVisitScreen> {
                   prefixIcon: Icons.architecture,
                 ),
                 CustomTextField(
-                  hint: "Call Result",
+                  hint: "Notes",
                   controller: cont.callResultCont,
                   prefixIcon: Icons.call,
                   maxLines: 4,

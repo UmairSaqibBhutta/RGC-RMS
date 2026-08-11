@@ -7,7 +7,7 @@ import 'package:leadmanagementsystem/storage/reminder_storage.dart';
 import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 
 class AlarmHelper {
-  static setReminder(
+  static Future<bool> setReminder(
       {required String title,
       required String desc,
       required DateTime dateTime}) async {
@@ -18,7 +18,7 @@ class AlarmHelper {
       assetAudioPath: 'assets/audio/alarm.mp3',
       loopAudio: true,
       vibrate: true,
-      volumeSettings: VolumeSettings.fixed(volume: 1.0, volumeEnforced: true),
+      // volumeSettings: VolumeSettings.fixed(volume: 1.0, volumeEnforced: true),
       warningNotificationOnKill: Platform.isIOS,
       androidFullScreenIntent: true,
       notificationSettings: NotificationSettings(
@@ -29,7 +29,7 @@ class AlarmHelper {
       ),
     );
 
-    await Alarm.set(alarmSettings: alarmSettings).then(
+    return await Alarm.set(alarmSettings: alarmSettings).then(
       (value) async {
         CustomSnackbar.success("Alarm set for $title");
         await ReminderStorage.saveReminder(ReminderModel(
@@ -38,11 +38,14 @@ class AlarmHelper {
           description: desc,
           dateTime: dateTime,
         ));
+        return true;
       },
     ).onError(
       (error, stackTrace) {
         log("error in alarm set = ${error.toString()}");
         CustomSnackbar.error("Alarm could not be set for $error");
+
+        return false;
       },
     );
   }

@@ -302,7 +302,7 @@ class VisitPdfService {
           _fieldRow('Block', _safe(v.block), 'GCO', _safe(v.gco)),
           _fieldRow('Key Person Name', _safe(v.keyPN), 'Key Person Contact',
               _safe(v.keyPC)),
-          _fieldRow('Architect', _safe(v.architect), 'Call Result',
+          _fieldRow('Architect', _safe(v.architect), 'Notes',
               _safe(v.callResult)),
           _fieldRow('Created At', _formatDate(v.createdAt), 'Last Updated',
               _formatDate(v.updatedAt)),

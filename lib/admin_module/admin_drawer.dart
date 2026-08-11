@@ -8,7 +8,7 @@ import 'package:leadmanagementsystem/controllers/drawer_controller.dart';
 import 'package:leadmanagementsystem/main.dart';
 import 'package:leadmanagementsystem/projects/projects_list_page.dart';
 import 'package:leadmanagementsystem/constants/constants.dart';
-import 'package:leadmanagementsystem/reports/reports_main_screen.dart';
+import 'package:leadmanagementsystem/reports/all_users_screen.dart';
 import 'package:leadmanagementsystem/screens/attendance/employess_list_screen.dart';
 import 'package:leadmanagementsystem/screens/attendance/mark_attendance_screen.dart';
 import 'package:leadmanagementsystem/screens/daily_distance_screen.dart';
@@ -122,7 +122,7 @@ class _AdminDrawerState extends State<AdminDrawer> {
                 CustomDrawerItem(
                   icon: CupertinoIcons.chart_bar,
                   onTap: () {
-                    Get.to(const ReportsMainScreen());
+                    Get.to(const AllUsersScreen());
                   },
                   title: "Reports",
                 ),

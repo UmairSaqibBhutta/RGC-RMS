@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:leadmanagementsystem/constants/constants.dart';
 
 class NotesPage extends StatefulWidget {
   const NotesPage({Key? key}) : super(key: key);
@@ -40,8 +41,8 @@ class _NotesPageState extends State<NotesPage> {
       body: _buildNotesList(),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddNoteSheet,
-        backgroundColor: Colors.teal.shade600,
-        child: const Icon(Icons.add),
+        backgroundColor: appColor,
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }

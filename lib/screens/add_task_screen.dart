@@ -1,7 +1,7 @@
 import 'dart:developer';
 
 import 'package:date_time_picker/date_time_picker.dart';
-// import 'package:file_picker/file_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -41,16 +41,16 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   String? filePath;
 
   uploadDocument() async {
-    // final filePicker =
-    //     await FilePicker.platform.pickFiles(allowMultiple: false);
+    final filePicker =
+        await FilePicker.platform.pickFiles(allowMultiple: false);
 
-    // if (filePicker != null) {
-    //   for (var element in filePicker.files) {
-    //     taskCont.filePath.value = element.path.toString();
-    //     taskCont.fileName.value = element.name.toString();
-    //     setState(() {});
-    //   }
-    // }
+    if (filePicker != null) {
+      for (var element in filePicker.files) {
+        taskCont.filePath.value = element.path.toString();
+        taskCont.fileName.value = element.name.toString();
+        setState(() {});
+      }
+    }
   }
 
   final taskCont = Get.put(TaskController());

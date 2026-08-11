@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
-// import 'package:file_picker/file_picker.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:leadmanagementsystem/constants/api_urls.dart';
 import 'package:leadmanagementsystem/bottom_nav_screen.dart';
@@ -128,15 +128,20 @@ class ProjectController extends GetxController {
   var fileName = ''.obs;
 
   Future<void> addFileFunction() async {
-    // final filePick = await FilePicker.platform.pickFiles(allowMultiple: false);
+    try {
+      final pickedImage =
+          await ImagePicker().pickImage(source: ImageSource.camera);
 
-    // if (filePick != null && filePick.files.isNotEmpty) {
-    //   final pickedFile = filePick.files.first;
-    //   filePath.value = pickedFile.path ?? '';
-    //   fileName.value = pickedFile.name;
+      if (pickedImage != null) {
+        filePath.value = pickedImage.path;
+        fileName.value = pickedImage.name;
 
-    //   log(" filePath.value = = ${filePath.value}");
-    // }
+        log(" filePath.value = = ${filePath.value}");
+      }
+    } catch (e) {
+      log("error in addFileFunction = ${e.toString()}");
+      CustomSnackbar.error('Could not access the camera: $e');
+    }
   }
 
   addWorkScope(WorkScopeModel workScopeModel) {
@@ -664,12 +669,12 @@ class ProjectController extends GetxController {
       'projectPriority': priority.value,
     });
 
-    // Handle file upload
-    if (existingFilePath != null) {
-      request.fields['file'] = existingFilePath;
-    } else {
+    // Handle file upload: prefer a newly picked file, otherwise keep the existing one
+    if (filePath.value.isNotEmpty) {
       request.files
           .add(await http.MultipartFile.fromPath('file', filePath.value));
+    } else if (existingFilePath != null && existingFilePath.isNotEmpty) {
+      request.fields['file'] = existingFilePath;
     }
 
     // Send the request

@@ -141,26 +141,43 @@ class DailyDistanceRecord {
         if (db == null) return -1;
         return da.compareTo(db);
       });
-    if (sorted.length < 2) return 0.0;
+
+    // Drop entries with unparseable or (0, 0) "null island" coordinates —
+    // treating a failed GPS fix as (0, 0) would otherwise inject a bogus
+    // multi-thousand-km jump into the total.
+    final validPoints = <Point<double>>[];
+    for (final entry in sorted) {
+      final lat = double.tryParse(entry.lat);
+      final lon = double.tryParse(entry.long);
+      if (lat == null || lon == null) continue;
+      if (lat == 0 && lon == 0) continue;
+      validPoints.add(Point(lat, lon));
+    }
+
+    if (validPoints.length < 2) return 0.0;
     double total = 0.0;
-    for (int i = 0; i < sorted.length - 1; i++) {
-      final lat1 = double.tryParse(sorted[i].lat) ?? 0;
-      final lon1 = double.tryParse(sorted[i].long) ?? 0;
-      final lat2 = double.tryParse(sorted[i + 1].lat) ?? 0;
-      final lon2 = double.tryParse(sorted[i + 1].long) ?? 0;
-      total += _haversineKm(lat1, lon1, lat2, lon2);
+    for (int i = 0; i < validPoints.length - 1; i++) {
+      total += _haversineKm(
+        validPoints[i].x,
+        validPoints[i].y,
+        validPoints[i + 1].x,
+        validPoints[i + 1].y,
+      );
     }
     return total;
   }
 
   static double _haversineKm(
       double lat1, double lon1, double lat2, double lon2) {
-    const r = 6371.0;
+    const r = 6371.0088; // mean Earth radius (IUGG)
     final dLat = _toRad(lat2 - lat1);
     final dLon = _toRad(lon2 - lon1);
     final a = sin(dLat / 2) * sin(dLat / 2) +
         cos(_toRad(lat1)) * cos(_toRad(lat2)) * sin(dLon / 2) * sin(dLon / 2);
-    return r * 2 * atan2(sqrt(a), sqrt(1 - a));
+    // Clamp: floating-point rounding can push `a` fractionally above 1 for
+    // near-identical points, which would make sqrt(1 - a) NaN.
+    final clampedA = a.clamp(0.0, 1.0);
+    return r * 2 * atan2(sqrt(clampedA), sqrt(1 - clampedA));
   }
 
   static double _toRad(double deg) => deg * pi / 180;

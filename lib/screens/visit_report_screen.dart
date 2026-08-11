@@ -381,7 +381,7 @@ class _VisitListScreenState extends State<VisitListScreen> {
                         _row("Contact", visit.keyPC),
                         _row("Architect", visit.architect),
                         const SizedBox(height: 10),
-                        _row("Call Result", visit.callResult),
+                        _row("Notes", visit.callResult),
                         const Divider(height: 20),
                         Row(
                           children: [
