@@ -183,6 +183,17 @@ class _DailyDistanceScreenState extends State<DailyDistanceScreen> {
                       );
                     }),
                   ],
+                  if (cont.otherUsersRecords.isNotEmpty) ...[
+                    const SizedBox(height: 24),
+                    _teamSectionLabel(),
+                    const SizedBox(height: 10),
+                    ...cont.otherUsersRecords.map((record) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _userDistanceCard(record),
+                      );
+                    }),
+                  ],
                   const SizedBox(height: 20),
                 ],
               ),
@@ -238,6 +249,35 @@ class _DailyDistanceScreenState extends State<DailyDistanceScreen> {
               SizedBox(width: 6),
               Text(
                 "History",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _teamSectionLabel() {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: appColor,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.groups, size: 14, color: Colors.white),
+              SizedBox(width: 6),
+              Text(
+                "Team",
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -573,6 +613,59 @@ class _DailyDistanceScreenState extends State<DailyDistanceScreen> {
             ],
             const SizedBox(height: 8),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _userDistanceCard(DailyDistanceRecord record) {
+    final days = DailyDistanceRecord.groupByDate(
+        record.checkIns, record.checkOuts);
+    final totalKm = record.totalDistanceKmAllTime.toStringAsFixed(2);
+    final name = record.user?.name;
+    final hasName = name != null && name.isNotEmpty;
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+          childrenPadding:
+              const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: appColor.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.person, size: 18, color: appColor),
+          ),
+          title: Text(
+            hasName ? name : 'Unknown user',
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+          ),
+          subtitle: Text(
+            "$totalKm km total  •  ${record.checkIns.length} in  •  ${record.checkOuts.length} out",
+            style: const TextStyle(fontSize: 11, color: Colors.black54),
+          ),
+          children: days.isEmpty
+              ? [
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      'No dated entries.',
+                      style: TextStyle(fontSize: 12, color: Colors.black54),
+                    ),
+                  ),
+                ]
+              : days
+                  .map((day) => Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: _historyDateCard(day),
+                      ))
+                  .toList(),
         ),
       ),
     );

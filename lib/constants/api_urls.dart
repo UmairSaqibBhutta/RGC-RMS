@@ -27,6 +27,10 @@ class ApiUrls {
   static const String assignProject = 'assignProject';
   static const String getAssignProjects = 'getAssignProjects';
   static const String getProjectDetail = 'project-detail';
+  static const String getProjectStatusCounts = 'getProjectStatusCounts';
+
+  /// Debug-only: permanently deletes a project. See [DebugDeleteProjectTile].
+  static const String deleteProject = 'delete-project';
 
   // notifications
   static const String getNotificaton = 'getNotification';
@@ -60,7 +64,7 @@ class ApiUrls {
   // daily distance
   static const String dailyDistanceCheckIn = 'checkInNew';
   static const String dailyDistanceCheckOut = 'checkOutNew';
-  static const String getDailyDistance = 'getCheckNew';
+  static const String getDailyDistance = 'getCheckNewByRole';
 
   // post work stages
   static const String addMainStage = 'addMainStage';

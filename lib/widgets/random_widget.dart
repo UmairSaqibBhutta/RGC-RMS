@@ -9,7 +9,6 @@ import 'package:leadmanagementsystem/constants/constants.dart';
 import 'package:leadmanagementsystem/constants/size_config.dart';
 import 'package:leadmanagementsystem/controllers/filter_controller.dart';
 import 'package:leadmanagementsystem/controllers/filter_variable_controller.dart';
-import 'package:leadmanagementsystem/models/project_model.dart';
 import 'package:leadmanagementsystem/widgets/custom_text_field.dart';
 
 class FilterUI extends StatefulWidget {
@@ -292,24 +291,35 @@ class _RadioWithImageState extends State<RadioWithImage> {
 }
 
 class PieChartSample2 extends StatefulWidget {
-  PieChartSample2({super.key, required this.projects});
+  PieChartSample2({super.key, required this.statusCounts});
 
-  List<ProjectCardModel> projects;
+  /// Per-status project counts, keyed by the same status strings used
+  /// throughout the app (e.g. 'Lead', 'Closed-Won') — from
+  /// `getProjectStatusCounts/:userId`, computed server-side across the
+  /// user's whole portfolio rather than one paginated page of projects.
+  Map<String, int> statusCounts;
 
   @override
   State<StatefulWidget> createState() => PieChart2State();
 }
 
 class PieChart2State extends State<PieChartSample2> {
-  static const _knownStatuses = {
-    'Lead',
-    'Contacted',
-    'Pitched',
-    'Sent Sample',
-    'Negotiating',
-    'Closed-Won',
-    'Closed-Lost',
-    'Temporary Close',
+  static const _knownStatusColors = {
+    'Lead': leadColor,
+    'Contacted': contactedColor,
+    'Pitched': pitchedColor,
+    'Sent Sample': sentSampleColor,
+    'Negotiating': negotiatingColor,
+    'Closed-Won': wonColor,
+    'Closed-Lost': lostColor,
+    'Temporary Close': Color(0xFFFFAB91),
+  };
+
+  // Some statuses are stored with a hyphen but read better with a space
+  // in the legend/labels.
+  static const _displayTitles = {
+    'Closed-Won': 'Closed - Won',
+    'Closed-Lost': 'Closed - Lost',
   };
 
   int touchedIndex = -1;
@@ -320,99 +330,24 @@ class PieChart2State extends State<PieChartSample2> {
   Widget build(BuildContext context) {
     return Obx(() {
       pieData = [
-        {
-          'title': 'Lead',
-          'count': widget.projects.isEmpty
-              ? 0
-              : widget.projects
-                  .where((p0) => p0.status == 'Lead')
-                  .toList()
-                  .length,
-          'color': leadColor,
-        },
-        {
-          'title': 'Contacted',
-          'count': widget.projects.isEmpty
-              ? 0
-              : widget.projects
-                  .where((p0) => p0.status == 'Contacted')
-                  .toList()
-                  .length,
-          'color': contactedColor,
-        },
-        {
-          'title': 'Pitched',
-          'count': widget.projects.isEmpty
-              ? 0
-              : widget.projects
-                  .where((p0) => p0.status == 'Pitched')
-                  .toList()
-                  .length,
-          'color': pitchedColor,
-        },
-        {
-          'title': 'Sent Sample',
-          'count': widget.projects.isEmpty
-              ? 0
-              : widget.projects
-                  .where((p0) => p0.status == 'Sent Sample')
-                  .toList()
-                  .length,
-          'color': sentSampleColor,
-        },
-        {
-          'title': 'Negotiating',
-          'count': widget.projects.isEmpty
-              ? 0
-              : widget.projects
-                  .where((p0) => p0.status == 'Negotiating')
-                  .toList()
-                  .length,
-          'color': negotiatingColor,
-        },
-        {
-          'title': 'Closed - Won',
-          'count': widget.projects.isEmpty
-              ? 0
-              : widget.projects
-                  .where((p0) => p0.status == 'Closed-Won')
-                  .toList()
-                  .length,
-          'color': wonColor,
-        },
-        {
-          'title': 'Closed - Lost',
-          'count': widget.projects.isEmpty
-              ? 0
-              : widget.projects
-                  .where((p0) => p0.status == 'Closed-Lost')
-                  .toList()
-                  .length,
-          'color': lostColor,
-        },
-        {
-          'title': 'Temporary Close',
-          'count': widget.projects.isEmpty
-              ? 0
-              : widget.projects
-                  .where((p0) => p0.status == 'Temporary Close')
-                  .toList()
-                  .length,
-          'color': Colors.orangeAccent.shade200,
-        },
+        for (final entry in _knownStatusColors.entries)
+          {
+            'title': _displayTitles[entry.key] ?? entry.key,
+            'count': widget.statusCounts[entry.key] ?? 0,
+            'color': entry.value,
+          },
       ];
 
       // Anything whose status doesn't match one of the buckets above
       // (e.g. newly created projects that haven't had a status set yet)
       // still counts toward the total, so surface it instead of silently
       // dropping it from the chart.
-      final knownCount =
-          pieData.fold<int>(0, (sum, e) => sum + (e['count'] as int));
-      final unclassifiedCount = widget.projects.length - knownCount;
+      final unclassifiedCount = widget.statusCounts.entries
+          .where((e) => !_knownStatusColors.containsKey(e.key))
+          .fold<int>(0, (sum, e) => sum + e.value);
       if (unclassifiedCount > 0) {
-        final unmatchedStatuses = widget.projects
-            .where((p) => !_knownStatuses.contains(p.status))
-            .map((p) => p.status)
+        final unmatchedStatuses = widget.statusCounts.keys
+            .where((k) => !_knownStatusColors.containsKey(k))
             .toSet();
         log('Pie chart: $unclassifiedCount project(s) with unmatched status: $unmatchedStatuses');
         pieData.add({
@@ -421,6 +356,8 @@ class PieChart2State extends State<PieChartSample2> {
           'color': Colors.grey,
         });
       }
+
+      final total = pieData.fold<int>(0, (sum, e) => sum + (e['count'] as int));
 
       return SizedBox(
         height: kIsWeb ? Get.height / 2 : Get.height / 3,
@@ -432,7 +369,7 @@ class PieChart2State extends State<PieChartSample2> {
                   height: 18,
                 ),
 
-                widget.projects.isEmpty
+                total == 0
                     ? Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 18.0),
                         child: Container(
@@ -498,7 +435,7 @@ class PieChart2State extends State<PieChartSample2> {
                 //   width: 1,
                 // ),
 
-                widget.projects.isEmpty
+                total == 0
                     ? const Spacer()
                     : const SizedBox.shrink(),
 
@@ -544,7 +481,7 @@ class PieChart2State extends State<PieChartSample2> {
                 child: Padding(
                   padding: const EdgeInsets.all(13.0),
                   child: Row(
-                    children: [Text('Total: ${widget.projects.length}')],
+                    children: [Text('Total: $total')],
                   ),
                 ),
               ),

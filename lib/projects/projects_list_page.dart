@@ -21,6 +21,7 @@ import 'package:leadmanagementsystem/projects/projects_widget.dart';
 import 'package:leadmanagementsystem/constants/constants.dart';
 import 'package:leadmanagementsystem/widgets/custom_text_field.dart';
 import 'package:leadmanagementsystem/widgets/custom_widgets.dart';
+import 'package:leadmanagementsystem/widgets/debug_delete_project_tile.dart';
 import 'package:leadmanagementsystem/widgets/random_widget.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
@@ -445,27 +446,36 @@ class _ProjectListPageState extends State<ProjectListPage> {
                                             itemBuilder: (context, index) {
                                               final project =
                                                   searchedProjects[index];
-                                              return Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        vertical: 8.0),
-                                                child: GestureDetector(
-                                                  onTap: () {
-                                                    // Handle project detail navigation
-                                                    Get.to(() =>
-                                                        ProjectDetailsPage(
-                                                          projectId:
-                                                              project.sId!,
-                                                          updateProject: false,
-                                                          receverId: '',
-                                                          token: '',
-                                                          senderName: '',
-                                                        ));
-                                                  },
-                                                  child: ProjectsWidget(
-                                                      project: ProjectCardModel
-                                                          .fromProjectData(
-                                                              project)),
+                                              return DebugDeleteProjectTile(
+                                                projectId: project.sId!,
+                                                onDeleted: () => setState(() =>
+                                                    searchedProjects.removeWhere(
+                                                        (p) =>
+                                                            p.sId ==
+                                                            project.sId)),
+                                                child: Padding(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(vertical: 8.0),
+                                                  child: GestureDetector(
+                                                    onTap: () {
+                                                      // Handle project detail navigation
+                                                      Get.to(() =>
+                                                          ProjectDetailsPage(
+                                                            projectId:
+                                                                project.sId!,
+                                                            updateProject:
+                                                                false,
+                                                            receverId: '',
+                                                            token: '',
+                                                            senderName: '',
+                                                          ));
+                                                    },
+                                                    child: ProjectsWidget(
+                                                        project:
+                                                            ProjectCardModel
+                                                                .fromProjectData(
+                                                                    project)),
+                                                  ),
                                                 ),
                                               );
                                             },
@@ -480,25 +490,28 @@ class _ProjectListPageState extends State<ProjectListPage> {
                                             itemBuilder: (context, index) {
                                               final project = projectsController
                                                   .myProjects[index];
-                                              return Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        vertical: 8.0),
-                                                child: GestureDetector(
-                                                  onTap: () {
-                                                    // Handle project detail navigation
-                                                    Get.to(() =>
-                                                        ProjectDetailsPage(
-                                                          projectId:
-                                                              project.sId!,
-                                                          updateProject: false,
-                                                          receverId: '',
-                                                          token: '',
-                                                          senderName: '',
-                                                        ));
-                                                  },
-                                                  child: ProjectsWidget(
-                                                      project: project),
+                                              return DebugDeleteProjectTile(
+                                                projectId: project.sId!,
+                                                child: Padding(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(vertical: 8.0),
+                                                  child: GestureDetector(
+                                                    onTap: () {
+                                                      // Handle project detail navigation
+                                                      Get.to(() =>
+                                                          ProjectDetailsPage(
+                                                            projectId:
+                                                                project.sId!,
+                                                            updateProject:
+                                                                false,
+                                                            receverId: '',
+                                                            token: '',
+                                                            senderName: '',
+                                                          ));
+                                                    },
+                                                    child: ProjectsWidget(
+                                                        project: project),
+                                                  ),
                                                 ),
                                               );
                                             },
@@ -513,25 +526,28 @@ class _ProjectListPageState extends State<ProjectListPage> {
                                             itemBuilder: (context, index) {
                                               final project = projectsController
                                                   .assignedProjects[index];
-                                              return Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        vertical: 8.0),
-                                                child: GestureDetector(
-                                                  onTap: () {
-                                                    // Handle project detail navigation
-                                                    Get.to(() =>
-                                                        ProjectDetailsPage(
-                                                          projectId:
-                                                              project.sId!,
-                                                          updateProject: false,
-                                                          receverId: '',
-                                                          token: '',
-                                                          senderName: '',
-                                                        ));
-                                                  },
-                                                  child: ProjectsWidget(
-                                                      project: project),
+                                              return DebugDeleteProjectTile(
+                                                projectId: project.sId!,
+                                                child: Padding(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(vertical: 8.0),
+                                                  child: GestureDetector(
+                                                    onTap: () {
+                                                      // Handle project detail navigation
+                                                      Get.to(() =>
+                                                          ProjectDetailsPage(
+                                                            projectId:
+                                                                project.sId!,
+                                                            updateProject:
+                                                                false,
+                                                            receverId: '',
+                                                            token: '',
+                                                            senderName: '',
+                                                          ));
+                                                    },
+                                                    child: ProjectsWidget(
+                                                        project: project),
+                                                  ),
                                                 ),
                                               );
                                             },
@@ -541,22 +557,27 @@ class _ProjectListPageState extends State<ProjectListPage> {
                                             return Column(children: [
                                               for (var l in projectsController
                                                   .teamProjects)
-                                                Padding(
-                                                  padding: const EdgeInsets.all(
-                                                      10.0),
-                                                  child: InkWell(
-                                                      onTap: () {
-                                                        Get.to(
-                                                            ProjectDetailsPage(
-                                                          updateProject: false,
-                                                          receverId: '',
-                                                          token: '',
-                                                          senderName: '',
-                                                          projectId: l.sId!,
-                                                        ));
-                                                      },
-                                                      child: ProjectsWidget(
-                                                          project: l)),
+                                                DebugDeleteProjectTile(
+                                                  projectId: l.sId!,
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            10.0),
+                                                    child: InkWell(
+                                                        onTap: () {
+                                                          Get.to(
+                                                              ProjectDetailsPage(
+                                                            updateProject:
+                                                                false,
+                                                            receverId: '',
+                                                            token: '',
+                                                            senderName: '',
+                                                            projectId: l.sId!,
+                                                          ));
+                                                        },
+                                                        child: ProjectsWidget(
+                                                            project: l)),
+                                                  ),
                                                 )
                                             ]);
                                           })
@@ -575,26 +596,35 @@ class _ProjectListPageState extends State<ProjectListPage> {
                                           itemBuilder: (context, index) {
                                             final project = controller
                                                 .filteredProjectDataList[index];
-                                            return Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 8.0),
-                                              child: GestureDetector(
-                                                onTap: () {
-                                                  Get.to(
-                                                      () => ProjectDetailsPage(
-                                                            projectId:
-                                                                project.sId!,
-                                                            updateProject: true,
-                                                            receverId: '',
-                                                            token: '',
-                                                            senderName: '',
-                                                          ));
-                                                },
-                                                child: ProjectsWidget(
-                                                    project: ProjectCardModel
-                                                        .fromProjectData(
-                                                            project)),
+                                            return DebugDeleteProjectTile(
+                                              projectId: project.sId!,
+                                              onDeleted: () {
+                                                controller
+                                                    .filteredProjectDataList
+                                                    .removeWhere((p) =>
+                                                        p.sId == project.sId);
+                                                controller.update();
+                                              },
+                                              child: Padding(
+                                                padding: const EdgeInsets
+                                                    .symmetric(vertical: 8.0),
+                                                child: GestureDetector(
+                                                  onTap: () {
+                                                    Get.to(() =>
+                                                        ProjectDetailsPage(
+                                                          projectId:
+                                                              project.sId!,
+                                                          updateProject: true,
+                                                          receverId: '',
+                                                          token: '',
+                                                          senderName: '',
+                                                        ));
+                                                  },
+                                                  child: ProjectsWidget(
+                                                      project: ProjectCardModel
+                                                          .fromProjectData(
+                                                              project)),
+                                                ),
                                               ),
                                             );
                                           },

@@ -214,6 +214,53 @@ class ProjectController extends GetxController {
     }
   }
 
+  /// Per-status project counts for the home screen pie chart, from
+  /// `getProjectStatusCounts/:userId` — computed server-side across the
+  /// user's whole portfolio, unlike [myProjects]/[assignedProjects]/
+  /// [teamProjects] which only ever hold one paginated page.
+  var projectStatusCounts = <String, int>{}.obs;
+
+  Future<void> getProjectStatusCounts() async {
+    final res = await getRequest.customGetRequest(
+      apiPath:
+          '${ApiUrls.getProjectStatusCounts}/${loginStorage.getUserId()}',
+    );
+
+    if (res != null && res['status'] != false) {
+      projectStatusCounts.value =
+          ProjectStatusCountsModel.fromJson(res).data;
+    } else {
+      log('getProjectStatusCounts failed: $res');
+    }
+  }
+
+  /// Debug-only: permanently deletes a project via `delete-project/:id` and
+  /// removes it from [myProjects]/[assignedProjects]/[teamProjects]/
+  /// [allProjects] so every screen watching those reactive lists updates
+  /// immediately. See [DebugDeleteProjectTile].
+  Future<bool> deleteProject(String projectId) async {
+    final res = await postRequest.customPostRequest(
+      url: '${ApiUrls.deleteProject}/$projectId',
+      body: {},
+    );
+
+    final message = res?['message'];
+    final messageText =
+        message is String && message.isNotEmpty ? message : null;
+
+    if (res != null && res['status'] != false) {
+      myProjects.removeWhere((p) => p.sId == projectId);
+      assignedProjects.removeWhere((p) => p.sId == projectId);
+      teamProjects.removeWhere((p) => p.sId == projectId);
+      allProjects.removeWhere((p) => p.sId == projectId);
+      CustomSnackbar.success(messageText ?? 'Project deleted');
+      return true;
+    } else {
+      CustomSnackbar.error(messageText ?? 'Failed to delete project');
+      return false;
+    }
+  }
+
   Future<void> loadMoreProjects(String type) async {
     int page;
 

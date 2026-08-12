@@ -414,6 +414,28 @@ class ProjectCardModel {
   }
 }
 
+/// Response of `getProjectStatusCounts/:userId` — a per-status project
+/// count for the home screen pie chart, computed server-side so the chart
+/// reflects the user's whole portfolio instead of just the paginated page
+/// of projects the list screens load.
+class ProjectStatusCountsModel {
+  bool? status;
+  Map<String, int> data;
+
+  ProjectStatusCountsModel({this.status, Map<String, int>? data})
+      : data = data ?? {};
+
+  ProjectStatusCountsModel.fromJson(Map<String, dynamic> json)
+      : status = json['status'],
+        data = (json['data'] as Map<String, dynamic>? ?? {}).map(
+          (key, value) => MapEntry(key, (value as num?)?.toInt() ?? 0),
+        );
+
+  Map<String, dynamic> toJson() {
+    return {'status': status, 'data': data};
+  }
+}
+
 class WorkScope {
   String? name;
   String? sId;

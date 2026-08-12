@@ -8,28 +8,27 @@ import 'package:leadmanagementsystem/main.dart';
 import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 
 class DailyDistanceUser {
+  final String sId;
   final String name;
   final String email;
-  final String role;
 
   DailyDistanceUser({
+    required this.sId,
     required this.name,
     required this.email,
-    required this.role,
   });
 
   factory DailyDistanceUser.fromJson(Map<String, dynamic> json) {
     return DailyDistanceUser(
+      sId: json['_id']?.toString() ?? '',
       name: json['name']?.toString() ?? '',
       email: json['email']?.toString() ?? '',
-      role: json['role']?.toString() ?? '',
     );
   }
 }
 
 class DailyDistanceEntry {
   final String? sId;
-  final DailyDistanceUser? user;
   final String dateTime;
   final String lat;
   final String long;
@@ -37,7 +36,6 @@ class DailyDistanceEntry {
 
   DailyDistanceEntry({
     this.sId,
-    this.user,
     required this.dateTime,
     required this.lat,
     required this.long,
@@ -47,9 +45,6 @@ class DailyDistanceEntry {
   factory DailyDistanceEntry.fromJson(Map<String, dynamic> json) {
     return DailyDistanceEntry(
       sId: json['_id']?.toString(),
-      user: json['userId'] is Map<String, dynamic>
-          ? DailyDistanceUser.fromJson(json['userId'] as Map<String, dynamic>)
-          : null,
       dateTime: json['dateTime']?.toString() ?? '',
       lat: json['lat']?.toString() ?? '',
       long: json['long']?.toString() ?? '',
@@ -73,11 +68,17 @@ class DailyDistanceEntry {
 
 class DailyDistanceRecord {
   final String? sId;
+
+  /// The user this record belongs to. `getCheckNewByRole` is role-scoped —
+  /// a plain user gets back just their own record, while a CEO/admin gets
+  /// one record per user they can see — so this is what tells them apart.
+  final DailyDistanceUser? user;
   final List<DailyDistanceEntry> checkIns;
   final List<DailyDistanceEntry> checkOuts;
 
   DailyDistanceRecord({
     this.sId,
+    this.user,
     required this.checkIns,
     required this.checkOuts,
   });
@@ -85,6 +86,9 @@ class DailyDistanceRecord {
   factory DailyDistanceRecord.fromJson(Map<String, dynamic> json) {
     return DailyDistanceRecord(
       sId: json['_id']?.toString(),
+      user: json['user'] is Map<String, dynamic>
+          ? DailyDistanceUser.fromJson(json['user'] as Map<String, dynamic>)
+          : null,
       checkIns: (json['checkIn'] as List<dynamic>? ?? [])
           .map((e) => DailyDistanceEntry.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -92,6 +96,57 @@ class DailyDistanceRecord {
           .map((e) => DailyDistanceEntry.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
+  }
+
+  /// Buckets [checkIns]/[checkOuts] into one [DailyDistanceRecord] per
+  /// calendar date, newest first — used both for a single user's day-by-day
+  /// history and for computing a user's distance across all their days.
+  static List<DailyDistanceRecord> groupByDate(
+    List<DailyDistanceEntry> checkIns,
+    List<DailyDistanceEntry> checkOuts,
+  ) {
+    final Map<String, List<DailyDistanceEntry>> checkInsByDate = {};
+    final Map<String, List<DailyDistanceEntry>> checkOutsByDate = {};
+
+    String keyOf(DateTime dt) =>
+        '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
+
+    for (final entry in checkIns) {
+      final dt = entry.parsedDateTime;
+      if (dt == null) continue;
+      checkInsByDate.putIfAbsent(keyOf(dt), () => []).add(entry);
+    }
+    for (final entry in checkOuts) {
+      final dt = entry.parsedDateTime;
+      if (dt == null) continue;
+      checkOutsByDate.putIfAbsent(keyOf(dt), () => []).add(entry);
+    }
+
+    final allDates = {...checkInsByDate.keys, ...checkOutsByDate.keys};
+    final records = allDates
+        .map((key) => DailyDistanceRecord(
+              checkIns: checkInsByDate[key] ?? [],
+              checkOuts: checkOutsByDate[key] ?? [],
+            ))
+        .toList();
+
+    return records..sort((a, b) {
+      final da = a.date;
+      final db = b.date;
+      if (da == null && db == null) return 0;
+      if (da == null) return 1;
+      if (db == null) return -1;
+      return db.compareTo(da);
+    });
+  }
+
+  /// Sum of each of this user's individual days' distances — summing
+  /// [distanceKm] directly across the whole (unbucketed) record would
+  /// splice together unrelated hops from different days into one bogus
+  /// figure, since a record here spans this user's entire history.
+  double get totalDistanceKmAllTime {
+    final days = groupByDate(checkIns, checkOuts);
+    return days.fold<double>(0, (sum, d) => sum + d.distanceKm);
   }
 
   DateTime? get date {
@@ -188,14 +243,20 @@ class DailyDistanceController extends GetxController {
   bool isCheckOutLoading = false;
   bool isRecordLoading = false;
 
+  /// One record per user `getCheckNewByRole` returned — just the caller's
+  /// own record for a plain user, or one per visible user for a CEO/admin.
   List<DailyDistanceRecord> allRecords = [];
-  DailyDistanceRecord? todayRecord;
+
+  /// The record belonging to the logged-in user specifically, picked out
+  /// of [allRecords] by matching `user.sId` — never assume it's the first
+  /// or only entry, since a CEO/admin gets everyone's records back too.
+  DailyDistanceRecord? myRecord;
 
   // Only today's check-ins — guards against multi-day records from a missed checkout.
   List<DailyDistanceEntry> get todayCheckIns {
-    if (todayRecord == null) return [];
+    if (myRecord == null) return [];
     final now = DateTime.now();
-    return todayRecord!.checkIns.where((e) {
+    return myRecord!.checkIns.where((e) {
       final dt = e.parsedDateTime;
       return dt != null &&
           dt.year == now.year &&
@@ -206,9 +267,9 @@ class DailyDistanceController extends GetxController {
 
   // Only today's check-outs — prevents an old checkout from marking today as closed.
   List<DailyDistanceEntry> get todayCheckOuts {
-    if (todayRecord == null) return [];
+    if (myRecord == null) return [];
     final now = DateTime.now();
-    return todayRecord!.checkOuts.where((e) {
+    return myRecord!.checkOuts.where((e) {
       final dt = e.parsedDateTime;
       return dt != null &&
           dt.year == now.year &&
@@ -221,45 +282,21 @@ class DailyDistanceController extends GetxController {
 
   bool get hasAnyCheckIn => todayCheckIns.isNotEmpty;
 
+  /// My own past days (today excluded — that's shown separately above).
   List<DailyDistanceRecord> get historyRecords {
-    final now = DateTime.now();
-    final Map<String, List<DailyDistanceEntry>> checkInsByDate = {};
-    final Map<String, List<DailyDistanceEntry>> checkOutsByDate = {};
-
-    for (final record in allRecords) {
-      for (final entry in record.checkIns) {
-        final dt = entry.parsedDateTime;
-        if (dt == null) continue;
-        if (dt.year == now.year && dt.month == now.month && dt.day == now.day) continue;
-        final key = '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
-        checkInsByDate.putIfAbsent(key, () => []).add(entry);
-      }
-      for (final entry in record.checkOuts) {
-        final dt = entry.parsedDateTime;
-        if (dt == null) continue;
-        if (dt.year == now.year && dt.month == now.month && dt.day == now.day) continue;
-        final key = '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
-        checkOutsByDate.putIfAbsent(key, () => []).add(entry);
-      }
-    }
-
-    final allDates = {...checkInsByDate.keys, ...checkOutsByDate.keys};
-    final records = allDates
-        .map((key) => DailyDistanceRecord(
-              checkIns: checkInsByDate[key] ?? [],
-              checkOuts: checkOutsByDate[key] ?? [],
-            ))
+    final myRec = myRecord;
+    if (myRec == null) return [];
+    return DailyDistanceRecord.groupByDate(myRec.checkIns, myRec.checkOuts)
+        .where((day) => !day.isToday)
         .toList();
-
-    return records..sort((a, b) {
-      final da = a.date;
-      final db = b.date;
-      if (da == null && db == null) return 0;
-      if (da == null) return 1;
-      if (db == null) return -1;
-      return db.compareTo(da);
-    });
   }
+
+  /// Every other user visible in this response (CEO/admin only — a plain
+  /// user's response only ever contains their own record), for the "Team"
+  /// section. Excludes the logged-in user's own record, already shown above.
+  List<DailyDistanceRecord> get otherUsersRecords => allRecords
+      .where((r) => r.user?.sId != loginStorage.getUserId())
+      .toList();
 
   double get totalDistanceKm {
     final cins = todayCheckIns;
@@ -274,7 +311,8 @@ class DailyDistanceController extends GetxController {
       update();
 
       final response = await getRequest.customGetRequest(
-        apiPath: "${ApiUrls.getDailyDistance}/${loginStorage.getUserId()}",
+        apiPath:
+            "${ApiUrls.getDailyDistance}/${loginStorage.getUserId()}/${loginStorage.getUserRole()}",
       );
 
       log("📥 Daily Distance Record: $response");
@@ -288,17 +326,19 @@ class DailyDistanceController extends GetxController {
                 DailyDistanceRecord.fromJson(e as Map<String, dynamic>))
             .toList();
 
-        DailyDistanceRecord? found;
-        for (final r in allRecords) {
-          if (r.isToday) {
-            found = r;
-            break;
-          }
+        final myUserId = loginStorage.getUserId();
+        if (allRecords.length == 1) {
+          // Unambiguous — a plain (non-CEO/admin) user's response only
+          // ever holds one record, their own, even if it doesn't echo
+          // back a `user` object to match against.
+          myRecord = allRecords.first;
+        } else {
+          myRecord =
+              allRecords.firstWhereOrNull((r) => r.user?.sId == myUserId);
         }
-        todayRecord = found;
       } else {
         allRecords = [];
-        todayRecord = null;
+        myRecord = null;
       }
     } catch (e) {
       log("❌ getTodayRecord Exception: $e");

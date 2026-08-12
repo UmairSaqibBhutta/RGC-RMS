@@ -12,10 +12,10 @@ import 'package:leadmanagementsystem/projects/project_details_page.dart';
 import 'package:leadmanagementsystem/projects/projects_widget.dart';
 import 'package:leadmanagementsystem/constants/constants.dart';
 import 'package:leadmanagementsystem/controllers/project_controller.dart';
-import 'package:leadmanagementsystem/models/project_model.dart';
 import 'package:leadmanagementsystem/screens/chat/chat_page.dart';
 import 'package:leadmanagementsystem/screens/notification_screen.dart';
 import 'package:leadmanagementsystem/widgets/custom_widgets.dart';
+import 'package:leadmanagementsystem/widgets/debug_delete_project_tile.dart';
 import 'package:leadmanagementsystem/widgets/random_widget.dart';
 
 class HomePage extends StatefulWidget {
@@ -39,6 +39,7 @@ class _HomePageState extends State<HomePage> {
 
     loginController.getNotifications();
     projectController.getProjects(context);
+    projectController.getProjectStatusCounts();
 
     _scrollController.addListener(_onScroll);
   }
@@ -215,7 +216,8 @@ class _HomePageState extends State<HomePage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               PieChartSample2(
-                                projects: getProjects(),
+                                statusCounts:
+                                    projectController.projectStatusCounts,
                               ),
                               const Divider(),
                               SingleChildScrollView(
@@ -300,19 +302,22 @@ class _HomePageState extends State<HomePage> {
                                     itemCount: myProjects.length,
                                     itemBuilder: (context, index) {
                                       final l = myProjects[index];
-                                      return Padding(
-                                        padding: const EdgeInsets.all(10.0),
-                                        child: InkWell(
-                                            onTap: () {
-                                              Get.to(ProjectDetailsPage(
-                                                updateProject: false,
-                                                receverId: '',
-                                                token: '',
-                                                senderName: '',
-                                                projectId: l.sId!,
-                                              ));
-                                            },
-                                            child: ProjectsWidget(project: l)),
+                                      return DebugDeleteProjectTile(
+                                        projectId: l.sId!,
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(10.0),
+                                          child: InkWell(
+                                              onTap: () {
+                                                Get.to(ProjectDetailsPage(
+                                                  updateProject: false,
+                                                  receverId: '',
+                                                  token: '',
+                                                  senderName: '',
+                                                  projectId: l.sId!,
+                                                ));
+                                              },
+                                              child: ProjectsWidget(project: l)),
+                                        ),
                                       );
                                     },
                                   );
@@ -329,19 +334,22 @@ class _HomePageState extends State<HomePage> {
                                     itemCount: assignedProjects.length,
                                     itemBuilder: (context, index) {
                                       final l = assignedProjects[index];
-                                      return Padding(
-                                        padding: const EdgeInsets.all(10.0),
-                                        child: InkWell(
-                                            onTap: () {
-                                              Get.to(ProjectDetailsPage(
-                                                updateProject: false,
-                                                receverId: '',
-                                                token: '',
-                                                senderName: '',
-                                                projectId: l.sId!,
-                                              ));
-                                            },
-                                            child: ProjectsWidget(project: l)),
+                                      return DebugDeleteProjectTile(
+                                        projectId: l.sId!,
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(10.0),
+                                          child: InkWell(
+                                              onTap: () {
+                                                Get.to(ProjectDetailsPage(
+                                                  updateProject: false,
+                                                  receverId: '',
+                                                  token: '',
+                                                  senderName: '',
+                                                  projectId: l.sId!,
+                                                ));
+                                              },
+                                              child: ProjectsWidget(project: l)),
+                                        ),
                                       );
                                     },
                                   );
@@ -357,19 +365,22 @@ class _HomePageState extends State<HomePage> {
                                     itemCount: teamProjects.length,
                                     itemBuilder: (context, index) {
                                       final l = teamProjects[index];
-                                      return Padding(
-                                        padding: const EdgeInsets.all(10.0),
-                                        child: InkWell(
-                                            onTap: () {
-                                              Get.to(ProjectDetailsPage(
-                                                projectId: l.sId!,
-                                                updateProject: false,
-                                                receverId: '',
-                                                token: '',
-                                                senderName: '',
-                                              ));
-                                            },
-                                            child: ProjectsWidget(project: l)),
+                                      return DebugDeleteProjectTile(
+                                        projectId: l.sId!,
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(10.0),
+                                          child: InkWell(
+                                              onTap: () {
+                                                Get.to(ProjectDetailsPage(
+                                                  projectId: l.sId!,
+                                                  updateProject: false,
+                                                  receverId: '',
+                                                  token: '',
+                                                  senderName: '',
+                                                ));
+                                              },
+                                              child: ProjectsWidget(project: l)),
+                                        ),
                                       );
                                     },
                                   );
@@ -441,16 +452,6 @@ class _HomePageState extends State<HomePage> {
       return 'Temporary Close';
     } else {
       return '';
-    }
-  }
-
-  List<ProjectCardModel> getProjects() {
-    if (currentIndex == 0) {
-      return projectController.myProjects;
-    } else if (currentIndex == 1) {
-      return projectController.assignedProjects;
-    } else {
-      return projectController.teamProjects;
     }
   }
 }
