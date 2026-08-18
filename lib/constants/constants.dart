@@ -1,4 +1,4 @@
-import 'dart:developer';
+﻿import 'package:leadmanagementsystem/utils/dev_log.dart';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -71,7 +71,7 @@ Widget showSpinkit() {
 
 /// Full-screen version of the "Please wait..." card shown by
 /// [alertDialogueWithLoader], for screens whose whole body depends on an
-/// initial fetch completing — keeps that loading style consistent with Home.
+/// initial fetch completing â€” keeps that loading style consistent with Home.
 Widget pleaseWaitLoader() {
   return Center(
     child: const PleaseWaitCard()
@@ -119,8 +119,8 @@ class PleaseWaitCard extends StatelessWidget {
 }
 
 /// Branded circular loader used everywhere in place of a bare
-/// [CircularProgressIndicator], so every loading state in the app —
-/// full-page, in-dialog, or inline in a button — looks like one
+/// [CircularProgressIndicator], so every loading state in the app â€”
+/// full-page, in-dialog, or inline in a button â€” looks like one
 /// consistent design instead of Material's generic default spinner.
 class AppLoader extends StatelessWidget {
   final double size;

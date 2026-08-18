@@ -1,4 +1,4 @@
-import 'dart:developer';
+﻿import 'package:leadmanagementsystem/utils/dev_log.dart';
 import 'dart:math' hide log;
 
 import 'package:get/get.dart';
@@ -69,9 +69,9 @@ class DailyDistanceEntry {
 class DailyDistanceRecord {
   final String? sId;
 
-  /// The user this record belongs to. `getCheckNewByRole` is role-scoped —
+  /// The user this record belongs to. `getCheckNewByRole` is role-scoped â€”
   /// a plain user gets back just their own record, while a CEO/admin gets
-  /// one record per user they can see — so this is what tells them apart.
+  /// one record per user they can see â€” so this is what tells them apart.
   final DailyDistanceUser? user;
   final List<DailyDistanceEntry> checkIns;
   final List<DailyDistanceEntry> checkOuts;
@@ -99,7 +99,7 @@ class DailyDistanceRecord {
   }
 
   /// Buckets [checkIns]/[checkOuts] into one [DailyDistanceRecord] per
-  /// calendar date, newest first — used both for a single user's day-by-day
+  /// calendar date, newest first â€” used both for a single user's day-by-day
   /// history and for computing a user's distance across all their days.
   static List<DailyDistanceRecord> groupByDate(
     List<DailyDistanceEntry> checkIns,
@@ -140,7 +140,7 @@ class DailyDistanceRecord {
     });
   }
 
-  /// Sum of each of this user's individual days' distances — summing
+  /// Sum of each of this user's individual days' distances â€” summing
   /// [distanceKm] directly across the whole (unbucketed) record would
   /// splice together unrelated hops from different days into one bogus
   /// figure, since a record here spans this user's entire history.
@@ -197,7 +197,7 @@ class DailyDistanceRecord {
         return da.compareTo(db);
       });
 
-    // Drop entries with unparseable or (0, 0) "null island" coordinates —
+    // Drop entries with unparseable or (0, 0) "null island" coordinates â€”
     // treating a failed GPS fix as (0, 0) would otherwise inject a bogus
     // multi-thousand-km jump into the total.
     final validPoints = <Point<double>>[];
@@ -243,16 +243,16 @@ class DailyDistanceController extends GetxController {
   bool isCheckOutLoading = false;
   bool isRecordLoading = false;
 
-  /// One record per user `getCheckNewByRole` returned — just the caller's
+  /// One record per user `getCheckNewByRole` returned â€” just the caller's
   /// own record for a plain user, or one per visible user for a CEO/admin.
   List<DailyDistanceRecord> allRecords = [];
 
   /// The record belonging to the logged-in user specifically, picked out
-  /// of [allRecords] by matching `user.sId` — never assume it's the first
+  /// of [allRecords] by matching `user.sId` â€” never assume it's the first
   /// or only entry, since a CEO/admin gets everyone's records back too.
   DailyDistanceRecord? myRecord;
 
-  // Only today's check-ins — guards against multi-day records from a missed checkout.
+  // Only today's check-ins â€” guards against multi-day records from a missed checkout.
   List<DailyDistanceEntry> get todayCheckIns {
     if (myRecord == null) return [];
     final now = DateTime.now();
@@ -265,7 +265,7 @@ class DailyDistanceController extends GetxController {
     }).toList();
   }
 
-  // Only today's check-outs — prevents an old checkout from marking today as closed.
+  // Only today's check-outs â€” prevents an old checkout from marking today as closed.
   List<DailyDistanceEntry> get todayCheckOuts {
     if (myRecord == null) return [];
     final now = DateTime.now();
@@ -282,7 +282,7 @@ class DailyDistanceController extends GetxController {
 
   bool get hasAnyCheckIn => todayCheckIns.isNotEmpty;
 
-  /// My own past days (today excluded — that's shown separately above).
+  /// My own past days (today excluded â€” that's shown separately above).
   List<DailyDistanceRecord> get historyRecords {
     final myRec = myRecord;
     if (myRec == null) return [];
@@ -291,7 +291,7 @@ class DailyDistanceController extends GetxController {
         .toList();
   }
 
-  /// Every other user visible in this response (CEO/admin only — a plain
+  /// Every other user visible in this response (CEO/admin only â€” a plain
   /// user's response only ever contains their own record), for the "Team"
   /// section. Excludes the logged-in user's own record, already shown above.
   List<DailyDistanceRecord> get otherUsersRecords => allRecords
@@ -315,7 +315,7 @@ class DailyDistanceController extends GetxController {
             "${ApiUrls.getDailyDistance}/${loginStorage.getUserId()}/${loginStorage.getUserRole()}",
       );
 
-      log("📥 Daily Distance Record: $response");
+      log("ðŸ“¥ Daily Distance Record: $response");
 
       if (response == null || response['status'] != true) return;
 
@@ -328,7 +328,7 @@ class DailyDistanceController extends GetxController {
 
         final myUserId = loginStorage.getUserId();
         if (allRecords.length == 1) {
-          // Unambiguous — a plain (non-CEO/admin) user's response only
+          // Unambiguous â€” a plain (non-CEO/admin) user's response only
           // ever holds one record, their own, even if it doesn't echo
           // back a `user` object to match against.
           myRecord = allRecords.first;
@@ -341,7 +341,7 @@ class DailyDistanceController extends GetxController {
         myRecord = null;
       }
     } catch (e) {
-      log("❌ getTodayRecord Exception: $e");
+      log("âŒ getTodayRecord Exception: $e");
     } finally {
       isRecordLoading = false;
       update();
@@ -361,14 +361,14 @@ class DailyDistanceController extends GetxController {
         "long": locationModel.long,
       };
 
-      log("📤 Daily CheckIn Body: $body");
+      log("ðŸ“¤ Daily CheckIn Body: $body");
 
       final response = await postRequest.customPostRequest(
         url: ApiUrls.dailyDistanceCheckIn,
         body: body,
       );
 
-      log("📥 Daily CheckIn Response: $response");
+      log("ðŸ“¥ Daily CheckIn Response: $response");
 
       if (response == null) {
         CustomSnackbar.error("No response from server");
@@ -383,7 +383,7 @@ class DailyDistanceController extends GetxController {
       CustomSnackbar.success("Location recorded successfully.");
       await getTodayRecord();
     } catch (e) {
-      log("❌ Daily CheckIn Exception: $e");
+      log("âŒ Daily CheckIn Exception: $e");
       CustomSnackbar.error("Something went wrong");
     } finally {
       isCheckInLoading = false;
@@ -404,14 +404,14 @@ class DailyDistanceController extends GetxController {
         "address": locationModel.address,
       };
 
-      log("📤 Daily CheckOut Body: $body");
+      log("ðŸ“¤ Daily CheckOut Body: $body");
 
       final response = await postRequest.customPostRequest(
         url: ApiUrls.dailyDistanceCheckOut,
         body: body,
       );
 
-      log("📥 Daily CheckOut Response: $response");
+      log("ðŸ“¥ Daily CheckOut Response: $response");
 
       if (response == null) {
         CustomSnackbar.error("No response from server");
@@ -426,7 +426,7 @@ class DailyDistanceController extends GetxController {
       CustomSnackbar.success("Day closed successfully.");
       await getTodayRecord();
     } catch (e) {
-      log("❌ Daily CheckOut Exception: $e");
+      log("âŒ Daily CheckOut Exception: $e");
       CustomSnackbar.error("Something went wrong");
     } finally {
       isCheckOutLoading = false;

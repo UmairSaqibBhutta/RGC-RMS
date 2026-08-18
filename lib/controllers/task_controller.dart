@@ -1,5 +1,5 @@
-import 'dart:convert';
-import 'dart:developer';
+﻿import 'dart:convert';
+import 'package:leadmanagementsystem/utils/dev_log.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -269,6 +269,31 @@ class TaskController extends GetxController {
     }
 
     update();
+  }
+
+  /// Debug-only: permanently deletes a task via `delete-task/:id` and
+  /// removes it from [filteredTasksList]/[assignedTasksList] so every
+  /// screen watching those reactive lists updates immediately.
+  /// See [DebugDeleteTaskTile].
+  Future<bool> deleteTask(String taskId) async {
+    final res = await postRequest.customPostRequest(
+      url: '${ApiUrls.deleteTask}/$taskId',
+      body: {},
+    );
+
+    final message = res?['message'];
+    final messageText =
+        message is String && message.isNotEmpty ? message : null;
+
+    if (res != null && res['status'] != false) {
+      filteredTasksList.removeWhere((t) => t.id == taskId);
+      assignedTasksList.removeWhere((t) => t.id == taskId);
+      CustomSnackbar.success(messageText ?? 'Task deleted');
+      return true;
+    } else {
+      CustomSnackbar.error(messageText ?? 'Failed to delete task');
+      return false;
+    }
   }
 
   void clearAllFields() {

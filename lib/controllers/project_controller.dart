@@ -1,5 +1,5 @@
-import 'dart:convert';
-import 'dart:developer';
+﻿import 'dart:convert';
+import 'package:leadmanagementsystem/utils/dev_log.dart';
 import 'dart:io';
 
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -215,7 +215,7 @@ class ProjectController extends GetxController {
   }
 
   /// Per-status project counts for the home screen pie chart, from
-  /// `getProjectStatusCounts/:userId` — computed server-side across the
+  /// `getProjectStatusCounts/:userId` â€” computed server-side across the
   /// user's whole portfolio, unlike [myProjects]/[assignedProjects]/
   /// [teamProjects] which only ever hold one paginated page.
   var projectStatusCounts = <String, int>{}.obs;

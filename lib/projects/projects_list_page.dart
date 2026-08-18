@@ -1,4 +1,4 @@
-import 'dart:developer';
+﻿import 'package:leadmanagementsystem/utils/dev_log.dart';
 import 'dart:io';
 
 import 'package:docx_template/docx_template.dart';
@@ -300,7 +300,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
                                     return Column(
                                       children: [
                                         const Text(
-                                          "ⓘ Search projects by project creator, title, company, manager, contractor, client, consultant, location, status, notes or budget",
+                                          "â“˜ Search projects by project creator, title, company, manager, contractor, client, consultant, location, status, notes or budget",
                                           style: TextStyle(
                                               fontStyle: FontStyle.italic,
                                               fontSize: 16),
@@ -710,7 +710,7 @@ class _ProjectListPageState extends State<ProjectListPage> {
         final consultantMEName = (project.consultantMEName ?? '').toLowerCase();
         final status = (project.status ?? '').toLowerCase();
 
-        // ✅ Match text query (optional)
+        // âœ… Match text query (optional)
         final matchesQuery = lowerQuery.isEmpty ||
             contractorName.contains(lowerQuery) ||
             contractorPMName.contains(lowerQuery) ||
@@ -728,15 +728,15 @@ class _ProjectListPageState extends State<ProjectListPage> {
             consultantMEName.contains(lowerQuery) ||
             status.contains(lowerQuery);
 
-        // ✅ Company filter (only if selected)
+        // âœ… Company filter (only if selected)
         final matchesCompany =
             lowerCompany.isEmpty || company.contains(lowerCompany);
 
-        // ✅ Status filter (only if selected)
+        // âœ… Status filter (only if selected)
         final matchesStatus =
             lowerStatus.isEmpty || status.contains(lowerStatus);
 
-        // ✅ Combine all (ignore null/empty filters)
+        // âœ… Combine all (ignore null/empty filters)
         return matchesQuery && matchesCompany && matchesStatus;
       }).toList();
     });

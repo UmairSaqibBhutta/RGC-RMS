@@ -1,4 +1,4 @@
-import 'dart:developer';
+﻿import 'package:leadmanagementsystem/utils/dev_log.dart';
 
 import 'package:get/get.dart';
 import 'package:leadmanagementsystem/main.dart';

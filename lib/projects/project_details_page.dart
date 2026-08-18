@@ -1,5 +1,6 @@
-import 'dart:developer';
+﻿import 'package:leadmanagementsystem/utils/dev_log.dart';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -222,7 +223,7 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 6),
                             child: MultiSelectDialogField(
-                              // ✅ Ensure initial value is a list of valid user IDs
+                              // âœ… Ensure initial value is a list of valid user IDs
                               initialValue: List<String>.from(
                                   projectCont.projectselectedUsers),
 
@@ -255,11 +256,11 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
                               onConfirm: (values) async {
                                 log("Selected Users: $values");
 
-                                // ✅ Prevent duplicate selections
+                                // âœ… Prevent duplicate selections
                                 projectCont.projectselectedUsers.clear();
                                 projectCont.projectselectedUsers.addAll(values);
 
-                                projectCont.update(); // ✅ Refresh UI
+                                projectCont.update(); // âœ… Refresh UI
 
                                 Map<String, dynamic> body = {
                                   'senderUserId': loginStorage.getUserId(),
@@ -635,13 +636,18 @@ class _ProjectDetailsPageState extends State<ProjectDetailsPage> {
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
               // Same `baseUrl + <path>` convention used for chat images
-              // (see chat_page.dart) — the API returns a bare filename here.
-              child: Image.network(
-                baseUrl + followUp.image!,
+              // (see chat_page.dart) â€” the API returns a bare filename here.
+              child: CachedNetworkImage(
+                imageUrl: baseUrl + followUp.image!,
                 height: 150,
                 width: double.infinity,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                placeholder: (_, __) => const SizedBox(
+                  height: 150,
+                  child: Center(
+                      child: CircularProgressIndicator(strokeWidth: 2)),
+                ),
+                errorWidget: (_, __, ___) => const SizedBox.shrink(),
               ),
             ),
           ],

@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -388,12 +389,17 @@ class _VisitReportDetailScreenState extends State<VisitReportDetailScreen> {
               // Same `baseUrl + <path>` convention used for chat images
               // (see chat_page.dart) and the project details follow-ups —
               // the API returns a bare filename here.
-              child: Image.network(
-                baseUrl + followUp.image!,
+              child: CachedNetworkImage(
+                imageUrl: baseUrl + followUp.image!,
                 height: 150,
                 width: double.infinity,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                placeholder: (_, __) => const SizedBox(
+                  height: 150,
+                  child: Center(
+                      child: CircularProgressIndicator(strokeWidth: 2)),
+                ),
+                errorWidget: (_, __, ___) => const SizedBox.shrink(),
               ),
             ),
           ],

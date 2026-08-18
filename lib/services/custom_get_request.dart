@@ -1,5 +1,5 @@
-import 'dart:convert';
-import 'dart:developer';
+﻿import 'dart:convert';
+import 'package:leadmanagementsystem/utils/dev_log.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -37,12 +37,12 @@ class CustomGetRequest {
     try {
       return json.decode(raw);
     } on FormatException catch (e) {
-      log('⚠️ JSON FormatException: $e — attempting sanitisation');
+      log('âš ï¸ JSON FormatException: $e â€” attempting sanitisation');
       try {
         final sanitized = _sanitizeJson(raw);
         return json.decode(sanitized);
       } catch (e2) {
-        log('❌ Sanitisation also failed: $e2');
+        log('âŒ Sanitisation also failed: $e2');
         return null;
       }
     }
@@ -79,7 +79,7 @@ class CustomGetRequest {
           continue;
         }
 
-        // Already in a string — decide: closing quote or unescaped inner quote?
+        // Already in a string â€” decide: closing quote or unescaped inner quote?
         // Peek at the next non-whitespace character.
         int j = i + 1;
         while (j < raw.length &&
@@ -100,7 +100,7 @@ class CustomGetRequest {
           inString = false;
           buf.write(ch);
         } else {
-          // Unescaped inner quote — escape it.
+          // Unescaped inner quote â€” escape it.
           buf.write(r'\"');
         }
         continue;

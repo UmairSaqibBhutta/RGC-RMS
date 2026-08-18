@@ -22,6 +22,9 @@ class ApiUrls {
   static const String assignTask = 'assignTask';
   static const String getAssignedTask = 'getAssignTasks';
 
+  /// Debug-only: permanently deletes a task. See [DebugDeleteTaskTile].
+  static const String deleteTask = 'delete-task';
+
   // project apis
 
   static const String assignProject = 'assignProject';

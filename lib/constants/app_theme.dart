@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:leadmanagementsystem/constants/constants.dart';
 
 const Color textPrimaryColor = Color(0xFF111827);
@@ -32,7 +31,11 @@ ThemeData buildAppTheme() {
     onSurface: textPrimaryColor,
   );
 
-  final baseTextTheme = GoogleFonts.latoTextTheme();
+  // Lato is bundled locally under assets/fonts/Lato (see pubspec.yaml) so it
+  // never needs to be fetched over the network at runtime, unlike
+  // GoogleFonts.latoTextTheme()/GoogleFonts.lato().
+  final baseTextTheme =
+      ThemeData(useMaterial3: true).textTheme.apply(fontFamily: 'Lato');
   final textTheme = baseTextTheme.copyWith(
     headlineSmall: baseTextTheme.headlineSmall?.copyWith(
       fontSize: 24,
@@ -95,7 +98,7 @@ ThemeData buildAppTheme() {
     useMaterial3: true,
     primaryColor: appColor,
     scaffoldBackgroundColor: surfaceMutedColor,
-    fontFamily: GoogleFonts.lato().fontFamily,
+    fontFamily: 'Lato',
     textTheme: textTheme,
     colorScheme: colorScheme,
     splashFactory: InkRipple.splashFactory,

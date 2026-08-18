@@ -1,4 +1,5 @@
-import 'dart:developer';
+﻿import 'dart:async';
+import 'package:leadmanagementsystem/utils/dev_log.dart';
 import 'dart:io';
 
 import 'package:alarm/alarm.dart';
@@ -39,38 +40,50 @@ const String notificationDesc = 'Show notifications';
 const notiId = 393;
 
 Future<void> main() async {
-  HttpOverrides.global = MyHttpOverrides();
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  // Silences every `print()` call app-wide (this codebase's and any
+  // package's) outside debug builds, so nothing leaks into release
+  // logcat/console. `log()` calls from dart:developer are unaffected by
+  // this â€” they already require an attached debugger/DevTools to be
+  // visible and are effectively inert in a real release build.
+  runZoned(() async {
+    HttpOverrides.global = MyHttpOverrides();
+    WidgetsFlutterBinding.ensureInitialized();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
 
-  // Initialize Crashlytics and catch Flutter errors
-  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
-  FlutterError.onError = (errorDetails) {
-    FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
-  };
-  // Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics
-  PlatformDispatcher.instance.onError = (error, stack) {
-    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-    return true;
-  };
+    // Initialize Crashlytics and catch Flutter errors
+    FlutterError.onError =
+        FirebaseCrashlytics.instance.recordFlutterFatalError;
+    FlutterError.onError = (errorDetails) {
+      FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+    };
+    // Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      return true;
+    };
 
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
-  projectsController = Get.put(ProjectController(), permanent: true);
-  locationController = Get.put(LocationController(), permanent: true);
+    projectsController = Get.put(ProjectController(), permanent: true);
+    locationController = Get.put(LocationController(), permanent: true);
 
-  getRequest = CustomGetRequest();
-  postRequest = CustomPostRequest();
-  await Hive.initFlutter();
-  await Hive.openBox('login_hive');
-  await Hive.openBox('remindersBox');
-  loginStorage = LoginStorage();
-  FirebaseMessagingService().initialize();
-  await Alarm.init();
+    getRequest = CustomGetRequest();
+    postRequest = CustomPostRequest();
+    await Hive.initFlutter();
+    await Hive.openBox('login_hive');
+    await Hive.openBox('remindersBox');
+    loginStorage = LoginStorage();
+    FirebaseMessagingService().initialize();
+    await Alarm.init();
 
-  runApp(const MyApp());
+    runApp(const MyApp());
+  }, zoneSpecification: ZoneSpecification(
+    print: (self, parent, zone, line) {
+      if (kDebugMode) parent.print(zone, line);
+    },
+  ));
 }
 
 class MyApp extends StatefulWidget {

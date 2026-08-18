@@ -1,5 +1,5 @@
-import 'dart:async';
-import 'dart:developer';
+﻿import 'dart:async';
+import 'package:leadmanagementsystem/utils/dev_log.dart';
 import 'dart:io';
 
 import 'package:chatview/chatview.dart';
@@ -124,8 +124,8 @@ class _ChatPageState extends State<ChatPage> {
             widget: showSpinkit(),
             reloadButton: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue, // 🔹 button background
-                foregroundColor: Colors.white, // 🔹 text/icon color
+                backgroundColor: Colors.blue, // ðŸ”¹ button background
+                foregroundColor: Colors.white, // ðŸ”¹ text/icon color
               ),
               onPressed: () => loadInitialChat(),
               child: const Text("Reload Chat"),
@@ -379,7 +379,7 @@ class _ChatPageState extends State<ChatPage> {
         .listen((querySnapshot) {
       log("isFirstLoad in listenNewMessages = $isFirstLoad");
 
-      // ⛔ Skip the first load (we're already loading messages manually)
+      // â›” Skip the first load (we're already loading messages manually)
       if (isFirstLoad) {
         isFirstLoad = false;
         return;
@@ -392,7 +392,7 @@ class _ChatPageState extends State<ChatPage> {
 
         if (data['sentBy'] == loginStorage.getUserId()) return;
 
-        log("🟢 New message received: $data");
+        log("ðŸŸ¢ New message received: $data");
 
         final messageType = MessageType.values.firstWhere(
           (e) => e.name == data['messageType'],

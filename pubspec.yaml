@@ -36,7 +36,6 @@ dependencies:
   permission_handler: ^11.4.0
   multi_select_flutter: ^4.1.3
   calendar_date_picker2: ">=1.1.8 <3.0.0"
-  google_fonts: ^6.3.2
   pdf: ^3.11.3
   path_provider: ^2.1.5
   excel: ^4.0.6
@@ -50,6 +49,7 @@ dependencies:
   flutter_launcher_icons: any
   animated_snack_bar: ^0.4.0
   image_picker: ^1.2.2
+  cached_network_image: ^3.4.1
 dependency_overrides:
   intl: ^0.20.0
 
@@ -64,3 +64,27 @@ flutter:
   assets:
     - images/
     - assets/audio/alarm.mp3
+
+  fonts:
+    - family: Lato
+      fonts:
+        - asset: assets/fonts/Lato/Lato-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Lato/Lato-Italic.ttf
+          weight: 400
+          style: italic
+        - asset: assets/fonts/Lato/Lato-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Lato/Lato-MediumItalic.ttf
+          weight: 500
+          style: italic
+        - asset: assets/fonts/Lato/Lato-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Lato/Lato-SemiBoldItalic.ttf
+          weight: 600
+          style: italic
+        - asset: assets/fonts/Lato/Lato-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Lato/Lato-BoldItalic.ttf
+          weight: 700
+          style: italic

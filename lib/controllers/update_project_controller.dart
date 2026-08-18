@@ -1,4 +1,4 @@
-import 'dart:developer';
+﻿import 'package:leadmanagementsystem/utils/dev_log.dart';
 
 import 'package:get/get.dart';
 import 'package:leadmanagementsystem/constants/api_urls.dart';
@@ -21,7 +21,7 @@ class UpdateProjectController extends GetxController {
       final res = await getRequest.customGetRequest(
           apiPath: '${ApiUrls.getProjectDetail}/$projectId');
 
-      log("📥 Project Detail Raw: $res");
+      log("ðŸ“¥ Project Detail Raw: $res");
 
       if (res == null || res['status'] != true || res['data'] == null) {
         projectUpdateModel = null;
@@ -31,7 +31,7 @@ class UpdateProjectController extends GetxController {
       projectUpdateModel = ProjectUpdateModel.fromJson(res);
       return projectUpdateModel?.updateProjectData;
     } catch (e) {
-      log("❌ getProjectById Exception: $e");
+      log("âŒ getProjectById Exception: $e");
       projectUpdateModel = null;
       return null;
     } finally {

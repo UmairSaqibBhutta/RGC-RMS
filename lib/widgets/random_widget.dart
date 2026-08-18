@@ -1,4 +1,4 @@
-import 'dart:developer';
+﻿import 'package:leadmanagementsystem/utils/dev_log.dart';
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/foundation.dart';
@@ -294,7 +294,7 @@ class PieChartSample2 extends StatefulWidget {
   PieChartSample2({super.key, required this.statusCounts});
 
   /// Per-status project counts, keyed by the same status strings used
-  /// throughout the app (e.g. 'Lead', 'Closed-Won') — from
+  /// throughout the app (e.g. 'Lead', 'Closed-Won') â€” from
   /// `getProjectStatusCounts/:userId`, computed server-side across the
   /// user's whole portfolio rather than one paginated page of projects.
   Map<String, int> statusCounts;

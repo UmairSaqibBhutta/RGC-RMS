@@ -1,8 +1,8 @@
-import 'package:geocoding/geocoding.dart' as geoCoding;
+﻿import 'package:geocoding/geocoding.dart' as geoCoding;
 // import 'package:geolocator/geolocator.dart';
 
 import 'dart:async';
-import 'dart:developer';
+import 'package:leadmanagementsystem/utils/dev_log.dart';
 
 import 'package:get/get.dart';
 import 'package:leadmanagementsystem/constants/api_urls.dart';
@@ -130,13 +130,13 @@ class LocationController extends GetxController {
         }
       }
 
-      /// 📍 Get Location
+      /// ðŸ“ Get Location
       LocationData? locationData = await location.getLocation();
 
       double lat = locationData.latitude!;
       double long = locationData.longitude!;
 
-      /// 🌍 Convert to Address
+      /// ðŸŒ Convert to Address
       List<geoCoding.Placemark> placemarks =
           await geoCoding.placemarkFromCoordinates(lat, long);
 
@@ -146,16 +146,16 @@ class LocationController extends GetxController {
           "${place.locality ?? ""} ${place.subLocality ?? ""} ${place.name ?? ""}"
               .trim();
 
-      log("📍 Current Address: $address");
+      log("ðŸ“ Current Address: $address");
 
-      /// ✅ Return LocationModel
+      /// âœ… Return LocationModel
       return LocationModel(
         address: address,
         lat: lat.toString(),
         long: long.toString(),
       );
     } catch (e) {
-      log("❌ Location Exception: $e");
+      log("âŒ Location Exception: $e");
       CustomSnackbar.error("Failed to get location");
       return null;
     }

@@ -9,6 +9,7 @@ import 'package:leadmanagementsystem/screens/add_task_screen.dart';
 import 'package:leadmanagementsystem/task_widget.dart';
 import 'package:leadmanagementsystem/widgets/custom_decoration_container.dart';
 import 'package:leadmanagementsystem/widgets/custom_widgets.dart';
+import 'package:leadmanagementsystem/widgets/debug_delete_task_tile.dart';
 
 class TaskListPage extends StatefulWidget {
   bool getTasksNyIndividualUsers;
@@ -138,11 +139,15 @@ class _TaskListPageState extends State<TaskListPage> {
                           // ListView `reverse: true`), without reversing the
                           // whole scroll view (which would flip the header too).
                           final task = tasks[tasks.length - 1 - index];
-                          return GestureDetector(
-                            onTap: () {
-                              Get.to(TaskDetailPage(task: task));
-                            },
-                            child: TaskWidget(task: task),
+                          return DebugDeleteTaskTile(
+                            taskId: task.id,
+                            taskController: controller,
+                            child: GestureDetector(
+                              onTap: () {
+                                Get.to(TaskDetailPage(task: task));
+                              },
+                              child: TaskWidget(task: task),
+                            ),
                           )
                               .animate()
                               .untint()

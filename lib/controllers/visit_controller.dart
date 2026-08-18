@@ -1,4 +1,4 @@
-import 'dart:developer';
+﻿import 'package:leadmanagementsystem/utils/dev_log.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -36,7 +36,7 @@ class VisitController extends GetxController {
   bool isLoadingMoreVisits = false;
   static const int _limit = 10;
 
-  /// ✅ Validation
+  /// âœ… Validation
   String? validate() {
     if (townPhaseCont.text.trim().isEmpty) {
       return "Town / Phase is required";
@@ -50,7 +50,7 @@ class VisitController extends GetxController {
     return null;
   }
 
-  /// ✅ Create Visit
+  /// âœ… Create Visit
   Future<void> submitData() async {
     final error = validate();
     if (error != null) {
@@ -78,16 +78,16 @@ class VisitController extends GetxController {
           "callResult": callResultCont.text.trim(),
       };
 
-      log("📤 Create Visit Payload: $body");
+      log("ðŸ“¤ Create Visit Payload: $body");
 
       final response = await postRequest.customPostRequest(
         url: ApiUrls.addNewVisitReport,
         body: body,
       );
 
-      log("📥 API Response: $response");
+      log("ðŸ“¥ API Response: $response");
 
-      /// ❌ Handle failure properly
+      /// âŒ Handle failure properly
       if (response == null) {
         CustomSnackbar.error("No response from server");
         return;
@@ -105,7 +105,7 @@ class VisitController extends GetxController {
       getVisitReports();
       Navigator.of(Get.context!).pop();
     } catch (e) {
-      log("❌ Exception: $e");
+      log("âŒ Exception: $e");
       CustomSnackbar.error("Something went wrong");
     } finally {
       isLoading = false;
@@ -140,14 +140,14 @@ class VisitController extends GetxController {
         "long": locationModel.long,
       };
 
-      log("📤 Check-In Body: $body");
+      log("ðŸ“¤ Check-In Body: $body");
 
       final response = await postRequest.customPostRequest(
         url: ApiUrls.visitCheckIn,
         body: body,
       );
 
-      log("📥 Check-In Response: $response");
+      log("ðŸ“¥ Check-In Response: $response");
 
       if (response == null) {
         CustomSnackbar.error("No response from server");
@@ -166,7 +166,7 @@ class VisitController extends GetxController {
       // Refresh visits
       await getVisitReports();
     } catch (e) {
-      log("❌ Check-In Exception: $e");
+      log("âŒ Check-In Exception: $e");
       CustomSnackbar.error("Something went wrong");
     } finally {
       // Ensure loading state is reset
@@ -190,14 +190,14 @@ class VisitController extends GetxController {
         "long": locationModel.long,
       };
 
-      log("📤 Check-Out Body: $body");
+      log("ðŸ“¤ Check-Out Body: $body");
 
       final response = await postRequest.customPostRequest(
         url: ApiUrls.visitCheckOut,
         body: body,
       );
 
-      log("📥 Check-Out Response: $response");
+      log("ðŸ“¥ Check-Out Response: $response");
 
       if (response == null) {
         CustomSnackbar.error("No response from server");
@@ -213,10 +213,10 @@ class VisitController extends GetxController {
 
       CustomSnackbar.success("Checked Out Successfully");
 
-      /// 🔄 Refresh list
+      /// ðŸ”„ Refresh list
       await getVisitReports();
     } catch (e) {
-      log("❌ Check-Out Exception: $e");
+      log("âŒ Check-Out Exception: $e");
       CustomSnackbar.error("Something went wrong");
     } finally {
       isLoading = false;
@@ -235,28 +235,28 @@ class VisitController extends GetxController {
             "${ApiUrls.getNewVisitReport}/${loginStorage.getUserId()!}?page=$_visitPage&limit=$_limit",
       );
 
-      log("📥 Visit Reports Raw: $response");
+      log("ðŸ“¥ Visit Reports Raw: $response");
 
       if (response == null) {
         CustomSnackbar.error("No response from server");
         return;
       }
 
-      /// ✅ Parse Model
+      /// âœ… Parse Model
       visitReportModel = VisitReportModel.fromJson(response);
       _visitTotalPages = visitReportModel?.pagination?.totalPages ?? 1;
 
-      /// ✅ Extract list safely
+      /// âœ… Extract list safely
       visitList = visitReportModel?.data ?? [];
 
-      log("✅ Parsed Visits Count: ${visitList.length}, Total Pages: $_visitTotalPages");
+      log("âœ… Parsed Visits Count: ${visitList.length}, Total Pages: $_visitTotalPages");
 
       if (visitList.isNotEmpty) {
-        log("📌 First Visit Site: ${visitList.first.site}");
-        log("⏱ CheckOut: ${visitList.first.checkOut?.time}");
+        log("ðŸ“Œ First Visit Site: ${visitList.first.site}");
+        log("â± CheckOut: ${visitList.first.checkOut?.time}");
       }
     } catch (e) {
-      log("❌ getVisitReports Exception: $e");
+      log("âŒ getVisitReports Exception: $e");
       CustomSnackbar.error("Failed to fetch visits");
     } finally {
       isReportLoading = false;
@@ -264,7 +264,7 @@ class VisitController extends GetxController {
     }
   }
 
-  /// ✅ Fetch a single visit report's full details
+  /// âœ… Fetch a single visit report's full details
   Future<VisitData?> getVisitDetail(String visitId) async {
     try {
       isVisitDetailLoading = true;
@@ -275,7 +275,7 @@ class VisitController extends GetxController {
         apiPath: "${ApiUrls.getVisitReportDetail}/$visitId",
       );
 
-      log("📥 Visit Detail Raw: $response");
+      log("ðŸ“¥ Visit Detail Raw: $response");
 
       if (response == null || response['status'] != true) {
         return null;
@@ -286,7 +286,7 @@ class VisitController extends GetxController {
 
       return visitDetail;
     } catch (e) {
-      log("❌ getVisitDetail Exception: $e");
+      log("âŒ getVisitDetail Exception: $e");
       return null;
     } finally {
       isVisitDetailLoading = false;
@@ -364,10 +364,10 @@ class VisitController extends GetxController {
         final moreModel = VisitReportModel.fromJson(response);
         final moreList = moreModel.data ?? [];
         visitList = [...visitList, ...moreList];
-        log("✅ Loaded More Visits: ${moreList.length}, Page: $_visitPage");
+        log("âœ… Loaded More Visits: ${moreList.length}, Page: $_visitPage");
       }
     } catch (e) {
-      log("❌ loadMoreVisits Exception: $e");
+      log("âŒ loadMoreVisits Exception: $e");
     } finally {
       isLoadingMoreVisits = false;
       update();
