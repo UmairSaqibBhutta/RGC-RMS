@@ -33,7 +33,7 @@ const String appName = "RGC RMS";
 String checkInString = "CheckIn";
 String checkOutString = "CheckOut";
 
-const baseUrl = 'http://38.247.129.79:8030/api/';
+const baseUrl = 'https://leadmanagementapi-production.up.railway.app/api/';
 
 alertDialogueWithLoader(context) {
   log("alertDialogueWithLoader fired");
@@ -272,7 +272,8 @@ class _CustomDialogState extends State<CustomDialog> {
                                   ),
                                   const SizedBox(width: 8),
                                   controller.editManagersLoading == true
-                                      ? const AppLoader(size: 20, strokeWidth: 2)
+                                      ? const AppLoader(
+                                          size: 20, strokeWidth: 2)
                                       : SizedBox(
                                           width: 140,
                                           child: CustomButton(
