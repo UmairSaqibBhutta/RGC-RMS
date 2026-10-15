@@ -36,6 +36,10 @@
 	<string>This app requires camera access to take photos for chat</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We use your location to allow you to check in and update the status of assigned tasks based on your current location.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>We use your location to allow you to check in and update the status of assigned tasks based on your current location.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>We use your location to allow you to check in and update the status of assigned tasks based on your current location.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>This app requires microphone access to record audio for chat</string>
 	<key>NSPhotoLibraryUsageDescription</key>
