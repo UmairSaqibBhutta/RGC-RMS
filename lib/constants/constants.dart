@@ -33,7 +33,7 @@ const String appName = "RGC RMS";
 String checkInString = "CheckIn";
 String checkOutString = "CheckOut";
 
-const baseUrl = 'https://leadmanagementapi-production.up.railway.app/api/';
+const baseUrl = 'http://109.199.127.39:8063/api/';
 
 alertDialogueWithLoader(context) {
   log("alertDialogueWithLoader fired");

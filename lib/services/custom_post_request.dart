@@ -69,6 +69,44 @@ class CustomPostRequest {
     }
   }
 
+  /// Multipart POST that can repeat the same field name (e.g. several
+  /// `contact` values) and optionally attach one file.
+  Future customMultipartRepeated({
+    required String url,
+    required Map<String, String> fields,
+    Map<String, List<String>> repeatedFields = const {},
+    File? file,
+    String fileField = "image",
+  }) async {
+    try {
+      var urlPath = '$baseUrl$url';
+      if (kDebugMode) log('url--->$urlPath');
+
+      var request = http.MultipartRequest('POST', Uri.parse(urlPath));
+      request.fields.addAll(fields);
+      repeatedFields.forEach((key, values) {
+        for (final v in values) {
+          request.files.add(http.MultipartFile.fromString(key, v));
+        }
+      });
+      if (file != null) {
+        request.files
+            .add(await http.MultipartFile.fromPath(fileField, file.path));
+      }
+
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+      if (kDebugMode) {
+        log('body---${response.body}');
+        log('statusCode---${response.statusCode}');
+      }
+      return json.decode(response.body);
+    } catch (err) {
+      log(err.toString());
+      return null;
+    }
+  }
+
   Future customFileUpload({
     required String url,
     required File file,

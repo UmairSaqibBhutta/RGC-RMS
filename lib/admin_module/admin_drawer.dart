@@ -15,6 +15,7 @@ import 'package:leadmanagementsystem/screens/daily_distance_screen.dart';
 import 'package:leadmanagementsystem/screens/leaves_page.dart';
 import 'package:leadmanagementsystem/screens/login_screen.dart';
 import 'package:leadmanagementsystem/screens/visit_report_screen.dart';
+import 'package:leadmanagementsystem/screens/visitors/visitor_list_screen.dart';
 import 'package:leadmanagementsystem/screens/reminders_list_page.dart';
 import 'package:leadmanagementsystem/screens/tasks_list_page.dart';
 import 'package:leadmanagementsystem/screens/add_user_screen.dart';
@@ -83,6 +84,13 @@ class _AdminDrawerState extends State<AdminDrawer> {
                     //
                   },
                   title: "Visit Plan / Reports",
+                ),
+                CustomDrawerItem(
+                  icon: CupertinoIcons.person_crop_rectangle,
+                  onTap: () {
+                    Get.to(() => const VisitorListScreen());
+                  },
+                  title: "Visitor Details",
                 ),
                 CustomDrawerItem(
                   icon: CupertinoIcons.chart_bar_alt_fill,

@@ -53,6 +53,12 @@ class ApiUrls {
   static const String visitCheckIn = 'visitCheckIn';
   static const String visitCheckOut = 'visitCheckOut';
 
+  // Visitor details
+  static const String addVisitor = 'add-visiting';
+  static const String getVisitors = 'get-visiting';
+  static const String updateVisitor = 'update-visit';
+  static const String deleteVisitor = 'delete-visit';
+
   // Attendance
 
   static const String markAttendance = 'markAttendance';
