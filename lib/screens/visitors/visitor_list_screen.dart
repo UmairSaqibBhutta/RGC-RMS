@@ -154,7 +154,9 @@ class _VisitorCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final initial = visitor.personName.isNotEmpty
         ? visitor.personName[0].toUpperCase()
-        : '?';
+        : (visitor.companyName.isNotEmpty
+            ? visitor.companyName[0].toUpperCase()
+            : '?');
     final hasCard = visitor.hasImage;
     return Material(
       color: Colors.white,
@@ -193,7 +195,7 @@ class _VisitorCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(visitor.companyName,
+                    Text(visitor.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -231,19 +233,56 @@ class _VisitorCard extends StatelessWidget {
               if (hasCard)
                 Padding(
                   padding: const EdgeInsets.only(left: 8),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      baseUrl + visitor.image!,
-                      width: 56,
-                      height: 40,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) =>
-                          const Icon(Icons.badge_outlined, color: Colors.grey),
+                  child: Badge(
+                    isLabelVisible: visitor.images.length > 1,
+                    label: Text('${visitor.images.length}'),
+                    backgroundColor: appColor,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        baseUrl + visitor.images.first,
+                        width: 56,
+                        height: 40,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const Icon(
+                            Icons.badge_outlined,
+                            color: Colors.grey),
+                      ),
                     ),
                   ),
                 ),
-              const Icon(Icons.chevron_right, color: Colors.grey),
+              PopupMenuButton<String>(
+                tooltip: 'Options',
+                icon: const Icon(Icons.more_vert, color: Colors.grey),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                onSelected: (v) async {
+                  final c = Get.find<VisitorController>();
+                  if (v == 'edit') {
+                    Get.to(() => AddVisitorScreen(visitor: visitor));
+                  } else if (v == 'delete') {
+                    await c.confirmAndDelete(visitor);
+                  }
+                },
+                itemBuilder: (_) => const [
+                  PopupMenuItem(
+                    value: 'edit',
+                    child: Row(children: [
+                      Icon(Icons.edit_outlined, size: 20, color: appColor),
+                      SizedBox(width: 10),
+                      Text('Edit'),
+                    ]),
+                  ),
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Row(children: [
+                      Icon(Icons.delete_outline, size: 20, color: Colors.red),
+                      SizedBox(width: 10),
+                      Text('Delete', style: TextStyle(color: Colors.red)),
+                    ]),
+                  ),
+                ],
+              ),
             ],
           ),
         ),

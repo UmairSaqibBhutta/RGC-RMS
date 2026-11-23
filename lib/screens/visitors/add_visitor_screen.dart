@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:leadmanagementsystem/constants/constants.dart';
 import 'package:leadmanagementsystem/controllers/visitor_controller.dart';
 import 'package:leadmanagementsystem/widgets/custom_button.dart';
+import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 import 'package:leadmanagementsystem/models/visitor_detail_model.dart';
 import 'package:leadmanagementsystem/widgets/custom_widgets.dart';
 import 'package:leadmanagementsystem/widgets/responsive_body.dart';
@@ -34,12 +35,24 @@ class _AddVisitorScreenState extends State<AddVisitorScreen> {
   bool get _isEdit => widget.visitor != null;
 
   Future<void> _pick(ImageSource source) async {
-    final picked = await ImagePicker().pickImage(
-        source: source, imageQuality: 80, maxWidth: 1600, maxHeight: 1600);
-    if (picked != null) controller.setCardImage(File(picked.path));
+    final picker = ImagePicker();
+    if (source == ImageSource.camera) {
+      final picked = await picker.pickImage(
+          source: source, imageQuality: 80, maxWidth: 1600, maxHeight: 1600);
+      if (picked != null) controller.addImages([File(picked.path)]);
+    } else {
+      final picked = await picker.pickMultiImage(
+          imageQuality: 80, maxWidth: 1600, maxHeight: 1600);
+      controller.addImages(picked.map((x) => File(x.path)).toList());
+    }
   }
 
   void _chooseSource() {
+    if (controller.remainingSlots <= 0) {
+      CustomSnackbar.warning(
+          'You can add up to ${VisitorController.maxImages} images');
+      return;
+    }
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -88,14 +101,14 @@ class _AddVisitorScreenState extends State<AddVisitorScreen> {
           children: [
             LayoutBuilder(builder: (context, box) {
               final wide = box.maxWidth >= 760;
-              final cardSec = _card('Visiting Card', [_cardPicker(c)]);
+              final cardSec = _card('Visiting Card Images', [_imagesPicker(c)]);
               final companySec = _card('Company & Person', [
-                _field('Company Name *', c.companyCont,
+                _field('Company Name', c.companyCont,
                     icon: Icons.business_outlined,
                     caps: TextCapitalization.words),
-                _field('Person Name *', c.personCont,
+                _field('Person Name', c.personCont,
                     icon: Icons.person_outline, caps: TextCapitalization.words),
-                _field('Designation *', c.designationCont,
+                _field('Designation', c.designationCont,
                     icon: Icons.badge_outlined, caps: TextCapitalization.words),
               ]);
               final contactSec = _card('Contact', [
@@ -114,8 +127,14 @@ class _AddVisitorScreenState extends State<AddVisitorScreen> {
                     icon: Icons.mail_outline, type: TextInputType.emailAddress),
               ]);
               final officeSec = _card('Office', [
-                _field('Office Address *', c.addressCont,
+                _field('Office Address', c.addressCont,
                     icon: Icons.location_on_outlined,
+                    lines: 3,
+                    caps: TextCapitalization.sentences),
+              ]);
+              final notesSec = _card('Comments', [
+                _field('Notes about this visitor', c.commentsCont,
+                    icon: Icons.notes_outlined,
                     lines: 3,
                     caps: TextCapitalization.sentences),
               ]);
@@ -129,14 +148,21 @@ class _AddVisitorScreenState extends State<AddVisitorScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
-                              child: Column(children: [cardSec, officeSec])),
+                              child: Column(
+                                  children: [cardSec, officeSec, notesSec])),
                           const SizedBox(width: 16),
                           Expanded(
                               child:
                                   Column(children: [companySec, contactSec])),
                         ],
                       )
-                    else ...[cardSec, companySec, contactSec, officeSec],
+                    else ...[
+                      cardSec,
+                      companySec,
+                      contactSec,
+                      officeSec,
+                      notesSec
+                    ],
                   ],
                 ),
               );
@@ -169,8 +195,22 @@ class _AddVisitorScreenState extends State<AddVisitorScreen> {
     );
   }
 
-  Widget _cardPicker(VisitorController c) {
-    if (c.cardImage == null && c.existingImage == null) {
+  Widget _imagesPicker(VisitorController c) {
+    final tiles = <Widget>[
+      for (final name in c.existingImages)
+        _thumb(
+          Image.network(baseUrl + name,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) =>
+                  const Center(child: Icon(Icons.broken_image_outlined))),
+          () => c.removeExistingImage(name),
+        ),
+      for (int i = 0; i < c.newImages.length; i++)
+        _thumb(Image.file(c.newImages[i], fit: BoxFit.cover),
+            () => c.removeNewImage(i)),
+    ];
+
+    if (tiles.isEmpty) {
       return InkWell(
         onTap: _chooseSource,
         borderRadius: BorderRadius.circular(14),
@@ -182,60 +222,75 @@ class _AddVisitorScreenState extends State<AddVisitorScreen> {
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: appColor.withValues(alpha: .4)),
           ),
-          child: const Column(
+          child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.add_a_photo_outlined, size: 36, color: appColor),
-              SizedBox(height: 8),
-              Text('Scan / upload visiting card',
+              const Icon(Icons.add_a_photo_outlined, size: 36, color: appColor),
+              const SizedBox(height: 8),
+              const Text('Scan / upload visiting card',
                   style:
                       TextStyle(color: appColor, fontWeight: FontWeight.w600)),
-              SizedBox(height: 2),
-              Text('Optional', style: TextStyle(color: Colors.grey)),
+              const SizedBox(height: 2),
+              Text('Optional • up to ${VisitorController.maxImages} images',
+                  style: const TextStyle(color: Colors.grey)),
             ],
           ),
         ),
       );
     }
-    return Stack(
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(14),
-          child: c.cardImage != null
-              ? Image.file(c.cardImage!,
-                  height: 190, width: double.infinity, fit: BoxFit.cover)
-              : Image.network(baseUrl + c.existingImage!,
-                  height: 190,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const SizedBox(
-                      height: 120,
-                      child: Center(child: Icon(Icons.broken_image_outlined)))),
+        GridView.count(
+          crossAxisCount: 3,
+          mainAxisSpacing: 8,
+          crossAxisSpacing: 8,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          children: [
+            ...tiles,
+            if (c.remainingSlots > 0)
+              InkWell(
+                onTap: _chooseSource,
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: appColor.withValues(alpha: .06),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: appColor.withValues(alpha: .4)),
+                  ),
+                  child: const Icon(Icons.add_a_photo_outlined,
+                      size: 28, color: appColor),
+                ),
+              ),
+          ],
         ),
-        Positioned(
-          top: 8,
-          right: 8,
-          child: Row(children: [
-            _roundBtn(Icons.edit, _chooseSource),
-            // Backend can't remove an existing image, only replace it.
-            if (c.cardImage != null) ...[
-              const SizedBox(width: 6),
-              _roundBtn(Icons.close, () => c.setCardImage(null)),
-            ],
-          ]),
-        ),
+        const SizedBox(height: 8),
+        Text('${c.imageCount} / ${VisitorController.maxImages} images',
+            style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
       ],
     );
   }
 
-  Widget _roundBtn(IconData icon, VoidCallback onTap) => GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(7),
-          decoration: const BoxDecoration(
-              color: Colors.black54, shape: BoxShape.circle),
-          child: Icon(icon, size: 16, color: Colors.white),
-        ),
+  Widget _thumb(Widget image, VoidCallback onRemove) => Stack(
+        fit: StackFit.expand,
+        children: [
+          ClipRRect(borderRadius: BorderRadius.circular(10), child: image),
+          Positioned(
+            top: 4,
+            right: 4,
+            child: GestureDetector(
+              onTap: onRemove,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(
+                    color: Colors.black54, shape: BoxShape.circle),
+                child: const Icon(Icons.close, size: 14, color: Colors.white),
+              ),
+            ),
+          ),
+        ],
       );
 
   Widget _phoneRow(VisitorController c, int i) {
@@ -245,7 +300,7 @@ class _AddVisitorScreenState extends State<AddVisitorScreen> {
         children: [
           Expanded(
             child: _field(
-              i == 0 ? 'Contact Number *' : 'Contact Number ${i + 1}',
+              i == 0 ? 'Contact Number' : 'Contact Number ${i + 1}',
               c.phoneConts[i],
               icon: Icons.phone_outlined,
               type: TextInputType.phone,

@@ -14,25 +14,6 @@ class VisitorDetailScreen extends StatelessWidget {
   final String visitorId;
   const VisitorDetailScreen({super.key, required this.visitorId});
 
-  Future<void> _confirmDelete(VisitorController c, VisitorDetail v) async {
-    final ok = await Get.dialog<bool>(AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      title: const Text('Delete visitor?'),
-      content: Text(
-          'This will permanently remove ${v.personName.isEmpty ? 'this visitor' : v.personName} and the saved card image.'),
-      actions: [
-        TextButton(
-            onPressed: () => Get.back(result: false),
-            child: const Text('Cancel')),
-        TextButton(
-            onPressed: () => Get.back(result: true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete')),
-      ],
-    ));
-    if (ok == true && await c.deleteVisitor(v.id)) Get.back();
-  }
-
   @override
   Widget build(BuildContext context) {
     return GetBuilder<VisitorController>(builder: (c) {
@@ -53,14 +34,19 @@ class VisitorDetailScreen extends StatelessWidget {
           IconButton(
             tooltip: 'Delete',
             icon: const Icon(Icons.delete_outline, color: Colors.red),
-            onPressed: c.isSubmitting ? null : () => _confirmDelete(c, visitor),
+            onPressed: c.isSubmitting
+                ? null
+                : () async {
+                    if (await c.confirmAndDelete(visitor)) Get.back();
+                  },
           ),
         ]),
         body: SafeArea(
           child: LayoutBuilder(builder: (context, box) {
             final wide = box.maxWidth >= 760;
             final info = _infoSections(visitor);
-            final card = visitor.hasImage ? _cardImage(visitor) : null;
+            final card =
+                visitor.hasImage ? _ImageGallery(images: visitor.images) : null;
             return ResponsiveBody(
               maxWidth: 1000,
               child: ListView(
@@ -130,6 +116,10 @@ class VisitorDetailScreen extends StatelessWidget {
                       mode: LaunchMode.externalApplication),
                 )),
           ]),
+        if (visitor.comments.isNotEmpty)
+          _section('Comments', [
+            _row(Icons.notes_outlined, visitor.comments),
+          ]),
       ];
 
   Widget _header(VisitorDetail visitor) {
@@ -163,7 +153,10 @@ class VisitorDetailScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(visitor.personName,
+                Text(
+                    visitor.personName.isNotEmpty
+                        ? visitor.personName
+                        : visitor.title,
                     style: const TextStyle(
                         color: Colors.white,
                         fontSize: 20,
@@ -185,61 +178,6 @@ class VisitorDetailScreen extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _cardImage(VisitorDetail visitor) {
-    final url = baseUrl + visitor.image!;
-    return GestureDetector(
-      onTap: () => Get.to(() => Scaffold(
-            backgroundColor: Colors.black,
-            appBar: AppBar(
-                backgroundColor: Colors.black,
-                foregroundColor: Colors.white,
-                title: const Text('Visiting Card')),
-            body: Center(
-              child: InteractiveViewer(
-                minScale: 1,
-                maxScale: 5,
-                child: Image.network(url),
-              ),
-            ),
-          )),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE5E7EB)),
-          color: Colors.white,
-        ),
-        padding: const EdgeInsets.all(8),
-        child: Stack(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: Image.network(
-                url,
-                width: double.infinity,
-                height: 220,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const SizedBox(
-                    height: 120,
-                    child: Center(child: Icon(Icons.broken_image_outlined))),
-              ),
-            ),
-            Positioned(
-              right: 8,
-              bottom: 8,
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: const BoxDecoration(
-                    color: Colors.black54, shape: BoxShape.circle),
-                child: const Icon(Icons.zoom_out_map,
-                    size: 16, color: Colors.white),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -281,6 +219,141 @@ class VisitorDetailScreen extends StatelessWidget {
           ),
           if (trailing != null) trailing,
         ],
+      ),
+    );
+  }
+}
+
+/// Swipeable gallery of a visitor's card images; tap to view full screen.
+class _ImageGallery extends StatefulWidget {
+  final List<String> images;
+  const _ImageGallery({required this.images});
+
+  @override
+  State<_ImageGallery> createState() => _ImageGalleryState();
+}
+
+class _ImageGalleryState extends State<_ImageGallery> {
+  final _page = PageController();
+  int _index = 0;
+
+  @override
+  void dispose() {
+    _page.dispose();
+    super.dispose();
+  }
+
+  void _openViewer(int start) {
+    Get.to(() => _FullScreenImages(images: widget.images, initial: start));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final images = widget.images;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 4),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        color: Colors.white,
+      ),
+      padding: const EdgeInsets.all(8),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: SizedBox(
+          height: 220,
+          child: Stack(
+            children: [
+              PageView.builder(
+                controller: _page,
+                itemCount: images.length,
+                onPageChanged: (i) => setState(() => _index = i),
+                itemBuilder: (_, i) => GestureDetector(
+                  onTap: () => _openViewer(i),
+                  child: Image.network(
+                    baseUrl + images[i],
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) =>
+                        const Center(child: Icon(Icons.broken_image_outlined)),
+                  ),
+                ),
+              ),
+              if (images.length > 1)
+                Positioned(
+                  left: 8,
+                  bottom: 8,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                        color: Colors.black54,
+                        borderRadius: BorderRadius.circular(12)),
+                    child: Text('${_index + 1} / ${images.length}',
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 12)),
+                  ),
+                ),
+              Positioned(
+                right: 8,
+                bottom: 8,
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: const BoxDecoration(
+                      color: Colors.black54, shape: BoxShape.circle),
+                  child: const Icon(Icons.zoom_out_map,
+                      size: 16, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FullScreenImages extends StatefulWidget {
+  final List<String> images;
+  final int initial;
+  const _FullScreenImages({required this.images, required this.initial});
+
+  @override
+  State<_FullScreenImages> createState() => _FullScreenImagesState();
+}
+
+class _FullScreenImagesState extends State<_FullScreenImages> {
+  late final PageController _page = PageController(initialPage: widget.initial);
+  late int _index = widget.initial;
+
+  @override
+  void dispose() {
+    _page.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        title: Text(widget.images.length > 1
+            ? 'Visiting Card ${_index + 1}/${widget.images.length}'
+            : 'Visiting Card'),
+      ),
+      body: PageView.builder(
+        controller: _page,
+        itemCount: widget.images.length,
+        onPageChanged: (i) => setState(() => _index = i),
+        itemBuilder: (_, i) => Center(
+          child: InteractiveViewer(
+            minScale: 1,
+            maxScale: 5,
+            child: Image.network(baseUrl + widget.images[i]),
+          ),
+        ),
       ),
     );
   }
