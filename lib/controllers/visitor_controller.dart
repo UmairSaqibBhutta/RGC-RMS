@@ -15,11 +15,22 @@ class VisitorController extends GetxController {
   final designationCont = TextEditingController();
   final emailCont = TextEditingController();
   final addressCont = TextEditingController();
+  final commentsCont = TextEditingController();
   final List<TextEditingController> phoneConts = [TextEditingController()];
-  File? cardImage;
 
-  /// Existing image (file name) while editing.
-  String? existingImage;
+  static const int maxImages = 10;
+
+  /// Newly picked images, not yet uploaded.
+  final List<File> newImages = [];
+
+  /// Images already on the server (file names) while editing.
+  final List<String> existingImages = [];
+
+  /// Existing images the user removed; sent as `remove_images` on update.
+  final List<String> removedImages = [];
+
+  int get imageCount => existingImages.length + newImages.length;
+  int get remainingSlots => maxImages - imageCount;
 
   // ---- List ----
   List<VisitorDetail> _all = [];
@@ -59,9 +70,28 @@ class VisitorController extends GetxController {
     update();
   }
 
-  void setCardImage(File? f) {
-    cardImage = f;
-    if (f != null) existingImage = null;
+  /// Adds picked images, keeping the total within [maxImages].
+  void addImages(List<File> files) {
+    if (files.isEmpty) return;
+    final slots = remainingSlots;
+    if (slots <= 0) {
+      CustomSnackbar.warning('You can add up to $maxImages images');
+      return;
+    }
+    if (files.length > slots) {
+      CustomSnackbar.warning('Only $maxImages images allowed, extra ignored');
+    }
+    newImages.addAll(files.take(slots));
+    update();
+  }
+
+  void removeNewImage(int i) {
+    newImages.removeAt(i);
+    update();
+  }
+
+  void removeExistingImage(String name) {
+    if (existingImages.remove(name)) removedImages.add(name);
     update();
   }
 
@@ -72,30 +102,40 @@ class VisitorController extends GetxController {
     designationCont.text = v.designation;
     emailCont.text = v.email;
     addressCont.text = v.officeAddress;
+    commentsCont.text = v.comments;
     if (v.contacts.isNotEmpty) {
       phoneConts.first.text = v.contacts.first;
       for (final n in v.contacts.skip(1)) {
         phoneConts.add(TextEditingController(text: n));
       }
     }
-    existingImage = v.hasImage ? v.image : null;
+    existingImages.addAll(v.images);
   }
 
+  /// Every field is optional, but the form can't be completely empty.
   String? validate() {
-    if (companyCont.text.trim().isEmpty) return 'Company name is required';
-    if (personCont.text.trim().isEmpty) return 'Person name is required';
-    if (designationCont.text.trim().isEmpty) return 'Designation is required';
-    final phones =
-        phoneConts.map((c) => c.text.trim()).where((e) => e.isNotEmpty);
-    if (phones.isEmpty) return 'At least one contact number is required';
+    final phones = phoneConts
+        .map((c) => c.text.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+    final email = emailCont.text.trim();
+
+    final isEmpty = companyCont.text.trim().isEmpty &&
+        personCont.text.trim().isEmpty &&
+        designationCont.text.trim().isEmpty &&
+        phones.isEmpty &&
+        email.isEmpty &&
+        addressCont.text.trim().isEmpty &&
+        commentsCont.text.trim().isEmpty &&
+        imageCount == 0;
+    if (isEmpty) return 'Please attach an image or fill in at least one field';
+
     if (phones.any((p) => p.replaceAll(RegExp(r'\D'), '').length < 7)) {
       return 'Enter valid contact number(s)';
     }
-    final email = emailCont.text.trim();
     if (email.isNotEmpty && !_emailRegex.hasMatch(email)) {
       return 'Enter a valid email address';
     }
-    if (addressCont.text.trim().isEmpty) return 'Office address is required';
     return null;
   }
 
@@ -126,10 +166,15 @@ class VisitorController extends GetxController {
           'designation': designationCont.text.trim(),
           'email': emailCont.text.trim(),
           'office_address': addressCont.text.trim(),
+          'comments': commentsCont.text.trim(),
         },
-        repeatedFields: {'contact': phones},
-        file: cardImage,
-        fileField: 'image',
+        repeatedFields: {
+          'contact': phones,
+          if (editingId != null && removedImages.isNotEmpty)
+            'remove_images': List.of(removedImages),
+        },
+        files: newImages,
+        fileField: 'images',
       );
 
       if (response == null) {
@@ -152,6 +197,30 @@ class VisitorController extends GetxController {
       isSubmitting = false;
       update();
     }
+  }
+
+  /// Asks for confirmation, then deletes. Returns true when deleted.
+  Future<bool> confirmAndDelete(VisitorDetail v) async {
+    final name = v.personName.isNotEmpty
+        ? v.personName
+        : (v.companyName.isNotEmpty ? v.companyName : 'this visitor');
+    final ok = await Get.dialog<bool>(AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: const Text('Delete visitor?'),
+      content:
+          Text('This will permanently remove $name and all saved card images.'),
+      actions: [
+        TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text('Cancel')),
+        TextButton(
+            onPressed: () => Get.back(result: true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete')),
+      ],
+    ));
+    if (ok != true) return false;
+    return deleteVisitor(v.id);
   }
 
   Future<bool> deleteVisitor(String id) async {
@@ -185,14 +254,16 @@ class VisitorController extends GetxController {
     designationCont.clear();
     emailCont.clear();
     addressCont.clear();
+    commentsCont.clear();
     for (final c in phoneConts.skip(1)) {
       c.dispose();
     }
     phoneConts
       ..removeRange(1, phoneConts.length)
       ..first.clear();
-    cardImage = null;
-    existingImage = null;
+    newImages.clear();
+    existingImages.clear();
+    removedImages.clear();
   }
 
   Future<void> getVisitors({bool showLoader = true}) async {
@@ -232,6 +303,7 @@ class VisitorController extends GetxController {
     designationCont.dispose();
     emailCont.dispose();
     addressCont.dispose();
+    commentsCont.dispose();
     for (final c in phoneConts) {
       c.dispose();
     }

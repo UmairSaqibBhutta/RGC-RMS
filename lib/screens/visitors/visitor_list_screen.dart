@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:leadmanagementsystem/constants/constants.dart';
@@ -5,6 +7,8 @@ import 'package:leadmanagementsystem/controllers/visitor_controller.dart';
 import 'package:leadmanagementsystem/models/visitor_detail_model.dart';
 import 'package:leadmanagementsystem/screens/visitors/add_visitor_screen.dart';
 import 'package:leadmanagementsystem/screens/visitors/visitor_detail_screen.dart';
+import 'package:leadmanagementsystem/services/visitor_report_service.dart';
+import 'package:leadmanagementsystem/widgets/custom_snackbar.dart';
 import 'package:leadmanagementsystem/widgets/custom_widgets.dart';
 import 'package:leadmanagementsystem/widgets/responsive_body.dart';
 
@@ -19,6 +23,32 @@ class VisitorListScreen extends StatefulWidget {
 class _VisitorListScreenState extends State<VisitorListScreen> {
   late final VisitorController controller;
   final _searchCont = TextEditingController();
+  bool _isExporting = false;
+
+  /// Exports the visitors currently shown (respecting search) as PDF or Excel.
+  Future<void> _export({required bool asPdf}) async {
+    if (_isExporting) return;
+    final items = controller.visitors;
+    if (items.isEmpty) {
+      CustomSnackbar.warning('No visitors to export');
+      return;
+    }
+    final q = controller.searchQuery.trim();
+    final filterNote = q.isEmpty ? null : 'Search "$q"';
+    setState(() => _isExporting = true);
+    try {
+      if (asPdf) {
+        await VisitorReportService.exportPdf(items, filterNote: filterNote);
+      } else {
+        await VisitorReportService.exportExcel(items, filterNote: filterNote);
+      }
+    } catch (e) {
+      log('❌ export visitors (${asPdf ? 'pdf' : 'excel'}): $e');
+      CustomSnackbar.error('Failed to generate report');
+    } finally {
+      if (mounted) setState(() => _isExporting = false);
+    }
+  }
 
   @override
   void initState() {
@@ -38,7 +68,27 @@ class _VisitorListScreenState extends State<VisitorListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F8FA),
-      appBar: mAppbar('Visitor Details'),
+      appBar: mAppbar('Visitor Details', action: [
+        _isExporting
+            ? const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: Center(
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: appColor),
+                  ),
+                ),
+              )
+            : Row(mainAxisSize: MainAxisSize.min, children: [
+                _exportButton(
+                    'images/pdf.png', 'Export PDF', () => _export(asPdf: true)),
+                _exportButton('images/excel.png', 'Export Excel',
+                    () => _export(asPdf: false)),
+                const SizedBox(width: 6),
+              ]),
+      ]),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: appColor,
         foregroundColor: Colors.white,
@@ -118,6 +168,14 @@ class _VisitorListScreenState extends State<VisitorListScreen> {
     );
   }
 
+  Widget _exportButton(String asset, String tooltip, VoidCallback onTap) {
+    return IconButton(
+      tooltip: tooltip,
+      onPressed: onTap,
+      icon: Image.asset(asset, width: 26, height: 26, fit: BoxFit.contain),
+    );
+  }
+
   Widget _empty(bool searching) {
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
@@ -154,7 +212,9 @@ class _VisitorCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final initial = visitor.personName.isNotEmpty
         ? visitor.personName[0].toUpperCase()
-        : '?';
+        : (visitor.companyName.isNotEmpty
+            ? visitor.companyName[0].toUpperCase()
+            : '?');
     final hasCard = visitor.hasImage;
     return Material(
       color: Colors.white,
@@ -193,7 +253,7 @@ class _VisitorCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(visitor.companyName,
+                    Text(visitor.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -231,19 +291,56 @@ class _VisitorCard extends StatelessWidget {
               if (hasCard)
                 Padding(
                   padding: const EdgeInsets.only(left: 8),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      baseUrl + visitor.image!,
-                      width: 56,
-                      height: 40,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) =>
-                          const Icon(Icons.badge_outlined, color: Colors.grey),
+                  child: Badge(
+                    isLabelVisible: visitor.images.length > 1,
+                    label: Text('${visitor.images.length}'),
+                    backgroundColor: appColor,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        baseUrl + visitor.images.first,
+                        width: 56,
+                        height: 40,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const Icon(
+                            Icons.badge_outlined,
+                            color: Colors.grey),
+                      ),
                     ),
                   ),
                 ),
-              const Icon(Icons.chevron_right, color: Colors.grey),
+              PopupMenuButton<String>(
+                tooltip: 'Options',
+                icon: const Icon(Icons.more_vert, color: Colors.grey),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                onSelected: (v) async {
+                  final c = Get.find<VisitorController>();
+                  if (v == 'edit') {
+                    Get.to(() => AddVisitorScreen(visitor: visitor));
+                  } else if (v == 'delete') {
+                    await c.confirmAndDelete(visitor);
+                  }
+                },
+                itemBuilder: (_) => const [
+                  PopupMenuItem(
+                    value: 'edit',
+                    child: Row(children: [
+                      Icon(Icons.edit_outlined, size: 20, color: appColor),
+                      SizedBox(width: 10),
+                      Text('Edit'),
+                    ]),
+                  ),
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Row(children: [
+                      Icon(Icons.delete_outline, size: 20, color: Colors.red),
+                      SizedBox(width: 10),
+                      Text('Delete', style: TextStyle(color: Colors.red)),
+                    ]),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
